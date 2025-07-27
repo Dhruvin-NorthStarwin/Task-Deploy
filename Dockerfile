@@ -1,3 +1,4 @@
+# Railway Backend Dockerfile - Deploy from root directory
 # Multi-stage build for production optimization
 FROM python:3.11-slim as builder
 
@@ -53,8 +54,9 @@ RUN mkdir -p uploads/images uploads/videos uploads/task_completions && \
 # Copy application code from backend directory
 COPY --chown=appuser:appuser backend/ .
 
-# Make startup script executable
-RUN chmod +x start_production.sh init_production_db.py
+# Make startup script executable (if they exist)
+RUN chmod +x init_production_db.py && \
+    (chmod +x start_production.sh || true)
 
 # Switch to non-root user
 USER appuser
