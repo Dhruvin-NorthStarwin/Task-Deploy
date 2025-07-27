@@ -14,7 +14,7 @@ async def get_tasks(
     initials: Optional[str] = Query(None),
     task_type: Optional[schemas.TaskType] = Query(None),
     db: Session = Depends(get_db),
-    current_restaurant: models.Restaurant = Depends(auth.get_current_restaurant_or_none)
+    current_restaurant: models.Restaurant = Depends(auth.get_current_restaurant)
 ):
     """Get all tasks for the current restaurant with optional filters"""
     from app.utils import convert_enum_for_api
@@ -27,10 +27,8 @@ async def get_tasks(
         task_type=task_type
     )
     
-    # For development: Use restaurant_id=1 if not authenticated
-    restaurant_id = 1
-    if current_restaurant:
-        restaurant_id = current_restaurant.id
+    # Use authenticated restaurant ID
+    restaurant_id = current_restaurant.id
     
     # Get tasks from DB
     tasks = crud.get_tasks_by_restaurant(db, restaurant_id, filters)
@@ -49,7 +47,7 @@ async def get_tasks(
 async def create_task(
     task: schemas.TaskCreate,
     db: Session = Depends(get_db),
-    current_restaurant: models.Restaurant = Depends(auth.get_current_restaurant_or_none)
+    current_restaurant: models.Restaurant = Depends(auth.get_current_restaurant)
 ):
     """Create a new task"""
     from app.utils import convert_enum_for_api
@@ -67,15 +65,9 @@ async def create_task(
     if hasattr(task.task_type, 'value'):
         print(f"Task_type enum value: {task.task_type.value}")
     
-    # For development: If no authentication, create a dummy restaurant for testing
-    restaurant_id = 1  # Default for development
-    if current_restaurant:
-        restaurant_id = current_restaurant.id
-        print(f"Using authenticated restaurant ID: {restaurant_id}")
-    else:
-        print("No authenticated restaurant, using default ID: 1")
-    
-    # ...existing code...
+    # Use authenticated restaurant ID
+    restaurant_id = current_restaurant.id
+    print(f"Using authenticated restaurant ID: {restaurant_id}")
     
     try:
         # Create default restaurant if not exists (for development)

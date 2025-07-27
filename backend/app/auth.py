@@ -87,21 +87,21 @@ def authenticate_restaurant(db: Session, restaurant_code: str, password: str) ->
         models.Restaurant.restaurant_code == restaurant_code
     ).first()
 
-    print(f"[DEBUG] Login attempt: code={restaurant_code}, password={password}")
     if not restaurant:
-        print("[DEBUG] No restaurant found for code.")
+        print(f"[DEBUG] No restaurant found for code: {restaurant_code}")
         return None
 
-    print(f"[DEBUG] Stored hash: {restaurant.password_hash}")
     try:
         password_ok = verify_password(password, restaurant.password_hash)
     except Exception as e:
         print(f"[DEBUG] Password verification error: {e}")
         password_ok = False
-    print(f"[DEBUG] Password match: {password_ok}")
+        
     if not password_ok:
+        print(f"[DEBUG] Invalid password for restaurant: {restaurant_code}")
         return None
 
+    print(f"[DEBUG] Successful login for restaurant: {restaurant_code}")
     return restaurant
 
 def validate_user_pin(db: Session, restaurant_id: int, pin: str) -> Optional[models.User]:
@@ -115,13 +115,13 @@ def validate_user_pin(db: Session, restaurant_id: int, pin: str) -> Optional[mod
     return user
 
 def get_current_restaurant_or_none(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
     db: Session = Depends(get_db)
 ) -> Optional[models.Restaurant]:
-    """Get current restaurant from JWT token, or None if invalid/missing (for development)"""
+    """Get current restaurant from JWT token, or None if invalid/missing"""
     try:
-        # For development: Skip authentication and return None
-        # This allows the task creation to use default restaurant_id = 1
-        return None
-    except Exception:
-        # Return None for any errors
+        # Get the current restaurant using proper authentication
+        return get_current_restaurant(credentials, db)
+    except HTTPException:
+        # Return None for any authentication errors (allows endpoints to handle gracefully)
         return None
