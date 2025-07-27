@@ -11,7 +11,7 @@ const getApiUrl = () => {
   // In production, use Railway URL as fallback if env var is not set
   if (!isDev && !envUrl) {
     console.warn('⚠️ VITE_API_BASE_URL not set, using default Railway URL');
-    return 'http://radiant-amazement-production-d68f.up.railway.app/api';
+    return 'https://radiant-amazement-production-d68f.up.railway.app/api';
   }
   
   return envUrl;
