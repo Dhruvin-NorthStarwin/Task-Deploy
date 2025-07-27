@@ -13,7 +13,7 @@ interface TaskDetailModalProps {
 const TaskDetailModal: React.FC<TaskDetailModalProps> = ({ 
   task, 
   onClose, 
-  onStatusChange, 
+  // onStatusChange, // Removed unused parameter
   onTaskApprove, 
   onTaskDecline 
 }) => {

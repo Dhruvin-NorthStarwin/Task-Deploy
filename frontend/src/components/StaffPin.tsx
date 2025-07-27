@@ -42,23 +42,32 @@ const StaffPin: React.FC<PinProps> = ({ onLogin }) => {
 
     // Verify PIN and call onLogin
     const verifyPin = useCallback(() => {
+        // Always log PIN verification for debugging production issues
+        console.log('🔍 PIN Verification - Entered PIN:', enteredPin);
+        console.log('🔍 PIN Verification - Staff PIN:', staffPin, 'Admin PIN:', adminPin);
+        
         if (enteredPin === staffPin) {
+            console.log('✅ Staff PIN accepted!');
             setMessage({ text: 'Staff PIN Accepted!', type: 'success' });
             setAnimation('animate-pulse');
             setTimeout(() => {
                 setAnimation('');
                 resetPin();
+                console.log('🔄 Calling onLogin with role: staff');
                 onLogin('staff');
             }, 800);
         } else if (enteredPin === adminPin) {
+            console.log('✅ Admin PIN accepted!');
             setMessage({ text: 'Admin PIN Accepted!', type: 'success' });
             setAnimation('animate-pulse');
             setTimeout(() => {
                 setAnimation('');
                 resetPin();
+                console.log('🔄 Calling onLogin with role: admin');
                 onLogin('admin');
             }, 800);
         } else {
+            console.log('❌ Invalid PIN entered:', enteredPin);
             setMessage({ text: 'Invalid PIN. Try again.', type: 'error' });
             setAnimation('animate-bounce');
             setTimeout(() => {
@@ -66,7 +75,7 @@ const StaffPin: React.FC<PinProps> = ({ onLogin }) => {
                 resetPin();
             }, 1000);
         }
-    }, [enteredPin, resetPin, onLogin]);
+    }, [enteredPin, resetPin, onLogin, staffPin, adminPin]);
 
     useEffect(() => {
         if (enteredPin.length === 4) {

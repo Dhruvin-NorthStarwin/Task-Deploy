@@ -17,7 +17,7 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
   const [tasks, setTasks] = useState<Task[]>([]); // Start with empty tasks
   const [activeView, setActiveView] = useState<Day | 'priority'>('monday');
   const [categoryFilter, setCategoryFilter] = useState<Category | 'all'>('all');
-  const [statusFilter, setStatusFilter] = useState<Status | 'all'>('all');
+  // const [statusFilter, setStatusFilter] = useState<Status | 'all'>('all'); // Removed unused variable
   const [searchTerm, setSearchTerm] = useState('');
   const [openDropdown, setOpenDropdown] = useState<number | null>(null);
 
@@ -62,15 +62,13 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
     console.log('AdminTaskPanel: Total tasks:', tasks.length);
     console.log('AdminTaskPanel: Active view:', activeView);
     console.log('AdminTaskPanel: Category filter:', categoryFilter);
-    console.log('AdminTaskPanel: Status filter:', statusFilter);
     console.log('AdminTaskPanel: Search term:', searchTerm);
     
     const filtered = tasks.filter(task => {
       const categoryMatch = categoryFilter === 'all' || task.category === categoryFilter;
-      const statusMatch = statusFilter === 'all' || task.status === statusFilter;
       const searchMatch = task.task.toLowerCase().includes(searchTerm.toLowerCase());
       
-      if (!searchMatch || !categoryMatch || !statusMatch) return false;
+      if (!searchMatch || !categoryMatch) return false;
       
       if (activeView === 'priority') return task.taskType === 'Priority';
       return task.day === activeView;
@@ -80,7 +78,7 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
     console.log('AdminTaskPanel: Sample filtered task:', filtered[0]);
     
     return filtered;
-  }, [tasks, activeView, categoryFilter, statusFilter, searchTerm]);
+  }, [tasks, activeView, categoryFilter, searchTerm]);
 
     const handleAddTask = async (newTasks: Omit<Task, 'id' | 'status'>[]) => {
     try {

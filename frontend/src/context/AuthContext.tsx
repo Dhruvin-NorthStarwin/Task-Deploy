@@ -45,24 +45,39 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Check for existing authentication on app load
     const checkExistingAuth = async () => {
       try {
+        console.log('🔍 AuthContext: Checking existing auth...');
         const token = localStorage.getItem('auth_token');
         const userData = localStorage.getItem('user_data');
         const savedRole = localStorage.getItem('user_role') as 'staff' | 'admin' | null;
         const pinVerified = localStorage.getItem('pin_verified') === 'true';
         
+        console.log('🔍 AuthContext: Found in storage:', {
+          hasToken: !!token,
+          hasUserData: !!userData,
+          savedRole,
+          pinVerified
+        });
+        
         if (token && userData) {
           // The token itself is the source of truth, no need for time-based check here
           // The backend will validate it on each request.
-          setUser(JSON.parse(userData));
+          const parsedUserData = JSON.parse(userData);
+          setUser(parsedUserData);
           setUserRoleState(savedRole);
           setIsPinVerified(pinVerified);
+          
+          console.log('✅ AuthContext: Auth state restored successfully');
+        } else {
+          console.log('❌ AuthContext: No valid auth data found');
         }
       } catch (error) {
-        console.error('Error checking existing auth:', error);
-        // Clear storage on error
+        console.error('❌ AuthContext: Error checking existing auth:', error);
+        // Clear storage on error to prevent corruption
+        console.log('🧹 AuthContext: Clearing corrupted storage');
         logout();
       } finally {
         setIsLoading(false);
+        console.log('✅ AuthContext: Loading complete');
       }
     };
 
@@ -114,10 +129,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const setUserRole = (role: 'staff' | 'admin') => {
+    console.log('🔑 AuthContext: Setting user role to:', role);
+    console.log('🔑 AuthContext: Current state - isAuthenticated:', !!user);
+    
     setUserRoleState(role);
     setIsPinVerified(true);
     localStorage.setItem('user_role', role);
     localStorage.setItem('pin_verified', 'true');
+    
+    console.log('✅ AuthContext: Role and PIN verification set successfully');
+    console.log('🔑 AuthContext: New state - userRole:', role, 'isPinVerified: true');
   };
 
   const value = {
