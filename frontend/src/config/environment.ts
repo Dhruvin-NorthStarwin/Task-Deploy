@@ -5,8 +5,14 @@ const getApiUrl = () => {
   
   // Force HTTPS for specific known Railway deployments
   if (envUrl && envUrl.includes('radiant-amazement-production-d68f.up.railway.app')) {
-    const httpsUrl = envUrl.replace('http://', 'https://');
-    console.log('🔒 Ensuring HTTPS for Railway backend:', httpsUrl);
+    let httpsUrl = envUrl.replace('http://', 'https://');
+    
+    // Ensure the URL ends with /api for backend endpoints
+    if (!httpsUrl.endsWith('/api') && !httpsUrl.endsWith('/api/')) {
+      httpsUrl = httpsUrl.endsWith('/') ? httpsUrl + 'api' : httpsUrl + '/api';
+    }
+    
+    console.log('🔒 Ensuring HTTPS and /api path for Railway backend:', httpsUrl);
     return httpsUrl;
   }
   
@@ -21,11 +27,17 @@ const getApiUrl = () => {
     return 'https://radiant-amazement-production-d68f.up.railway.app/api';
   }
   
-  // If we have an envUrl but we're in production, ensure it's HTTPS
-  if (!isDev && envUrl && envUrl.startsWith('http://')) {
-    const httpsUrl = envUrl.replace('http://', 'https://');
-    console.log('🔒 Converting HTTP to HTTPS for production:', httpsUrl);
-    return httpsUrl;
+  // If we have an envUrl but we're in production, ensure it's HTTPS and has /api
+  if (!isDev && envUrl) {
+    let finalUrl = envUrl.startsWith('http://') ? envUrl.replace('http://', 'https://') : envUrl;
+    
+    // Ensure the URL ends with /api for backend endpoints
+    if (!finalUrl.endsWith('/api') && !finalUrl.endsWith('/api/')) {
+      finalUrl = finalUrl.endsWith('/') ? finalUrl + 'api' : finalUrl + '/api';
+    }
+    
+    console.log('🔒 Final API URL for production:', finalUrl);
+    return finalUrl;
   }
 
   return envUrl;

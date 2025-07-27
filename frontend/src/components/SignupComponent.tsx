@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import config from '../config/environment';
 
 interface Location {
   addressLine1: string;
@@ -75,7 +76,7 @@ const SignupComponent: React.FC<{ onShowLogin: () => void, onRegistrationSuccess
     }
 
     try {
-      const response = await fetch('/api/auth/register', {
+      const response = await fetch(`${config.API_BASE_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

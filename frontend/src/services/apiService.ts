@@ -56,16 +56,27 @@ export const login = async (credentials: LoginCredentials): Promise<AuthResponse
 };
 
 export const checkAuth = async (): Promise<User> => {
-  const response = await fetch(`${API_BASE_URL}/auth/me`, {
-    headers: getHeaders(),
-  });
+  // Note: Backend doesn't have /auth/me endpoint
+  // This function might need to be removed or implemented differently
+  // For now, we'll return a mock response or check localStorage
+  const token = localStorage.getItem('token');
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
   
-  return handleResponse(response);
+  // You might want to validate the token against the backend differently
+  // or store user info in localStorage after login
+  const userInfo = localStorage.getItem('userInfo');
+  if (userInfo) {
+    return JSON.parse(userInfo);
+  }
+  
+  throw new Error('No user information found');
 };
 
 // Task APIs
 export const getTasks = async (filters?: Record<string, any>): Promise<Task[]> => {
-  let url = `${API_BASE_URL}/tasks`;
+  let url = `${API_BASE_URL}/tasks/`;
   
   console.log('🔥 DEBUGGING: getTasks called with filters:', filters);
   console.log('🔥 DEBUGGING: API_BASE_URL:', API_BASE_URL);
@@ -151,7 +162,7 @@ export const createTask = async (task: Omit<Task, 'id' | 'status'>): Promise<Tas
   
   try {
     // For development, temporarily disable authentication
-    const response = await fetch(`${API_BASE_URL}/tasks`, {
+    const response = await fetch(`${API_BASE_URL}/tasks/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -201,10 +212,31 @@ export const createTask = async (task: Omit<Task, 'id' | 'status'>): Promise<Tas
 };
 
 export const updateTaskStatus = async (taskId: number, status: string): Promise<Task> => {
-  const response = await fetch(`${API_BASE_URL}/tasks/${taskId}/status`, {
+  // Note: Backend doesn't have a general /status endpoint
+  // Instead use specific endpoints: /submit, /approve, /decline
+  let endpoint: string;
+  
+  switch (status.toLowerCase()) {
+    case 'submitted':
+    case 'submit':
+      endpoint = `${API_BASE_URL}/tasks/${taskId}/submit`;
+      break;
+    case 'approved':
+    case 'approve':
+      endpoint = `${API_BASE_URL}/tasks/${taskId}/approve`;
+      break;
+    case 'declined':
+    case 'decline':
+      endpoint = `${API_BASE_URL}/tasks/${taskId}/decline`;
+      break;
+    default:
+      throw new Error(`Unsupported status update: ${status}. Use 'submit', 'approve', or 'decline'`);
+  }
+  
+  const response = await fetch(endpoint, {
     method: 'PATCH',
     headers: getHeaders(),
-    body: JSON.stringify({ status }),
+    body: JSON.stringify({}), // Most status endpoints don't need additional data
   });
   
   return handleResponse(response);
@@ -289,13 +321,18 @@ export const deleteTask = async (taskId: number): Promise<void> => {
 };
 
 export const assignTask = async (taskId: number, userId: number): Promise<Task> => {
-  const response = await fetch(`${API_BASE_URL}/tasks/${taskId}/assign`, {
-    method: 'PATCH',
-    headers: getHeaders(),
-    body: JSON.stringify({ user_id: userId }),
-  });
+  // Note: Backend doesn't have /assign endpoint
+  // This functionality may need to be implemented in the backend first
+  console.warn(`Attempted to assign task ${taskId} to user ${userId}, but backend doesn't support this yet`);
+  throw new Error('Task assignment functionality not yet implemented in backend');
   
-  return handleResponse(response);
+  // When backend implements this, use:
+  // const response = await fetch(`${API_BASE_URL}/tasks/${taskId}/assign`, {
+  //   method: 'PATCH',
+  //   headers: getHeaders(),
+  //   body: JSON.stringify({ user_id: userId }),
+  // });
+  // return handleResponse(response);
 };
 
 export const updateTaskInitials = async (taskId: number, initials: string): Promise<Task> => {

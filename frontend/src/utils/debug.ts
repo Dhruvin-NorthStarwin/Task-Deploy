@@ -1,5 +1,6 @@
 // Debug utilities to help troubleshoot API configuration
 import { config } from '../config/environment';
+import { debugEndpoints } from '../config/apiEndpoints';
 
 export const debugApiConfig = () => {
   console.log('🔍 API Configuration Debug:');
@@ -17,7 +18,17 @@ export const debugApiConfig = () => {
     return false;
   }
   
+  // Ensure API URL ends with /api
+  if (!config.API_BASE_URL.endsWith('/api')) {
+    console.warn('⚠️ WARNING: API URL does not end with /api');
+    console.warn('⚠️ Current URL:', config.API_BASE_URL);
+  }
+  
   console.log('✅ API Configuration looks correct');
+  
+  // Debug all endpoints
+  debugEndpoints();
+  
   return true;
 };
 

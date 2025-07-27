@@ -294,7 +294,9 @@ class OfflineService {
     this.notifyListeners();
 
     const maxRetries = 3;
-    const backendUrl = 'http://localhost:3001/api';
+    // Import the config to get the correct API URL
+    const { default: config } = await import('../config/environment');
+    const backendUrl = config.API_BASE_URL;
 
     for (const operation of this.syncQueue.filter(op => !op.synced)) {
       try {
