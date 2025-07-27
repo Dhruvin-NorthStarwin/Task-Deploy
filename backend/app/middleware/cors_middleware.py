@@ -29,14 +29,11 @@ class CustomCORSMiddleware(BaseHTTPMiddleware):
         # Prepare the response
         response = await call_next(request)
         
-        # Set CORS headers
-        if self.use_wildcard:
+        # Always allow all origins by reflecting the request origin
+        if origin:
+            response.headers["Access-Control-Allow-Origin"] = origin
+        else:
             response.headers["Access-Control-Allow-Origin"] = "*"
-        elif origin in self.allowed_origins:
-            response.headers["Access-Control-Allow-Origin"] = origin
-        # Special case for Railway frontend
-        elif origin == "https://task-module.up.railway.app":
-            response.headers["Access-Control-Allow-Origin"] = origin
             
         # Always set these headers
         response.headers["Access-Control-Allow-Credentials"] = "true"
