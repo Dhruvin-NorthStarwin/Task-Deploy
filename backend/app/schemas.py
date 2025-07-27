@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr
-from typing import Optional, List
+from typing import Optional, List, Union
 from datetime import datetime
 from app.models import TaskStatus, TaskCategory, TaskType, Day  # Import from models
 
@@ -74,12 +74,16 @@ class Restaurant(RestaurantBase):
 class TaskBase(BaseModel):
     task: str
     description: Optional[str] = None
-    category: TaskCategory
-    day: Day
-    task_type: TaskType = TaskType.DAILY
+    category: Union[TaskCategory, str]
+    day: Union[Day, str]
+    task_type: Union[TaskType, str] = "Daily"
     image_required: bool = False
     video_required: bool = False
     initials: Optional[str] = None
+
+    class Config:
+        # Use enum values instead of names
+        use_enum_values = True
 
 class TaskCreate(TaskBase):
     pass
@@ -87,16 +91,20 @@ class TaskCreate(TaskBase):
 class TaskUpdate(BaseModel):
     task: Optional[str] = None
     description: Optional[str] = None
-    category: Optional[TaskCategory] = None
-    day: Optional[Day] = None
-    status: Optional[TaskStatus] = None
-    task_type: Optional[TaskType] = None
+    category: Optional[Union[TaskCategory, str]] = None
+    day: Optional[Union[Day, str]] = None
+    status: Optional[Union[TaskStatus, str]] = None
+    task_type: Optional[Union[TaskType, str]] = None
     image_required: Optional[bool] = None
     video_required: Optional[bool] = None
     image_url: Optional[str] = None
     video_url: Optional[str] = None
     decline_reason: Optional[str] = None
     initials: Optional[str] = None
+
+    class Config:
+        # Use enum values instead of names
+        use_enum_values = True
 
 class TaskSubmit(BaseModel):
     image_url: Optional[str] = None
@@ -119,6 +127,7 @@ class Task(TaskBase):
 
     class Config:
         from_attributes = True
+        use_enum_values = True
 
 # Media file schemas
 class MediaFileBase(BaseModel):

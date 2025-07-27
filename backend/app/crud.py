@@ -105,12 +105,28 @@ def create_task(db: Session, task: schemas.TaskCreate, restaurant_id: int) -> mo
     print(f"Creating task: {task.dict()}, restaurant_id: {restaurant_id}")
     
     try:
+        # Convert string values to enum objects
+        def get_enum_from_value(enum_class, value):
+            if isinstance(value, str):
+                for enum_member in enum_class:
+                    if enum_member.value == value:
+                        return enum_member
+                # If not found by value, try by name
+                return enum_class[value.upper()]
+            return value
+        
+        category = get_enum_from_value(models.TaskCategory, task.category)
+        day = get_enum_from_value(models.Day, task.day)
+        task_type = get_enum_from_value(models.TaskType, task.task_type)
+        
+        print(f"Converted enums - category: {category}, day: {day}, task_type: {task_type}")
+        
         db_task = models.Task(
             task=task.task,
             description=task.description,
-            category=task.category,
-            day=task.day,
-            task_type=task.task_type,
+            category=category,
+            day=day,
+            task_type=task_type,
             image_required=task.image_required,
             video_required=task.video_required,
             restaurant_id=restaurant_id,

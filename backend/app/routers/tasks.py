@@ -55,6 +55,17 @@ async def create_task(
     from app.utils import convert_enum_for_api
     
     print(f"Create task request received: {task.dict()}")
+    print(f"Task category type: {type(task.category)}, value: {task.category}")
+    print(f"Task day type: {type(task.day)}, value: {task.day}")
+    print(f"Task task_type type: {type(task.task_type)}, value: {task.task_type}")
+    
+    # Check if we're getting enum objects or strings
+    if hasattr(task.category, 'value'):
+        print(f"Category enum value: {task.category.value}")
+    if hasattr(task.day, 'value'):
+        print(f"Day enum value: {task.day.value}")
+    if hasattr(task.task_type, 'value'):
+        print(f"Task_type enum value: {task.task_type.value}")
     
     # For development: If no authentication, create a dummy restaurant for testing
     restaurant_id = 1  # Default for development
