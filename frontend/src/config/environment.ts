@@ -8,10 +8,10 @@ const getApiUrl = () => {
     return 'http://localhost:8000/api';
   }
   
-  // In production, require the env var
+  // In production, use Railway URL as fallback if env var is not set
   if (!isDev && !envUrl) {
-    console.error('❌ Missing required environment variable: VITE_API_BASE_URL');
-    throw new Error('Missing required environment variable: VITE_API_BASE_URL');
+    console.warn('⚠️ VITE_API_BASE_URL not set, using default Railway URL');
+    return 'http://radiant-amazement-production-d68f.up.railway.app/api';
   }
   
   return envUrl;
@@ -37,7 +37,7 @@ if (config.ENVIRONMENT === 'production') {
   
   for (const envVar of requiredEnvVars) {
     if (!import.meta.env[envVar]) {
-      console.error(`Missing required environment variable: ${envVar}`);
+      console.warn(`⚠️ Environment variable ${envVar} not set, using fallback value`);
     }
   }
 }
