@@ -18,7 +18,7 @@ RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 # Copy requirements and install Python dependencies
-COPY backend/requirements.txt .
+COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
@@ -50,8 +50,8 @@ WORKDIR /app
 RUN mkdir -p uploads/images uploads/videos uploads/task_completions && \
     chown -R appuser:appuser uploads
 
-# Copy application code from backend directory
-COPY --chown=appuser:appuser backend/ .
+# Copy application code (when deploying from backend directory)
+COPY --chown=appuser:appuser . .
 
 # Make startup script executable
 RUN chmod +x start_production.sh init_production_db.py
