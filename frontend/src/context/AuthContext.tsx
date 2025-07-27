@@ -74,16 +74,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(true);
       const response = await apiService.login(restaurantCode, password);
       
-      if (response && response.access_token && response.user) {
-        const { access_token, user } = response;
+      if (response && response.token && response.restaurant) {
+        const { token, restaurant } = response;
         
         // Store auth data
-        localStorage.setItem('auth_token', access_token);
-        localStorage.setItem('user_data', JSON.stringify(user));
-        localStorage.setItem('user_role', user.role);
+        localStorage.setItem('auth_token', token);
+        localStorage.setItem('user_data', JSON.stringify(restaurant));
+        // For now, set default role since restaurant doesn't have role field
+        localStorage.setItem('user_role', 'admin'); // Restaurant owner is admin by default
         
-        setUser(user);
-        setUserRoleState(user.role);
+        setUser(restaurant);
+        setUserRoleState('admin');
         setIsPinVerified(false); // Reset PIN verification on new login
         localStorage.removeItem('pin_verified');
 

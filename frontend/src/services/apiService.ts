@@ -57,15 +57,25 @@ export const login = async (restaurant_code: string, password: string): Promise<
     body: JSON.stringify({ restaurant_code, password }),
   });
   
-  const data = await handleResponse(response);
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    if (config.DEBUG) {
+      console.error('🔥 LOGIN ERROR:', response.status, response.statusText, errorData);
+    }
+    throw new Error(errorData.detail || errorData.message || `Login failed: ${response.status}`);
+  }
+  
+  const data = await response.json();
   if (config.DEBUG) {
     console.log('🔥 LOGIN: Response data:', data);
   }
   
   // Store the token in localStorage immediately so other API calls can use it
-  if (data && data.access_token) {
-    localStorage.setItem('auth_token', data.access_token);
+  // Backend returns 'token', not 'access_token'
+  if (data && data.token) {
+    localStorage.setItem('auth_token', data.token);
     if (config.DEBUG) {
+      //ccc
       console.log('🔥 LOGIN: Token saved to localStorage');
     }
   }
