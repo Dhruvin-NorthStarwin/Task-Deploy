@@ -12,6 +12,8 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isPinVerified: boolean;
+  userRole: 'staff' | 'admin' | null;
   login: (email: string, password: string) => Promise<boolean>;
   setUserRole: (role: 'staff' | 'admin') => void;
   logout: () => void;
@@ -34,6 +36,8 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isPinVerified, setIsPinVerified] = useState(false);
+  const [userRole, setUserRoleState] = useState<'staff' | 'admin' | null>(null);
 
   useEffect(() => {
     // Check for existing authentication on app load
@@ -42,6 +46,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const token = localStorage.getItem('auth_token');
         const userData = localStorage.getItem('user_data');
         const loginTimestamp = localStorage.getItem('login_timestamp');
+        const savedRole = localStorage.getItem('user_role') as 'staff' | 'admin' | null;
+        const pinVerified = localStorage.getItem('pin_verified') === 'true';
         
         if (token && userData && loginTimestamp) {
           // Check if token is still valid (within 1 hour)
@@ -49,11 +55,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           
           if (isTokenValid) {
             setUser(JSON.parse(userData));
+            setUserRoleState(savedRole);
+            setIsPinVerified(pinVerified);
           } else {
             // Token expired, clear storage
             localStorage.removeItem('auth_token');
             localStorage.removeItem('user_data');
             localStorage.removeItem('user_role');
+            localStorage.removeItem('pin_verified');
             localStorage.removeItem('login_timestamp');
           }
         }
@@ -100,22 +109,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (user) {
       const updatedUser = { ...user, role };
       setUser(updatedUser);
+      setUserRoleState(role);
+      setIsPinVerified(true);
       localStorage.setItem('user_data', JSON.stringify(updatedUser));
       localStorage.setItem('user_role', role);
+      localStorage.setItem('pin_verified', 'true');
     }
   };
 
   const logout = () => {
     setUser(null);
+    setUserRoleState(null);
+    setIsPinVerified(false);
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user_data');
     localStorage.removeItem('user_role');
+    localStorage.removeItem('pin_verified');
     localStorage.removeItem('login_timestamp');
   };
 
   const value: AuthContextType = {
     user,
     isAuthenticated: !!user,
+    isPinVerified,
+    userRole,
     isLoading,
     login,
     setUserRole,

@@ -14,7 +14,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 const App: React.FC = () => {
   const [notification, setNotification] = useState<null | { message: string; type: 'success' | 'error' }>(null);
   const { setUserRole, logout } = useAuth();
-  const navigate = useNavigate ? useNavigate() : null;
+  const navigate = useNavigate();
 
   const showNotification = (notif: { message: string; type: 'success' | 'error' }) => {
     setNotification(notif);
@@ -24,28 +24,32 @@ const App: React.FC = () => {
   // Handler for login success
   const handleLoginSuccess = () => {
     showNotification({ message: 'Login successful!', type: 'success' });
-    if (navigate) navigate('/pin');
-    // fallback for non-router context
-    window.location.pathname = '/pin';
+    navigate('/pin');
+  };
+
+  // Handler for registration success
+  const handleRegistrationSuccess = () => {
+    showNotification({ message: 'Registration complete! Please enter your PIN.', type: 'success' });
+    navigate('/pin');
   };
 
   // Handler for PIN entry success
   const handlePinLogin = (role: 'staff' | 'admin') => {
     setUserRole(role);
+    showNotification({ message: `${role === 'admin' ? 'Admin' : 'Staff'} access granted!`, type: 'success' });
+    
     if (role === 'admin') {
-      if (navigate) navigate('/admin');
-      window.location.pathname = '/admin';
+      navigate('/admin');
     } else {
-      if (navigate) navigate('/staff');
-      window.location.pathname = '/staff';
+      navigate('/staff');
     }
   };
 
   // Handler for logout
   const handleLogout = () => {
     logout();
-    if (navigate) navigate('/');
-    window.location.pathname = '/';
+    showNotification({ message: 'Logged out successfully!', type: 'success' });
+    navigate('/');
   };
 
   return (
@@ -55,14 +59,15 @@ const App: React.FC = () => {
         <Routes>
           <Route path="/" element={
             <LoginComponent
-              onShowSignup={() => navigate ? navigate('/signup') : window.location.pathname = '/signup'}
+              onShowSignup={() => navigate('/signup')}
               onLoginSuccess={handleLoginSuccess}
               setNotification={showNotification}
             />
           } />
           <Route path="/signup" element={
             <SignupComponent
-              onShowLogin={() => navigate ? navigate('/') : window.location.pathname = '/'}
+              onShowLogin={() => navigate('/')}
+              onRegistrationSuccess={handleRegistrationSuccess}
               setNotification={showNotification}
             />
           } />
@@ -72,12 +77,12 @@ const App: React.FC = () => {
             </ProtectedRoute>
           } />
           <Route path="/admin" element={
-            <ProtectedRoute requireAuth={true} requiredRole="admin">
+            <ProtectedRoute requireAuth={true} requiredRole="admin" requirePin={true}>
               <AdminTaskPanel onLogout={handleLogout} />
             </ProtectedRoute>
           } />
           <Route path="/staff" element={
-            <ProtectedRoute requireAuth={true} requiredRole="staff">
+            <ProtectedRoute requireAuth={true} requiredRole="staff" requirePin={true}>
               <StaffTaskPanel onLogout={handleLogout} />
             </ProtectedRoute>
           } />

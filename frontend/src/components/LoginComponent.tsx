@@ -37,21 +37,24 @@ const LoginComponent: React.FC<{ onShowSignup: () => void, onLoginSuccess: () =>
   const [password, setPassword] = useState('');
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const { login } = useAuth();
+  const { login, isAuthenticated, isPinVerified, userRole } = useAuth();
 
-  // Auto-redirect to /pin if valid token exists in localStorage
+  // Auto-redirect authenticated users to appropriate page
   React.useEffect(() => {
-    const token = localStorage.getItem('auth_token');
-    const loginTimestamp = localStorage.getItem('login_timestamp');
-    
-    if (token && loginTimestamp) {
-      // Check if token is still valid (within 1 hour)
-      const isTokenValid = (Date.now() - parseInt(loginTimestamp)) < 60 * 60 * 1000;
-      if (isTokenValid) {
+    if (isAuthenticated) {
+      if (isPinVerified && userRole) {
+        // Redirect to appropriate dashboard
+        if (userRole === 'admin') {
+          window.location.pathname = '/admin';
+        } else if (userRole === 'staff') {
+          window.location.pathname = '/staff';
+        }
+      } else {
+        // Redirect to PIN page
         window.location.pathname = '/pin';
       }
     }
-  }, []);
+  }, [isAuthenticated, isPinVerified, userRole]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -66,17 +69,9 @@ const LoginComponent: React.FC<{ onShowSignup: () => void, onLoginSuccess: () =>
       if (loginSuccess) {
         // Store additional auth info for session management
         localStorage.setItem('login_timestamp', Date.now().toString());
+        localStorage.setItem('auth_token', 'user_authenticated');
         
-        if (rememberMe) {
-          localStorage.setItem('auth_token', 'user_authenticated');
-        } else {
-          localStorage.removeItem('auth_token');
-        }
-        
-        setNotification({ message: 'Login successful!', type: 'success' });
-        setTimeout(() => {
-          onLoginSuccess();
-        }, 1000);
+        onLoginSuccess();
       } else {
         setNotification({ message: 'Invalid credentials.', type: 'error' });
       }

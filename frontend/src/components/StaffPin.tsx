@@ -100,6 +100,11 @@ const StaffPin: React.FC<PinProps> = ({ onLogin }) => {
             <div className="text-center mb-6">
                 <h1 className="text-xl font-bold text-gray-800">Enter PIN</h1>
                 <p className="text-gray-500 text-sm mt-1">Enter your 4-digit PIN to continue</p>
+                <div className="mt-3 text-xs text-gray-400">
+                    <p>Use your assigned PIN:</p>
+                    <p>• Admin PIN for management access</p>
+                    <p>• Staff PIN for task management</p>
+                </div>
             </div>
 
             {/* PIN Display */}

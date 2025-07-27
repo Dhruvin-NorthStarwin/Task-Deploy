@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 
 interface Location {
   addressLine1: string;
@@ -27,7 +28,7 @@ const PasswordToggleIcon: React.FC<{ isVisible: boolean }> = ({ isVisible }) => 
   );
 };
 
-const SignupComponent: React.FC<{ onShowLogin: () => void, setNotification: (notification: Notification) => void }> = ({ onShowLogin, setNotification }) => {
+const SignupComponent: React.FC<{ onShowLogin: () => void, onRegistrationSuccess: () => void, setNotification: (notification: Notification) => void }> = ({ onShowLogin, onRegistrationSuccess, setNotification }) => {
   const [showCodeModal, setShowCodeModal] = useState(false);
   const [registeredCode, setRegisteredCode] = useState('');
   const [registeredStaff, setRegisteredStaff] = useState<any[]>([]);
@@ -42,6 +43,7 @@ const SignupComponent: React.FC<{ onShowLogin: () => void, setNotification: (not
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
   const [terms, setTerms] = useState(false);
+  const { login } = useAuth();
 
   const handleLocationChange = (index: number, field: keyof Location, value: string) => {
     const newLocations = [...locations];
@@ -95,7 +97,14 @@ const SignupComponent: React.FC<{ onShowLogin: () => void, setNotification: (not
         setRegisteredCode(data.restaurant_code);
         setRegisteredStaff(data.staff || []);
         setShowCodeModal(true);
-        // Do NOT call onRegistrationSuccess here
+        
+        // Auto-login the user after registration so they can proceed to PIN
+        const loginSuccess = await login(data.restaurant_code, password);
+        if (loginSuccess) {
+          // Store auth info
+          localStorage.setItem('login_timestamp', Date.now().toString());
+          localStorage.setItem('auth_token', 'user_authenticated');
+        }
       } else {
         setNotification({ message: data.message || 'Registration failed.', type: 'error' });
       }
@@ -230,7 +239,25 @@ const SignupComponent: React.FC<{ onShowLogin: () => void, setNotification: (not
                 </ul>
               </div>
             )}
-            <p className="text-gray-600 mt-4">Please save this code and staff info. You can close this window when ready.</p>
+            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-sm text-yellow-800">
+                <strong>Important:</strong> Please save this information safely. You'll need your restaurant code to login and the PINs to access your dashboard.
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <button 
+                onClick={() => { setShowCodeModal(false); onRegistrationSuccess(); }}
+                className="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+              >
+                Continue to PIN Entry
+              </button>
+              <button 
+                onClick={() => { setShowCodeModal(false); onShowLogin(); }}
+                className="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+              >
+                Back to Login
+              </button>
+            </div>
           </div>
         </div>
       )}

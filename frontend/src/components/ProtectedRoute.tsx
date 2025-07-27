@@ -1,62 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requiredRole?: 'staff' | 'admin';
   requireAuth?: boolean;
-}
-
-interface AuthState {
-  isAuthenticated: boolean;
-  userRole: 'staff' | 'admin' | null;
-  isLoading: boolean;
+  requirePin?: boolean;
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
   children, 
   requiredRole, 
-  requireAuth = true 
+  requireAuth = true,
+  requirePin = false
 }) => {
   const location = useLocation();
-  const [authState, setAuthState] = useState<AuthState>({
-    isAuthenticated: false,
-    userRole: null,
-    isLoading: true
-  });
-
-  useEffect(() => {
-    // Check authentication status from localStorage or session
-    const checkAuth = () => {
-      try {
-        const token = localStorage.getItem('auth_token');
-        const userRole = localStorage.getItem('user_role') as 'staff' | 'admin' | null;
-        const loginTimestamp = localStorage.getItem('login_timestamp');
-        
-        // Check if token exists and is still valid (within 60 minutes)
-        const isTokenValid = token && loginTimestamp && 
-          (Date.now() - parseInt(loginTimestamp)) < 60 * 60 * 1000; // 1 hour expiry
-        
-        setAuthState({
-          isAuthenticated: !!isTokenValid,
-          userRole: isTokenValid ? userRole : null,
-          isLoading: false
-        });
-      } catch (error) {
-        console.error('Auth check failed:', error);
-        setAuthState({
-          isAuthenticated: false,
-          userRole: null,
-          isLoading: false
-        });
-      }
-    };
-
-    checkAuth();
-  }, []);
+  const { isAuthenticated, isPinVerified, userRole, isLoading } = useAuth();
 
   // Show loading spinner while checking auth
-  if (authState.isLoading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
@@ -65,20 +28,30 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   // If authentication is required but user is not authenticated
-  if (requireAuth && !authState.isAuthenticated) {
+  if (requireAuth && !isAuthenticated) {
     // Redirect to login with return URL
     return <Navigate to={`/?redirect=${encodeURIComponent(location.pathname)}`} replace />;
   }
 
+  // If PIN verification is required but not verified
+  if (requirePin && isAuthenticated && !isPinVerified) {
+    return <Navigate to="/pin" replace />;
+  }
+
   // If specific role is required but user doesn't have it
-  if (requiredRole && authState.userRole !== requiredRole) {
-    // Redirect based on user's actual role or to login if no role
-    if (authState.userRole === 'admin') {
+  if (requiredRole && userRole !== requiredRole) {
+    // If no role is set yet, redirect to PIN
+    if (!userRole) {
+      return <Navigate to="/pin" replace />;
+    }
+    
+    // Redirect based on user's actual role
+    if (userRole === 'admin') {
       return <Navigate to="/admin" replace />;
-    } else if (authState.userRole === 'staff') {
+    } else if (userRole === 'staff') {
       return <Navigate to="/staff" replace />;
     } else {
-      return <Navigate to="/" replace />;
+      return <Navigate to="/pin" replace />;
     }
   }
 
