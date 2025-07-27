@@ -3,9 +3,11 @@
 version: '3.8'
 
 services:
-  # PostgreSQL Database
+  # PostgreSQL Database (Custom Image)
   postgres:
-    image: postgres:15-alpine
+    build:
+      context: ./database
+      dockerfile: Dockerfile
     container_name: task-postgres
     environment:
       POSTGRES_DB: restro_manage
@@ -16,7 +18,6 @@ services:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./database_reset.sql:/docker-entrypoint-initdb.d/init.sql:ro
     networks:
       - task-network
     healthcheck:
