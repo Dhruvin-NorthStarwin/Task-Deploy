@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     # CORS
     ALLOWED_ORIGINS: Union[str, List[str]] = os.getenv(
         "ALLOWED_ORIGINS", 
-        "http://localhost:3000,http://localhost:5173,https://task-module.up.railway.app,https://radiant-amazement-production-d68f.up.railway.app"
+        "https://task-module.up.railway.app,https://radiant-amazement-production-d68f.up.railway.app"
     )
     
     @field_validator('ALLOWED_ORIGINS')
@@ -52,7 +52,7 @@ class Settings(BaseSettings):
         return v or 10485760
     
     # Environment
-    ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
+    ENVIRONMENT: str = os.getenv("ENVIRONMENT", "production")
     DEBUG: bool = False
     
     @field_validator('DEBUG', mode='before')
@@ -152,6 +152,7 @@ settings = Settings()
 
 # Validate critical settings in production
 if settings.ENVIRONMENT == "production":
+    # Allow our production test key
     if settings.SECRET_KEY == "your-secret-key-change-in-production":
         raise ValueError("SECRET_KEY must be changed in production!")
     

@@ -33,18 +33,29 @@ print(f"🔍 CORS Allowed Origins: {settings.ALLOWED_ORIGINS}")
 print(f"🔍 Environment: {settings.ENVIRONMENT}")
 print(f"🔍 Debug Mode: {settings.DEBUG}")
 
-# Safety check for "*" wildcard - if needed, convert string "*" to ["*"]
+# Safety check for production - never use wildcard in production
 origins = settings.ALLOWED_ORIGINS
 if origins == ["*"] or origins == "*":
-    origins = ["*"]
-    print("⚠️ WARNING: Using wildcard CORS origin. This is not recommended for production.")
+    if settings.ENVIRONMENT == "production":
+        # Force specific origins for production
+        origins = ["https://task-module.up.railway.app", "https://radiant-amazement-production-d68f.up.railway.app"]
+        print("🔒 PRODUCTION: Overriding wildcard with specific origins for security")
+    else:
+        origins = ["*"]
+        print("⚠️ WARNING: Using wildcard CORS origin in development.")
 elif isinstance(origins, str):
     origins = [origins]
 
-# Add frontend Railway domain explicitly for safety
-if "https://task-module.up.railway.app" not in origins:
-    origins.append("https://task-module.up.railway.app")
-    print("✅ Added Railway frontend domain to allowed origins")
+# Ensure production URLs are included
+production_origins = [
+    "https://task-module.up.railway.app",
+    "https://radiant-amazement-production-d68f.up.railway.app"
+]
+
+for prod_origin in production_origins:
+    if prod_origin not in origins and origins != ["*"]:
+        origins.append(prod_origin)
+        print(f"✅ Added {prod_origin} to allowed origins")
 
 # Print final origins list
 print(f"🔍 Final CORS Origins: {origins}")
@@ -52,15 +63,13 @@ print(f"🔍 Final CORS Origins: {origins}")
 # Add preflight middleware first (handles OPTIONS requests)
 app.add_middleware(PreflightMiddleware)
 
-# Configure CORS middleware for all origins
-# Note: When using allow_origins=["*"], allow_credentials must be False
+# Configure CORS middleware with proper credentials handling
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins
-    allow_credentials=False,  # Must be False when using wildcard origins
-    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization", "X-Requested-With", "Accept"],
-    expose_headers=["*"]
+    allow_origins=origins,
+    allow_credentials=True if origins != ["*"] else False,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allow_headers=["*"],
 )
 
 # Then add our custom middleware as a backup

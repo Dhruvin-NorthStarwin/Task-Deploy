@@ -23,7 +23,7 @@ const getApiUrl = () => {
 
   // In production, always use HTTPS for Railway fallback
   if (!isDev && !envUrl) {
-    console.warn('⚠️ VITE_API_BASE_URL not set, using default Railway HTTPS URL');
+    console.log('🚀 Using production Railway HTTPS URL');
     return 'https://radiant-amazement-production-d68f.up.railway.app/api';
   }
   

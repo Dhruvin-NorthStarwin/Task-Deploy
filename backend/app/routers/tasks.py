@@ -70,30 +70,13 @@ async def create_task(
     print(f"Using authenticated restaurant ID: {restaurant_id}")
     
     try:
-        # Create default restaurant if not exists (for development)
+        # Verify restaurant exists
         restaurant = crud.get_restaurant_by_id(db, restaurant_id)
         if not restaurant:
-            print(f"Restaurant {restaurant_id} not found, creating default restaurant")
-            from app.schemas import RestaurantCreate, LocationCreate
-            restaurant = crud.create_restaurant(
-                db, 
-                RestaurantCreate(
-                    name="Test Restaurant",
-                    cuisine_type="Testing",
-                    contact_email="test@example.com",
-                    contact_phone="123-456-7890",
-                    password="password123",
-                    locations=[LocationCreate(
-                        address_line1="123 Test St",
-                        town_city="Test City",
-                        postcode="12345"
-                    )]
-                )
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Restaurant not found"
             )
-            restaurant_id = restaurant.id
-            print(f"Created restaurant with ID: {restaurant_id}")
-        else:
-            print(f"Using existing restaurant with ID: {restaurant_id}")
         
         # Now create the task
         print("Creating task in database")
