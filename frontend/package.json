@@ -4,8 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --mode development",
     "build": "vite build --mode production",
+    "build:production": "tsc -b && vite build --mode production",
     "build:full": "tsc -b && vite build --mode production",
     "start": "serve -s dist -l $PORT",
     "lint": "eslint .",

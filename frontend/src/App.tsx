@@ -11,6 +11,7 @@ import StaffTaskPanel from './components/staff/StaffTaskPanel';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { debugApiConfig } from './utils/debug';
+import config from './config/environment';
 
 // Create an inner component that uses the auth context
 const AppContent: React.FC = () => {
@@ -18,9 +19,11 @@ const AppContent: React.FC = () => {
   const { setUserRole, logout } = useAuth();
   const navigate = useNavigate();
 
-  // Debug API configuration on app load
+  // Debug API configuration on app load (only in development)
   useEffect(() => {
-    debugApiConfig();
+    if (config.DEBUG) {
+      debugApiConfig();
+    }
   }, []);
 
   const showNotification = (notif: { message: string; type: 'success' | 'error' }) => {

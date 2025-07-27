@@ -12,7 +12,9 @@ export default defineConfig(({ mode }) => {
     if (env.VITE_API_BASE_URL.includes('radiant-amazement-production-d68f.up.railway.app') && 
         env.VITE_API_BASE_URL.startsWith('http://')) {
       env.VITE_API_BASE_URL = env.VITE_API_BASE_URL.replace('http://', 'https://');
-      console.log('🔒 Fixed API URL to use HTTPS:', env.VITE_API_BASE_URL);
+      if (env.VITE_DEBUG === 'true') {
+        console.log('🔒 Fixed API URL to use HTTPS:', env.VITE_API_BASE_URL);
+      }
     }
   }
   

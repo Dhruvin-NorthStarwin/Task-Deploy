@@ -1,16 +1,16 @@
 import os
 from typing import List, Union
 from pydantic_settings import BaseSettings
-from pydantic import field_validator
+from pydantic import field_validator, Field
 
 class Settings(BaseSettings):
-    # Database
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./restro_manage.db")
+    # Database - Railway automatically provides DATABASE_URL
+    DATABASE_URL: str = Field(default="sqlite:///./restro_manage.db", env="DATABASE_URL")
     
-    # Security
-    SECRET_KEY: str = os.getenv("SECRET_KEY", "your-secret-key-change-in-production")
+    # Security - Railway will provide these via environment variables
+    SECRET_KEY: str = Field(default="your-secret-key-change-in-production", env="SECRET_KEY")
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=30, env="ACCESS_TOKEN_EXPIRE_MINUTES")
     
     @field_validator('ACCESS_TOKEN_EXPIRE_MINUTES', mode='before')
     @classmethod
@@ -23,9 +23,9 @@ class Settings(BaseSettings):
         return v or 30
     
     # CORS
-    ALLOWED_ORIGINS: Union[str, List[str]] = os.getenv(
-        "ALLOWED_ORIGINS", 
-        "https://task-module.up.railway.app,https://radiant-amazement-production-d68f.up.railway.app"
+    ALLOWED_ORIGINS: Union[str, List[str]] = Field(
+        default="https://task-module.up.railway.app,https://radiant-amazement-production-d68f.up.railway.app",
+        env="ALLOWED_ORIGINS"
     )
     
     @field_validator('ALLOWED_ORIGINS')
@@ -36,8 +36,8 @@ class Settings(BaseSettings):
         return v
     
     # File Upload
-    UPLOAD_DIRECTORY: str = os.getenv("UPLOAD_DIR", "./uploads")
-    MAX_FILE_SIZE: int = 10485760  # 10MB default
+    UPLOAD_DIRECTORY: str = Field(default="./uploads", env=["UPLOAD_DIR", "UPLOAD_DIRECTORY"])
+    MAX_FILE_SIZE: int = Field(default=10485760, env="MAX_FILE_SIZE")  # 10MB default
     ALLOWED_IMAGE_TYPES: List[str] = ["image/jpeg", "image/png", "image/gif", "image/webp"]
     ALLOWED_VIDEO_TYPES: List[str] = ["video/mp4", "video/webm", "video/avi", "video/mov"]
     
@@ -52,8 +52,8 @@ class Settings(BaseSettings):
         return v or 10485760
     
     # Environment
-    ENVIRONMENT: str = os.getenv("ENVIRONMENT", "production")
-    DEBUG: bool = False
+    ENVIRONMENT: str = Field(default="development", env="ENVIRONMENT")  # Railway will set this to "production"
+    DEBUG: bool = Field(default=False, env="DEBUG")
     
     @field_validator('DEBUG', mode='before')
     @classmethod
@@ -63,8 +63,8 @@ class Settings(BaseSettings):
         return bool(v) if v is not None else False
     
     # Database Pool (for production with PostgreSQL)
-    DB_POOL_SIZE: int = 5
-    DB_MAX_OVERFLOW: int = 10
+    DB_POOL_SIZE: int = Field(default=5, env="DB_POOL_SIZE")
+    DB_MAX_OVERFLOW: int = Field(default=10, env="DB_MAX_OVERFLOW")
     
     @field_validator('DB_POOL_SIZE', mode='before')
     @classmethod
@@ -87,10 +87,10 @@ class Settings(BaseSettings):
         return v or 10
     
     # Logging
-    LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
+    LOG_LEVEL: str = Field(default="INFO", env="LOG_LEVEL")
     
     # Rate Limiting
-    RATE_LIMIT_PER_MINUTE: int = 60
+    RATE_LIMIT_PER_MINUTE: int = Field(default=60, env="RATE_LIMIT_PER_MINUTE")
     
     @field_validator('RATE_LIMIT_PER_MINUTE', mode='before')
     @classmethod
@@ -108,45 +108,8 @@ class Settings(BaseSettings):
         case_sensitive = False
         # Use environment variable names exactly as defined
         env_prefix = ""
-
-    def __init__(self, **kwargs):
-        # Load environment variables for fields that use os.getenv
-        env_values = {}
-        
-        # Parse environment variables safely
-        if "ACCESS_TOKEN_EXPIRE_MINUTES" not in kwargs:
-            env_val = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
-            if env_val:
-                env_values["ACCESS_TOKEN_EXPIRE_MINUTES"] = env_val
-                
-        if "MAX_FILE_SIZE" not in kwargs:
-            env_val = os.getenv("MAX_FILE_SIZE")
-            if env_val:
-                env_values["MAX_FILE_SIZE"] = env_val
-                
-        if "DEBUG" not in kwargs:
-            env_val = os.getenv("DEBUG")
-            if env_val:
-                env_values["DEBUG"] = env_val
-                
-        if "DB_POOL_SIZE" not in kwargs:
-            env_val = os.getenv("DB_POOL_SIZE")
-            if env_val:
-                env_values["DB_POOL_SIZE"] = env_val
-                
-        if "DB_MAX_OVERFLOW" not in kwargs:
-            env_val = os.getenv("DB_MAX_OVERFLOW")
-            if env_val:
-                env_values["DB_MAX_OVERFLOW"] = env_val
-                
-        if "RATE_LIMIT_PER_MINUTE" not in kwargs:
-            env_val = os.getenv("RATE_LIMIT_PER_MINUTE")
-            if env_val:
-                env_values["RATE_LIMIT_PER_MINUTE"] = env_val
-        
-        # Merge with provided kwargs
-        kwargs.update(env_values)
-        super().__init__(**kwargs)
+        # Handle Railway environment variables
+        env_file_encoding = 'utf-8'
 
 settings = Settings()
 

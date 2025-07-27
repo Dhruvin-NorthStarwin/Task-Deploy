@@ -45,7 +45,9 @@ const getHeaders = (includeAuth = true) => {
 
 // Authentication APIs
 export const login = async (restaurant_code: string, password: string): Promise<any> => {
-  console.log('🔥 LOGIN: Attempting login with code:', restaurant_code);
+  if (config.DEBUG) {
+    console.log('🔥 LOGIN: Attempting login with code:', restaurant_code);
+  }
   
   const response = await fetchWithTimeout(`${API_BASE_URL}/auth/login`, {
     method: 'POST',
@@ -56,12 +58,16 @@ export const login = async (restaurant_code: string, password: string): Promise<
   });
   
   const data = await handleResponse(response);
-  console.log('🔥 LOGIN: Response data:', data);
+  if (config.DEBUG) {
+    console.log('🔥 LOGIN: Response data:', data);
+  }
   
   // Store the token in localStorage immediately so other API calls can use it
   if (data && data.access_token) {
     localStorage.setItem('auth_token', data.access_token);
-    console.log('🔥 LOGIN: Token saved to localStorage');
+    if (config.DEBUG) {
+      console.log('🔥 LOGIN: Token saved to localStorage');
+    }
   }
   
   return data;
@@ -87,9 +93,11 @@ export const checkAuth = async (): Promise<User> => {
 export const getTasks = async (filters?: Record<string, any>): Promise<Task[]> => {
   let url = `${API_BASE_URL}/tasks/`;
   
-  console.log('🔥 DEBUGGING: getTasks called with filters:', filters);
-  console.log('🔥 DEBUGGING: API_BASE_URL:', API_BASE_URL);
-  console.log('🔥 DEBUGGING: Full URL:', url);
+  if (config.DEBUG) {
+    console.log('🔥 DEBUGGING: getTasks called with filters:', filters);
+    console.log('🔥 DEBUGGING: API_BASE_URL:', API_BASE_URL);
+    console.log('🔥 DEBUGGING: Full URL:', url);
+  }
   
   if (filters && Object.keys(filters).length > 0) {
     const queryParams = new URLSearchParams();
@@ -101,27 +109,37 @@ export const getTasks = async (filters?: Record<string, any>): Promise<Task[]> =
     url += `?${queryParams.toString()}`;
   }
   
-  console.log('🔥 DEBUGGING: Fetching tasks from:', url);
+  if (config.DEBUG) {
+    console.log('🔥 DEBUGGING: Fetching tasks from:', url);
+  }
   
   try {
-    console.log('🔥 DEBUGGING: About to fetch...');
+    if (config.DEBUG) {
+      console.log('🔥 DEBUGGING: About to fetch...');
+    }
     const response = await fetchWithRetry(url, {
       headers: getHeaders(true), // Always include auth for this endpoint
     });
     
-    console.log('🔥 DEBUGGING: Response received:', response.status, response.statusText);
+    if (config.DEBUG) {
+      console.log('🔥 DEBUGGING: Response received:', response.status, response.statusText);
+    }
     
     if (!response.ok) {
-      console.error('🔥 ERROR: Error fetching tasks:', response.status, response.statusText);
-      const errorText = await response.text();
-      console.error('🔥 ERROR: Error details:', errorText);
+      if (config.DEBUG) {
+        console.error('🔥 ERROR: Error fetching tasks:', response.status, response.statusText);
+        const errorText = await response.text();
+        console.error('🔥 ERROR: Error details:', errorText);
+      }
       // Throw an error to be caught by the calling component
       throw new Error(`Failed to fetch tasks: ${response.status} ${response.statusText}`);
     }
     
     const data = await response.json();
-    console.log('🔥 SUCCESS: Raw tasks data:', data);
-    console.log('🔥 SUCCESS: Number of raw tasks:', data.length);
+    if (config.DEBUG) {
+      console.log('🔥 SUCCESS: Raw tasks data:', data);
+      console.log('🔥 SUCCESS: Number of raw tasks:', data.length);
+    }
     
     // Transform backend data to match frontend Task interface
     const transformedTasks: Task[] = data.map((backendTask: any) => ({
@@ -140,13 +158,17 @@ export const getTasks = async (filters?: Record<string, any>): Promise<Task[]> =
       initials: backendTask.initials,
     }));
     
-    console.log('🔥 SUCCESS: Transformed tasks:', transformedTasks);
-    console.log('🔥 SUCCESS: Number of transformed tasks:', transformedTasks.length);
-    console.log('🔥 SUCCESS: First transformed task:', transformedTasks[0]);
+    if (config.DEBUG) {
+      console.log('🔥 SUCCESS: Transformed tasks:', transformedTasks);
+      console.log('🔥 SUCCESS: Number of transformed tasks:', transformedTasks.length);
+      console.log('🔥 SUCCESS: First transformed task:', transformedTasks[0]);
+    }
     
     return transformedTasks;
   } catch (error) {
-    console.error('🔥 FATAL ERROR: Error in getTasks:', error);
+    if (config.DEBUG) {
+      console.error('🔥 FATAL ERROR: Error in getTasks:', error);
+    }
     // Re-throw the error so the UI can handle it (e.g., show an error message)
     throw error;
   }
@@ -165,7 +187,9 @@ export const createTask = async (task: Omit<Task, 'id' | 'status'>): Promise<Tas
     initials: task.initials,
   };
   
-  console.log('Creating task with auth:', backendTask);
+  if (config.DEBUG) {
+    console.log('Creating task with auth:', backendTask);
+  }
   
   const response = await fetch(`${API_BASE_URL}/tasks/`, {
     method: 'POST',
@@ -208,7 +232,9 @@ export const updateTaskStatus = async (taskId: number, status: string): Promise<
 };
 
 export const submitTask = async (taskId: number, imageUrl?: string, videoUrl?: string, initials?: string): Promise<Task> => {
-  console.log('🔥 SUBMIT: Submitting task', taskId, 'with media:', { imageUrl, videoUrl, initials });
+  if (config.DEBUG) {
+    console.log('🔥 SUBMIT: Submitting task', taskId, 'with media:', { imageUrl, videoUrl, initials });
+  }
   
   const response = await fetch(`${API_BASE_URL}/tasks/${taskId}/submit`, {
     method: 'PATCH',
@@ -226,12 +252,16 @@ export const submitTask = async (taskId: number, imageUrl?: string, videoUrl?: s
   }
   
   const data = await response.json();
-  console.log('🔥 SUBMIT: Task submitted successfully:', data);
+  if (config.DEBUG) {
+    console.log('🔥 SUBMIT: Task submitted successfully:', data);
+  }
   return data;
 };
 
 export const approveTask = async (taskId: number): Promise<Task> => {
-  console.log('🔥 APPROVE: Approving task', taskId);
+  if (config.DEBUG) {
+    console.log('🔥 APPROVE: Approving task', taskId);
+  }
   
   const response = await fetch(`${API_BASE_URL}/tasks/${taskId}/approve`, {
     method: 'PATCH',
@@ -244,12 +274,16 @@ export const approveTask = async (taskId: number): Promise<Task> => {
   }
   
   const data = await response.json();
-  console.log('🔥 APPROVE: Task approved successfully:', data);
+  if (config.DEBUG) {
+    console.log('🔥 APPROVE: Task approved successfully:', data);
+  }
   return data;
 };
 
 export const declineTask = async (taskId: number, reason: string): Promise<Task> => {
-  console.log('🔥 DECLINE: Declining task', taskId, 'with reason:', reason);
+  if (config.DEBUG) {
+    console.log('🔥 DECLINE: Declining task', taskId, 'with reason:', reason);
+  }
   
   const response = await fetch(`${API_BASE_URL}/tasks/${taskId}/decline`, {
     method: 'PATCH',
@@ -265,12 +299,16 @@ export const declineTask = async (taskId: number, reason: string): Promise<Task>
   }
   
   const data = await response.json();
-  console.log('🔥 DECLINE: Task declined successfully:', data);
+  if (config.DEBUG) {
+    console.log('🔥 DECLINE: Task declined successfully:', data);
+  }
   return data;
 };
 
 export const deleteTask = async (taskId: number): Promise<void> => {
-  console.log('🔥 DELETE: Deleting task', taskId);
+  if (config.DEBUG) {
+    console.log('🔥 DELETE: Deleting task', taskId);
+  }
   
   const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
     method: 'DELETE',
@@ -282,7 +320,9 @@ export const deleteTask = async (taskId: number): Promise<void> => {
     throw new Error(errorData.detail || `Failed to delete task: ${response.status}`);
   }
   
-  console.log('🔥 DELETE: Task deleted successfully');
+  if (config.DEBUG) {
+    console.log('🔥 DELETE: Task deleted successfully');
+  }
 };
 
 export const assignTask = async (taskId: number, userId: number): Promise<Task> => {
@@ -301,7 +341,9 @@ export const assignTask = async (taskId: number, userId: number): Promise<Task> 
 };
 
 export const updateTaskInitials = async (taskId: number, initials: string): Promise<Task> => {
-  console.log('🔥 UPDATE INITIALS: Updating task', taskId, 'with initials:', initials);
+  if (config.DEBUG) {
+    console.log('🔥 UPDATE INITIALS: Updating task', taskId, 'with initials:', initials);
+  }
   
   const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
     method: 'PUT',
@@ -317,7 +359,9 @@ export const updateTaskInitials = async (taskId: number, initials: string): Prom
   }
   
   const data = await response.json();
-  console.log('🔥 UPDATE INITIALS: Task initials updated successfully:', data);
+  if (config.DEBUG) {
+    console.log('🔥 UPDATE INITIALS: Task initials updated successfully:', data);
+  }
   return data;
 };
 
@@ -327,7 +371,7 @@ export const uploadFile = async (taskId: number, file: File, type: 'image' | 'vi
   formData.append('file', file);
   formData.append('task_id', taskId.toString());
   
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('auth_token');
   const headers: Record<string, string> = {};
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;

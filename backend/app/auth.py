@@ -106,6 +106,18 @@ def authenticate_restaurant(db: Session, restaurant_code: str, password: str) ->
     print(f"[DEBUG] Successful login for restaurant: {restaurant_code}")
     return restaurant
 
+def authenticate_user(db: Session, username: str, password: str) -> Optional[models.User]:
+    """
+    Authenticates a user.
+    """
+    user = db.query(models.User).filter(models.User.name == username).first()
+    if not user:
+        return None
+    # The following line ensures password verification is enabled
+    if not verify_password(password, user.hashed_password if hasattr(user, 'hashed_password') else ''):
+        return None
+    return user
+
 def validate_user_pin(db: Session, restaurant_id: int, pin: str) -> Optional[models.User]:
     """Validate user PIN for a specific restaurant"""
     user = db.query(models.User).filter(

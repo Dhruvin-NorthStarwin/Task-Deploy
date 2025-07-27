@@ -12,7 +12,9 @@ const getApiUrl = () => {
       httpsUrl = httpsUrl.endsWith('/') ? httpsUrl + 'api' : httpsUrl + '/api';
     }
     
-    console.log('🔒 Ensuring HTTPS and /api path for Railway backend:', httpsUrl);
+    if (config.DEBUG) {
+      console.log('🔒 Ensuring HTTPS and /api path for Railway backend:', httpsUrl);
+    }
     return httpsUrl;
   }
   
@@ -23,7 +25,9 @@ const getApiUrl = () => {
 
   // In production, always use HTTPS for Railway fallback
   if (!isDev && !envUrl) {
-    console.log('🚀 Using production Railway HTTPS URL');
+    if (config.DEBUG) {
+      console.log('🚀 Using production Railway HTTPS URL');
+    }
     return 'https://radiant-amazement-production-d68f.up.railway.app/api';
   }
   
@@ -36,7 +40,9 @@ const getApiUrl = () => {
       finalUrl = finalUrl.endsWith('/') ? finalUrl + 'api' : finalUrl + '/api';
     }
     
-    console.log('🔒 Final API URL for production:', finalUrl);
+    if (config.DEBUG) {
+      console.log('🔒 Final API URL for production:', finalUrl);
+    }
     return finalUrl;
   }
 
@@ -50,19 +56,17 @@ export const config = {
   REQUEST_TIMEOUT: parseInt(import.meta.env.VITE_REQUEST_TIMEOUT || '10000'), // 10 seconds
 };
 
-// Debug: Log the API URL being used
-console.log('🔍 API_BASE_URL:', config.API_BASE_URL);
-console.log('🔍 Environment Mode:', config.ENVIRONMENT);
-console.log('🔍 VITE_API_BASE_URL from env:', import.meta.env.VITE_API_BASE_URL);
+// Debug: Log the API URL being used (only in debug mode)
+if (config.DEBUG) {
+  console.log('🔍 API_BASE_URL:', config.API_BASE_URL);
+  console.log('🔍 Environment Mode:', config.ENVIRONMENT);
+  console.log('🔍 VITE_API_BASE_URL from env:', import.meta.env.VITE_API_BASE_URL);
+}
 
 // Validate required environment variables in production
 if (config.ENVIRONMENT === 'production') {
-  const requiredEnvVars = ['VITE_API_BASE_URL'];
-  
-  for (const envVar of requiredEnvVars) {
-    if (!import.meta.env[envVar]) {
-      console.warn(`⚠️ Environment variable ${envVar} not set, using fallback value`);
-    }
+  if (!import.meta.env.VITE_API_BASE_URL && config.DEBUG) {
+    console.warn(`⚠️ Environment variable VITE_API_BASE_URL not set, using fallback value`);
   }
 }
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import config from '../config/environment';
 
 interface Notification {
   message: string;
@@ -70,8 +71,10 @@ const LoginComponent: React.FC<{ onShowSignup: () => void, onLoginSuccess: () =>
         // Store login timestamp only - the token is already saved by the login function
         localStorage.setItem('login_timestamp', Date.now().toString());
         
-        // Log that we successfully logged in
-        console.log('🔥 LOGIN SUCCESS: Login successful, redirecting...');
+        // Log that we successfully logged in (only in debug mode)
+        if (config.DEBUG) {
+          console.log('🔥 LOGIN SUCCESS: Login successful, redirecting...');
+        }
         
         onLoginSuccess();
       } else {
