@@ -50,7 +50,6 @@ WORKDIR /app
 RUN mkdir -p uploads/images uploads/videos uploads/task_completions && \
     chown -R appuser:appuser uploads
 
-# Copy application code (when deploying from backend directory)
 COPY --chown=appuser:appuser . .
 
 # Make startup script executable
