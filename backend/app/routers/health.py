@@ -5,6 +5,7 @@ from app.database import get_db
 from app.config import settings
 import os
 import psutil
+import sys
 from datetime import datetime
 
 router = APIRouter()
@@ -70,7 +71,8 @@ async def get_metrics():
             "application": {
                 "environment": settings.ENVIRONMENT,
                 "debug": settings.DEBUG,
-                "upload_directory": settings.UPLOAD_DIRECTORY
+                "upload_directory": settings.UPLOAD_DIRECTORY,
+                "cors_origins": settings.ALLOWED_ORIGINS
             }
         }
     except Exception as e:
@@ -78,3 +80,17 @@ async def get_metrics():
             "timestamp": datetime.utcnow().isoformat(),
             "error": f"Could not retrieve metrics: {str(e)}"
         }
+        
+@router.get("/cors-debug")
+async def cors_debug():
+    """Debug endpoint to check CORS settings"""
+    return {
+        "allowed_origins": settings.ALLOWED_ORIGINS,
+        "environment": settings.ENVIRONMENT,
+        "debug": settings.DEBUG,
+        "python_version": sys.version,
+        "env_variables": {
+            "ALLOWED_ORIGINS": os.getenv("ALLOWED_ORIGINS", "Not set"),
+            "ENVIRONMENT": os.getenv("ENVIRONMENT", "Not set")
+        }
+    }

@@ -8,6 +8,7 @@ from app.config import settings
 from app.database import engine, Base
 from app.routers import auth, tasks, users, uploads, health
 from app.middleware.error_handler import global_exception_handler, validation_exception_handler
+from app.middleware.cors_middleware import CustomCORSMiddleware
 import uvicorn
 import os
 import logging
@@ -31,14 +32,34 @@ print(f"🔍 CORS Allowed Origins: {settings.ALLOWED_ORIGINS}")
 print(f"🔍 Environment: {settings.ENVIRONMENT}")
 print(f"🔍 Debug Mode: {settings.DEBUG}")
 
+# Safety check for "*" wildcard - if needed, convert string "*" to ["*"]
+origins = settings.ALLOWED_ORIGINS
+if origins == ["*"] or origins == "*":
+    origins = ["*"]
+    print("⚠️ WARNING: Using wildcard CORS origin. This is not recommended for production.")
+elif isinstance(origins, str):
+    origins = [origins]
+
+# Add frontend Railway domain explicitly for safety
+if "https://task-module.up.railway.app" not in origins:
+    origins.append("https://task-module.up.railway.app")
+    print("✅ Added Railway frontend domain to allowed origins")
+
+# Print final origins list
+print(f"🔍 Final CORS Origins: {origins}")
+
+# First try with the default CORSMiddleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS,
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["*"]
 )
+
+# Then add our custom middleware as a backup
+app.add_middleware(CustomCORSMiddleware)
 
 # Add global exception handlers
 app.add_exception_handler(Exception, global_exception_handler)
