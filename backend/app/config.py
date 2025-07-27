@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     # CORS
     ALLOWED_ORIGINS: Union[str, List[str]] = os.getenv(
         "ALLOWED_ORIGINS", 
-        "http://localhost:3000,http://localhost:5173"
+        "http://localhost:3000,http://localhost:5173,https://task-module.up.railway.app,https://radiant-amazement-production-d68f.up.railway.app"
     )
     
     @field_validator('ALLOWED_ORIGINS')
