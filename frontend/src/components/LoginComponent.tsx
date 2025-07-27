@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import apiService from '../services/apiService';
+import { useAuth } from '../context/AuthContext';
 
 interface Notification {
   message: string;
@@ -37,12 +37,19 @@ const LoginComponent: React.FC<{ onShowSignup: () => void, onLoginSuccess: () =>
   const [password, setPassword] = useState('');
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const { login } = useAuth();
 
   // Auto-redirect to /pin if valid token exists in localStorage
   React.useEffect(() => {
     const token = localStorage.getItem('auth_token');
-    if (token) {
-      window.location.pathname = '/pin';
+    const loginTimestamp = localStorage.getItem('login_timestamp');
+    
+    if (token && loginTimestamp) {
+      // Check if token is still valid (within 1 hour)
+      const isTokenValid = (Date.now() - parseInt(loginTimestamp)) < 60 * 60 * 1000;
+      if (isTokenValid) {
+        window.location.pathname = '/pin';
+      }
     }
   }, []);
 
@@ -53,17 +60,19 @@ const LoginComponent: React.FC<{ onShowSignup: () => void, onLoginSuccess: () =>
       return;
     }
     try {
-      const credentials = { restaurant_code: restaurantCode, password };
-      const authResponse = await apiService.login(credentials);
+      // Use AuthContext login instead of direct API call
+      const loginSuccess = await login(restaurantCode, password);
       
-      if (authResponse.token) {
-        // Store the token
-        localStorage.setItem('token', authResponse.token);
+      if (loginSuccess) {
+        // Store additional auth info for session management
+        localStorage.setItem('login_timestamp', Date.now().toString());
+        
         if (rememberMe) {
-          localStorage.setItem('auth_token', authResponse.token);
+          localStorage.setItem('auth_token', 'user_authenticated');
         } else {
           localStorage.removeItem('auth_token');
         }
+        
         setNotification({ message: 'Login successful!', type: 'success' });
         setTimeout(() => {
           onLoginSuccess();
