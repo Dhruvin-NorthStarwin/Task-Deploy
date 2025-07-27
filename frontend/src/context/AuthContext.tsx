@@ -80,13 +80,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // Store auth data
         localStorage.setItem('auth_token', token);
         localStorage.setItem('user_data', JSON.stringify(restaurant));
-        // For now, set default role since restaurant doesn't have role field
-        localStorage.setItem('user_role', 'admin'); // Restaurant owner is admin by default
+        // Don't set role automatically - require PIN verification
         
         setUser(restaurant);
-        setUserRoleState('admin');
+        setUserRoleState(null); // Reset role - will be set via PIN
         setIsPinVerified(false); // Reset PIN verification on new login
         localStorage.removeItem('pin_verified');
+        localStorage.removeItem('user_role');
 
         return true;
       }
@@ -115,7 +115,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const setUserRole = (role: 'staff' | 'admin') => {
     setUserRoleState(role);
+    setIsPinVerified(true);
     localStorage.setItem('user_role', role);
+    localStorage.setItem('pin_verified', 'true');
   };
 
   const value = {
