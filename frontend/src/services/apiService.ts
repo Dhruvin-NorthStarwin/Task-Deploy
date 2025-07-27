@@ -28,14 +28,15 @@ const handleResponse = async (response: Response) => {
 
 // Helper to get headers with auth token
 const getHeaders = (includeAuth = true) => {
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  };
+  const headers = new Headers();
+  headers.append('Content-Type', 'application/json');
   
   if (includeAuth) {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('auth_token');
     if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+      headers.append('Authorization', `Bearer ${token}`);
+    } else {
+      console.warn('⚠️ No auth token found in localStorage. Request will be unauthenticated.');
     }
   }
   
@@ -43,32 +44,40 @@ const getHeaders = (includeAuth = true) => {
 };
 
 // Authentication APIs
-export const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
+export const login = async (restaurant_code: string, password: string): Promise<any> => {
+  console.log('🔥 LOGIN: Attempting login with code:', restaurant_code);
+  
   const response = await fetchWithTimeout(`${API_BASE_URL}/auth/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(credentials),
+    body: JSON.stringify({ restaurant_code, password }),
   });
   
-  return handleResponse(response);
+  const data = await handleResponse(response);
+  console.log('🔥 LOGIN: Response data:', data);
+  
+  // Store the token in localStorage immediately so other API calls can use it
+  if (data && data.access_token) {
+    localStorage.setItem('auth_token', data.access_token);
+    console.log('🔥 LOGIN: Token saved to localStorage');
+  }
+  
+  return data;
 };
 
 export const checkAuth = async (): Promise<User> => {
-  // Note: Backend doesn't have /auth/me endpoint
-  // This function might need to be removed or implemented differently
-  // For now, we'll return a mock response or check localStorage
-  const token = localStorage.getItem('token');
+  // Check if we have a token and user data in localStorage
+  const token = localStorage.getItem('auth_token');
   if (!token) {
     throw new Error('No authentication token found');
   }
   
-  // You might want to validate the token against the backend differently
-  // or store user info in localStorage after login
-  const userInfo = localStorage.getItem('userInfo');
-  if (userInfo) {
-    return JSON.parse(userInfo);
+  // Get user info from localStorage
+  const userData = localStorage.getItem('user_data');
+  if (userData) {
+    return JSON.parse(userData);
   }
   
   throw new Error('No user information found');
@@ -97,10 +106,7 @@ export const getTasks = async (filters?: Record<string, any>): Promise<Task[]> =
   try {
     console.log('🔥 DEBUGGING: About to fetch...');
     const response = await fetchWithRetry(url, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...getHeaders(),
-      },
+      headers: getHeaders(true), // Always include auth for this endpoint
     });
     
     console.log('🔥 DEBUGGING: Response received:', response.status, response.statusText);
@@ -109,7 +115,8 @@ export const getTasks = async (filters?: Record<string, any>): Promise<Task[]> =
       console.error('🔥 ERROR: Error fetching tasks:', response.status, response.statusText);
       const errorText = await response.text();
       console.error('🔥 ERROR: Error details:', errorText);
-      return []; // Return empty array for now to prevent app from crashing
+      // Throw an error to be caught by the calling component
+      throw new Error(`Failed to fetch tasks: ${response.status} ${response.statusText}`);
     }
     
     const data = await response.json();
@@ -139,9 +146,9 @@ export const getTasks = async (filters?: Record<string, any>): Promise<Task[]> =
     
     return transformedTasks;
   } catch (error) {
-    console.error('🔥 FATAL ERROR: Error fetching tasks:', error);
-    console.error('🔥 FATAL ERROR: Error details:', error);
-    return []; // Return empty array to prevent app from crashing
+    console.error('🔥 FATAL ERROR: Error in getTasks:', error);
+    // Re-throw the error so the UI can handle it (e.g., show an error message)
+    throw error;
   }
 };
 
@@ -158,57 +165,15 @@ export const createTask = async (task: Omit<Task, 'id' | 'status'>): Promise<Tas
     initials: task.initials,
   };
   
-  console.log('Creating task:', backendTask);
+  console.log('Creating task with auth:', backendTask);
   
-  try {
-    // For development, temporarily disable authentication
-    const response = await fetch(`${API_BASE_URL}/tasks/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(backendTask),
-    });
-    
-    // Log any errors for debugging
-    if (!response.ok) {
-      console.error('Error creating task:', response.status, response.statusText);
-      const errorText = await response.text();
-      console.error('Error details:', errorText);
-      
-      // For now, create a fake response to allow the app to continue working
-      return {
-        id: Date.now(),
-        task: task.task,
-        description: task.description || "",
-        category: task.category,
-        day: task.day,
-        status: "Unknown",
-        imageRequired: task.imageRequired || false,
-        videoRequired: task.videoRequired || false,
-        taskType: task.taskType,
-        initials: task.initials
-      };
-    }
-    
-    return await response.json();
-  } catch (error) {
-    console.error('Error creating task:', error);
-    
-    // Return a fake task to allow the app to continue working
-    return {
-      id: Date.now(),
-      task: task.task,
-      description: task.description || "",
-      category: task.category,
-      day: task.day,
-      status: "Unknown",
-      imageRequired: task.imageRequired || false,
-      videoRequired: task.videoRequired || false,
-      taskType: task.taskType,
-      initials: task.initials
-    };
-  }
+  const response = await fetch(`${API_BASE_URL}/tasks/`, {
+    method: 'POST',
+    headers: getHeaders(true), // Ensure auth token is included
+    body: JSON.stringify(backendTask),
+  });
+  
+  return handleResponse(response);
 };
 
 export const updateTaskStatus = async (taskId: number, status: string): Promise<Task> => {

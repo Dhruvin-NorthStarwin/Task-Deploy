@@ -12,7 +12,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { debugApiConfig } from './utils/debug';
 
-const App: React.FC = () => {
+// Create an inner component that uses the auth context
+const AppContent: React.FC = () => {
   const [notification, setNotification] = useState<null | { message: string; type: 'success' | 'error' }>(null);
   const { setUserRole, logout } = useAuth();
   const navigate = useNavigate();
@@ -51,13 +52,6 @@ const App: React.FC = () => {
     }
   };
 
-  // Handler for logout
-  const handleLogout = () => {
-    logout();
-    showNotification({ message: 'Logged out successfully!', type: 'success' });
-    navigate('/');
-  };
-
   return (
     <div className="bg-stone-100">
       <div className="min-h-screen bg-stone-200 flex items-center justify-center p-4">
@@ -84,12 +78,12 @@ const App: React.FC = () => {
           } />
           <Route path="/admin" element={
             <ProtectedRoute requireAuth={true} requiredRole="admin" requirePin={true}>
-              <AdminTaskPanel onLogout={handleLogout} />
+              <AdminTaskPanel onLogout={logout} />
             </ProtectedRoute>
           } />
           <Route path="/staff" element={
             <ProtectedRoute requireAuth={true} requiredRole="staff" requirePin={true}>
-              <StaffTaskPanel onLogout={handleLogout} />
+              <StaffTaskPanel onLogout={logout} />
             </ProtectedRoute>
           } />
         </Routes>
@@ -98,12 +92,13 @@ const App: React.FC = () => {
   );
 };
 
-const AppWithRouter: React.FC = () => (
+// Main App wrapper component
+const App: React.FC = () => (
   <BrowserRouter>
     <AuthProvider>
-      <App />
+      <AppContent />
     </AuthProvider>
   </BrowserRouter>
 );
 
-export default AppWithRouter;
+export default App;

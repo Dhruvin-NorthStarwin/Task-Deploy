@@ -67,9 +67,11 @@ const LoginComponent: React.FC<{ onShowSignup: () => void, onLoginSuccess: () =>
       const loginSuccess = await login(restaurantCode, password);
       
       if (loginSuccess) {
-        // Store additional auth info for session management
+        // Store login timestamp only - the token is already saved by the login function
         localStorage.setItem('login_timestamp', Date.now().toString());
-        localStorage.setItem('auth_token', 'user_authenticated');
+        
+        // Log that we successfully logged in
+        console.log('🔥 LOGIN SUCCESS: Login successful, redirecting...');
         
         onLoginSuccess();
       } else {

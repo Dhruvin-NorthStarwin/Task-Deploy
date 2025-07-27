@@ -67,3 +67,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
 
 # Run the application with production initialization and Railway port support
 CMD ["sh", "-c", "python init_production_db.py && uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1"]
+
