@@ -89,6 +89,49 @@ export const checkAuth = async (): Promise<User> => {
   throw new Error('No user information found');
 };
 
+export const register = async (registrationData: {
+  name: string;
+  cuisine_type: string;
+  contact_email: string;
+  contact_phone: string;
+  password: string;
+  locations: Array<{
+    address_line1: string;
+    town_city: string;
+    postcode: string;
+  }>;
+}): Promise<any> => {
+  if (config.DEBUG) {
+    console.log('🔥 REGISTER: Attempting registration with data:', { 
+      ...registrationData, 
+      password: '[HIDDEN]' 
+    });
+  }
+  
+  const response = await fetchWithTimeout(`${API_BASE_URL}/auth/register`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(registrationData),
+  });
+  
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    if (config.DEBUG) {
+      console.error('🔥 REGISTER ERROR:', response.status, response.statusText, errorData);
+    }
+    throw new Error(errorData.detail || errorData.message || `Registration failed: ${response.status}`);
+  }
+  
+  const data = await response.json();
+  if (config.DEBUG) {
+    console.log('🔥 REGISTER: Registration successful:', data);
+  }
+  
+  return data;
+};
+
 // Task APIs
 export const getTasks = async (filters?: Record<string, any>): Promise<Task[]> => {
   let url = `${API_BASE_URL}/tasks/`;
@@ -389,6 +432,7 @@ export const uploadFile = async (taskId: number, file: File, type: 'image' | 'vi
 // Default export for easy imports
 const apiService = {
   login,
+  register,
   checkAuth,
   getTasks,
   createTask,

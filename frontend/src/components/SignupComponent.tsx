@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import config from '../config/environment';
+import { register as registerApi } from '../services/apiService';
 
 interface Location {
   addressLine1: string;
@@ -30,6 +31,7 @@ const PasswordToggleIcon: React.FC<{ isVisible: boolean }> = ({ isVisible }) => 
 };
 
 const SignupComponent: React.FC<{ onShowLogin: () => void, onRegistrationSuccess: () => void, setNotification: (notification: Notification) => void }> = ({ onShowLogin, onRegistrationSuccess, setNotification }) => {
+  const { login: authLogin } = useAuth();
   const [showCodeModal, setShowCodeModal] = useState(false);
   const [registeredCode, setRegisteredCode] = useState('');
   const [registeredStaff, setRegisteredStaff] = useState<any[]>([]);
@@ -44,7 +46,6 @@ const SignupComponent: React.FC<{ onShowLogin: () => void, onRegistrationSuccess
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
   const [terms, setTerms] = useState(false);
-  const { login } = useAuth();
 
   const handleLocationChange = (index: number, field: keyof Location, value: string) => {
     const newLocations = [...locations];
@@ -76,41 +77,70 @@ const SignupComponent: React.FC<{ onShowLogin: () => void, onRegistrationSuccess
     }
 
     try {
-      const response = await fetch(`${config.API_BASE_URL}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: restaurantName,
-          cuisine_type: cuisineType,
-          contact_email: contactEmail,
-          contact_phone: contactPhone,
-          password,
-          locations: locations.map(l => ({
-            address_line1: l.addressLine1,
-            town_city: l.townCity,
-            postcode: l.postcode
-          }))
-        })
-      });
-      const data = await response.json();
-      if (response.ok && data.restaurant_code) {
+      const registrationData = {
+        name: restaurantName,
+        cuisine_type: cuisineType,
+        contact_email: contactEmail,
+        contact_phone: contactPhone,
+        password,
+        locations: locations.map(l => ({
+          address_line1: l.addressLine1,
+          town_city: l.townCity,
+          postcode: l.postcode
+        }))
+      };
+
+      if (config.DEBUG) {
+        console.log('🔥 SIGNUP: Submitting registration data:', { 
+          ...registrationData, 
+          password: '[HIDDEN]' 
+        });
+      }
+
+      const data = await registerApi(registrationData);
+      
+      if (data.restaurant_code) {
         setNotification({ message: 'Registration successful!', type: 'success' });
         setRegisteredCode(data.restaurant_code);
         setRegisteredStaff(data.staff || []);
         setShowCodeModal(true);
         
         // Auto-login the user after registration so they can proceed to PIN
-        const loginSuccess = await login(data.restaurant_code, password);
-        if (loginSuccess) {
-          // Store auth info
-          localStorage.setItem('login_timestamp', Date.now().toString());
-          localStorage.setItem('auth_token', 'user_authenticated');
+        try {
+          const loginSuccess = await authLogin(data.restaurant_code, password);
+          if (loginSuccess) {
+            // Store auth info
+            localStorage.setItem('login_timestamp', Date.now().toString());
+            localStorage.setItem('auth_token', 'user_authenticated');
+          }
+        } catch (loginError) {
+          if (config.DEBUG) {
+            console.error('🔥 AUTO-LOGIN ERROR:', loginError);
+          }
         }
       } else {
         setNotification({ message: data.message || 'Registration failed.', type: 'error' });
       }
-    } catch (error) {
-      setNotification({ message: 'Server error. Please try again later.', type: 'error' });
+    } catch (error: any) {
+      if (config.DEBUG) {
+        console.error('🔥 SIGNUP ERROR:', error);
+      }
+      
+      let errorMessage = 'Server error. Please try again later.';
+      
+      if (error.message) {
+        if (error.message.includes('422')) {
+          errorMessage = 'Please check all fields are filled correctly. Some required information may be missing.';
+        } else if (error.message.includes('400')) {
+          errorMessage = 'Email already registered or invalid data provided.';
+        } else if (error.message.includes('Email already registered')) {
+          errorMessage = 'This email is already registered. Please use a different email or try logging in.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      setNotification({ message: errorMessage, type: 'error' });
     }
   };
 
