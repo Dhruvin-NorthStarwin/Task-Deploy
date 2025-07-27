@@ -3,14 +3,14 @@ const getApiUrl = () => {
   const envUrl = import.meta.env.VITE_API_BASE_URL;
   const isDev = import.meta.env.MODE === 'development';
   
-  // In development, use localhost if env var is not set
+  // In development, use localhost (can be switched to HTTPS if needed)
   if (isDev && !envUrl) {
     return 'http://localhost:8000/api';
   }
-  
-  // In production, use Railway URL as fallback if env var is not set
+
+  // In production, always use HTTPS for Railway fallback
   if (!isDev && !envUrl) {
-    console.warn('⚠️ VITE_API_BASE_URL not set, using default Railway URL');
+    console.warn('⚠️ VITE_API_BASE_URL not set, using default Railway HTTPS URL');
     return 'https://radiant-amazement-production-d68f.up.railway.app/api';
   }
   
