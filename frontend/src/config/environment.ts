@@ -3,6 +3,13 @@ const getApiUrl = () => {
   const envUrl = import.meta.env.VITE_API_BASE_URL;
   const isDev = import.meta.env.MODE === 'development';
   
+  // Force HTTPS for specific known Railway deployments
+  if (envUrl && envUrl.includes('radiant-amazement-production-d68f.up.railway.app')) {
+    const httpsUrl = envUrl.replace('http://', 'https://');
+    console.log('🔒 Ensuring HTTPS for Railway backend:', httpsUrl);
+    return httpsUrl;
+  }
+  
   // In development, use localhost (can be switched to HTTPS if needed)
   if (isDev && !envUrl) {
     return 'http://localhost:8000/api';
@@ -14,10 +21,15 @@ const getApiUrl = () => {
     return 'https://radiant-amazement-production-d68f.up.railway.app/api';
   }
   
-  return envUrl;
-};
+  // If we have an envUrl but we're in production, ensure it's HTTPS
+  if (!isDev && envUrl && envUrl.startsWith('http://')) {
+    const httpsUrl = envUrl.replace('http://', 'https://');
+    console.log('🔒 Converting HTTP to HTTPS for production:', httpsUrl);
+    return httpsUrl;
+  }
 
-// Environment configuration for different deployment stages
+  return envUrl;
+};// Environment configuration for different deployment stages
 export const config = {
   API_BASE_URL: getApiUrl(),
   UPLOAD_MAX_SIZE: parseInt(import.meta.env.VITE_UPLOAD_MAX_SIZE || '10485760'), // 10MB

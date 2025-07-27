@@ -1,7 +1,7 @@
 
 
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { LoginComponent, NotificationComponent } from './components/LoginComponent';
 import { SignupComponent } from './components/SignupComponent';
@@ -10,11 +10,17 @@ import AdminTaskPanel from './components/admin/AdminTaskPanel';
 import StaffTaskPanel from './components/staff/StaffTaskPanel';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { debugApiConfig } from './utils/debug';
 
 const App: React.FC = () => {
   const [notification, setNotification] = useState<null | { message: string; type: 'success' | 'error' }>(null);
   const { setUserRole, logout } = useAuth();
   const navigate = useNavigate();
+
+  // Debug API configuration on app load
+  useEffect(() => {
+    debugApiConfig();
+  }, []);
 
   const showNotification = (notif: { message: string; type: 'success' | 'error' }) => {
     setNotification(notif);
