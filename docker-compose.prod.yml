@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  database:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=restaurant_tasks
+      - POSTGRES_USER=restro_user
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-your-secure-password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U restro_user -d restaurant_tasks"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    environment:
+      - REACT_APP_API_BASE_URL=http://backend:8000/api
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      - database
+    environment:
+      - DATABASE_URL=postgresql://restro_user:${POSTGRES_PASSWORD:-your-secure-password}@database:5432/restaurant_tasks
+      - SECRET_KEY=${SECRET_KEY:-dev-secret-key-change-in-production}
+      - ALLOWED_ORIGINS=http://localhost,http://frontend
+      - ENVIRONMENT=production
+      - DEBUG=false
+      - ACCESS_TOKEN_EXPIRE_MINUTES=60
+      - MAX_FILE_SIZE=10485760
+      - UPLOAD_DIR=./uploads
+      - LOG_LEVEL=INFO
+      - RATE_LIMIT_PER_MINUTE=60
+    volumes:
+      - backend_uploads:/app/uploads
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  backend_uploads:
+    driver: local
+  postgres_data:
+    driver: local
+
+networks:
+  app-network:
+    driver: bridge

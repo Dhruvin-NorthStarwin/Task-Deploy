@@ -1,0 +1,276 @@
+from fastapi import APIRouter, Depends, HTTPException, status, Query
+from sqlalchemy.orm import Session
+from typing import List, Optional
+from app.database import get_db
+from app import crud, schemas, auth, models
+
+router = APIRouter(prefix="/tasks", tags=["tasks"])
+
+@router.get("/", response_model=List[schemas.Task])
+async def get_tasks(
+    status: Optional[schemas.TaskStatus] = Query(None),
+    category: Optional[schemas.TaskCategory] = Query(None),
+    day: Optional[schemas.Day] = Query(None),
+    initials: Optional[str] = Query(None),
+    task_type: Optional[schemas.TaskType] = Query(None),
+    db: Session = Depends(get_db),
+    current_restaurant: models.Restaurant = Depends(auth.get_current_restaurant_or_none)
+):
+    """Get all tasks for the current restaurant with optional filters"""
+    from app.utils import convert_enum_for_api
+    
+    filters = schemas.TaskFilters(
+        status=status,
+        category=category,
+        day=day,
+        initials=initials,
+        task_type=task_type
+    )
+    
+    # For development: Use restaurant_id=1 if not authenticated
+    restaurant_id = 1
+    if current_restaurant:
+        restaurant_id = current_restaurant.id
+    
+    # Get tasks from DB
+    tasks = crud.get_tasks_by_restaurant(db, restaurant_id, filters)
+    
+    # Convert SQLAlchemy objects to dictionaries
+    task_dicts = []
+    for task in tasks:
+        # Convert to dictionary and handle enum values
+        task_dict = {c.name: getattr(task, c.name) for c in task.__table__.columns}
+        # Convert enum objects to their string values
+        task_dicts.append(convert_enum_for_api(task_dict))
+    
+    return task_dicts
+
+@router.post("/", response_model=schemas.Task)
+async def create_task(
+    task: schemas.TaskCreate,
+    db: Session = Depends(get_db),
+    current_restaurant: models.Restaurant = Depends(auth.get_current_restaurant_or_none)
+):
+    """Create a new task"""
+    from app.utils import convert_enum_for_api
+    
+    print(f"Create task request received: {task.dict()}")
+    
+    # For development: If no authentication, create a dummy restaurant for testing
+    restaurant_id = 1  # Default for development
+    if current_restaurant:
+        restaurant_id = current_restaurant.id
+        print(f"Using authenticated restaurant ID: {restaurant_id}")
+    else:
+        print("No authenticated restaurant, using default ID: 1")
+    
+    # ...existing code...
+    
+    try:
+        # Create default restaurant if not exists (for development)
+        restaurant = crud.get_restaurant_by_id(db, restaurant_id)
+        if not restaurant:
+            print(f"Restaurant {restaurant_id} not found, creating default restaurant")
+            from app.schemas import RestaurantCreate, LocationCreate
+            restaurant = crud.create_restaurant(
+                db, 
+                RestaurantCreate(
+                    name="Test Restaurant",
+                    cuisine_type="Testing",
+                    contact_email="test@example.com",
+                    contact_phone="123-456-7890",
+                    password="password123",
+                    locations=[LocationCreate(
+                        address_line1="123 Test St",
+                        town_city="Test City",
+                        postcode="12345"
+                    )]
+                )
+            )
+            restaurant_id = restaurant.id
+            print(f"Created restaurant with ID: {restaurant_id}")
+        else:
+            print(f"Using existing restaurant with ID: {restaurant_id}")
+        
+        # Now create the task
+        print("Creating task in database")
+        db_task = crud.create_task(db, task, restaurant_id)
+        
+        # Convert SQLAlchemy object to dictionary
+        task_dict = {c.name: getattr(db_task, c.name) for c in db_task.__table__.columns}
+        # Convert enum objects to their string values
+        return convert_enum_for_api(task_dict)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error creating task: {str(e)}"
+        )
+
+@router.get("/{task_id}", response_model=schemas.Task)
+async def get_task(
+    task_id: int,
+    current_restaurant: models.Restaurant = Depends(auth.get_current_restaurant),
+    db: Session = Depends(get_db)
+):
+    """Get a specific task by ID"""
+    from app.utils import convert_enum_for_api
+    
+    task = crud.get_task_by_id(db, task_id, current_restaurant.id)
+    if not task:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task not found"
+        )
+        
+    # Convert SQLAlchemy object to dictionary
+    task_dict = {c.name: getattr(task, c.name) for c in task.__table__.columns}
+    # Convert enum objects to their string values
+    return convert_enum_for_api(task_dict)
+
+@router.put("/{task_id}", response_model=schemas.Task)
+async def update_task(
+    task_id: int,
+    task_update: schemas.TaskUpdate,
+    current_restaurant: models.Restaurant = Depends(auth.get_current_restaurant),
+    db: Session = Depends(get_db)
+):
+    """Update a task"""
+    from app.utils import convert_enum_for_api
+    
+    # ...existing code...
+    
+    try:
+        updated_task = crud.update_task(db, task_id, current_restaurant.id, task_update)
+        if not updated_task:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Task not found"
+            )
+        
+        # Convert SQLAlchemy object to dictionary
+        task_dict = {c.name: getattr(updated_task, c.name) for c in updated_task.__table__.columns}
+        # Convert enum objects to their string values
+        return convert_enum_for_api(task_dict)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error updating task: {str(e)}"
+        )
+
+@router.patch("/{task_id}/submit", response_model=schemas.Task)
+async def submit_task(
+    task_id: int,
+    submission_data: schemas.TaskSubmit,
+    current_restaurant: models.Restaurant = Depends(auth.get_current_restaurant_or_none),
+    db: Session = Depends(get_db)
+):
+    """Submit a task with image/video proof"""
+    # For development: Use restaurant_id=1 if not authenticated
+    restaurant_id = 1
+    if current_restaurant:
+        restaurant_id = current_restaurant.id
+    
+    # Update task status to SUBMITTED and add media URLs
+    task_update = schemas.TaskUpdate(
+        status=schemas.TaskStatus.SUBMITTED,
+        image_url=submission_data.image_url,
+        video_url=submission_data.video_url,
+        initials=submission_data.initials
+    )
+    
+    updated_task = crud.update_task(db, task_id, restaurant_id, task_update)
+    if not updated_task:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task not found"
+        )
+    
+    return updated_task
+
+@router.patch("/{task_id}/approve", response_model=schemas.Task)
+async def approve_task(
+    task_id: int,
+    current_restaurant: models.Restaurant = Depends(auth.get_current_restaurant_or_none),
+    db: Session = Depends(get_db)
+):
+    """Approve a submitted task (Admin only)"""
+    # For development: Use restaurant_id=1 if not authenticated
+    restaurant_id = 1
+    if current_restaurant:
+        restaurant_id = current_restaurant.id
+    
+    task_update = schemas.TaskUpdate(status=schemas.TaskStatus.DONE)
+    updated_task = crud.update_task(db, task_id, restaurant_id, task_update)
+    if not updated_task:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task not found"
+        )
+    
+    return updated_task
+
+@router.patch("/{task_id}/decline", response_model=schemas.Task)
+async def decline_task(
+    task_id: int,
+    decline_data: schemas.TaskDecline,
+    current_restaurant: models.Restaurant = Depends(auth.get_current_restaurant_or_none),
+    db: Session = Depends(get_db)
+):
+    """Decline a submitted task with reason (Admin only)"""
+    # For development: Use restaurant_id=1 if not authenticated
+    restaurant_id = 1
+    if current_restaurant:
+        restaurant_id = current_restaurant.id
+    
+    task_update = schemas.TaskUpdate(
+        status=schemas.TaskStatus.DECLINED,
+        decline_reason=decline_data.reason,
+        image_url=None,  # Clear the image when declining
+        video_url=None   # Clear the video when declining
+    )
+    updated_task = crud.update_task(db, task_id, restaurant_id, task_update)
+    if not updated_task:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task not found"
+        )
+    
+    return updated_task
+
+@router.delete("/{task_id}")
+async def delete_task(
+    task_id: int,
+    current_restaurant: models.Restaurant = Depends(auth.get_current_restaurant_or_none),
+    db: Session = Depends(get_db)
+):
+    """Delete a task"""
+    # For development: Use restaurant_id=1 if not authenticated
+    restaurant_id = 1
+    if current_restaurant:
+        restaurant_id = current_restaurant.id
+    
+    success = crud.delete_task(db, task_id, restaurant_id)
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task not found"
+        )
+    return {"message": "Task deleted successfully"}
+
+@router.get("/{task_id}/media", response_model=List[schemas.MediaFile])
+async def get_task_media(
+    task_id: int,
+    current_restaurant: models.Restaurant = Depends(auth.get_current_restaurant),
+    db: Session = Depends(get_db)
+):
+    """Get all media files for a task"""
+    # Verify task belongs to restaurant
+    task = crud.get_task_by_id(db, task_id, current_restaurant.id)
+    if not task:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task not found"
+        )
+    
+    media_files = crud.get_media_files_by_task(db, task_id)
+    return media_files
