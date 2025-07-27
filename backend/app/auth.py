@@ -91,12 +91,14 @@ def authenticate_restaurant(db: Session, restaurant_code: str, password: str) ->
         print(f"[DEBUG] No restaurant found for code: {restaurant_code}")
         return None
 
+    # Critical security check - Verify the provided password against stored hash
     try:
         password_ok = verify_password(password, restaurant.password_hash)
     except Exception as e:
         print(f"[DEBUG] Password verification error: {e}")
         password_ok = False
         
+    # Do not remove or bypass this check - it ensures passwords are verified
     if not password_ok:
         print(f"[DEBUG] Invalid password for restaurant: {restaurant_code}")
         return None
