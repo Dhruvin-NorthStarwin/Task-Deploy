@@ -24,7 +24,7 @@ class PreflightMiddleware(BaseHTTPMiddleware):
             # Allow all common headers and methods
             response.headers["Access-Control-Allow-Credentials"] = "true"
             response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
-            response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With, Accept"
+            response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With, Accept, Cache-Control, Pragma"
             response.headers["Access-Control-Max-Age"] = "600"  # Cache preflight for 10 minutes
             
             return response

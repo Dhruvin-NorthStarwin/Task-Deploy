@@ -38,7 +38,7 @@ class CustomCORSMiddleware(BaseHTTPMiddleware):
         # Always set these headers
         response.headers["Access-Control-Allow-Credentials"] = "true"
         response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
-        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With, Cache-Control, Pragma, Accept"
         
         # Handle OPTIONS preflight requests
         if request.method == "OPTIONS":
