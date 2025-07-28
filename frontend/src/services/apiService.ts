@@ -96,7 +96,17 @@ export const login = async (restaurant_code: string, password: string): Promise<
     
     const response = await fetchWithTimeout(`${apiUrl}/auth/login`, {
       method: 'POST',
+<<<<<<< Updated upstream
       headers,
+=======
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        // Add iOS/Safari specific headers (now allowed by CORS)
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
+      },
+>>>>>>> Stashed changes
       body: JSON.stringify({ restaurant_code, password }),
       // iOS-specific fetch options
       mode: 'cors',
