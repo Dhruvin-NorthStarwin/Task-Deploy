@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import config from '../config/environment';
+import BrowserCompatibilityChecker from './common/BrowserCompatibilityChecker';
 
 interface Notification {
   message: string;
@@ -70,15 +71,38 @@ const LoginComponent: React.FC<{
     
     setIsLoading(true);
     try {
+      console.log('🔐 LoginComponent: Attempting login...');
       const success = await login(restaurantCode, password);
       if (success) {
+        console.log('✅ LoginComponent: Login successful');
         onLoginSuccess();
       } else {
-        setNotification({ message: 'Invalid credentials. Please try again.', type: 'error' });
+        console.log('❌ LoginComponent: Login failed - invalid credentials');
+        setNotification({ message: 'Invalid credentials. Please check your restaurant code and password.', type: 'error' });
       }
-    } catch (error) {
-      console.error('Login error:', error);
-      setNotification({ message: 'Login failed. Please check your connection and try again.', type: 'error' });
+    } catch (error: any) {
+      console.error('❌ LoginComponent: Login error:', error);
+      
+      // Handle specific error types for iOS/Mac users
+      let errorMessage = 'Login failed. Please try again.';
+      
+      if (error.message.includes('storage') || error.message.includes('Private Mode')) {
+        errorMessage = 'Storage issue detected. Please disable Private Mode in Safari and try again.';
+      } else if (error.message.includes('Network') || error.message.includes('connection')) {
+        errorMessage = 'Network connection failed. Please check your internet connection and try again.';
+      } else if (error.message.includes('timeout')) {
+        errorMessage = 'Connection timeout. Please try again with a better internet connection.';
+      } else if (error.message.includes('Invalid restaurant code')) {
+        errorMessage = 'Restaurant not found. Please check your restaurant code.';
+      } else if (error.message.includes('Invalid') || error.message.includes('credentials')) {
+        errorMessage = 'Invalid restaurant code or password. Please try again.';
+      } else if (error.message.includes('Security') || error.message.includes('CORS')) {
+        errorMessage = 'Security restriction. Please make sure you are using the correct URL.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      setNotification({ message: errorMessage, type: 'error' });
     } finally {
       setIsLoading(false);
     }
@@ -97,6 +121,9 @@ const LoginComponent: React.FC<{
           <h1 className="text-3xl font-bold text-gray-800 mb-2">RestroManage</h1>
           <p className="text-gray-600">Sign in to your restaurant dashboard</p>
         </div>
+
+        {/* Browser Compatibility Check */}
+        <BrowserCompatibilityChecker />
 
         {/* Login Form */}
         <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">

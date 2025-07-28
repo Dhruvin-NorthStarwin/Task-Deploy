@@ -47,40 +47,96 @@ const getHeaders = (includeAuth = true) => {
 export const login = async (restaurant_code: string, password: string): Promise<any> => {
   if (config.DEBUG) {
     console.log('🔥 LOGIN: Attempting login with code:', restaurant_code);
+    console.log('🔥 LOGIN: API URL:', API_BASE_URL);
+    console.log('🔥 LOGIN: User Agent:', navigator.userAgent);
+    console.log('🔥 LOGIN: Platform:', navigator.platform);
   }
-  
-  const response = await fetchWithTimeout(`${API_BASE_URL}/auth/login`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ restaurant_code, password }),
-  });
-  
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    if (config.DEBUG) {
-      console.error('🔥 LOGIN ERROR:', response.status, response.statusText, errorData);
+
+  try {
+    // Check localStorage availability first (Safari Private Mode issues)
+    try {
+      localStorage.setItem('test', 'test');
+      localStorage.removeItem('test');
+    } catch (storageError) {
+      console.error('🔥 LOGIN: localStorage not available:', storageError);
+      throw new Error('Your browser storage is disabled. Please disable Private Mode or enable storage.');
     }
-    throw new Error(errorData.detail || errorData.message || `Login failed: ${response.status}`);
-  }
-  
-  const data = await response.json();
-  if (config.DEBUG) {
-    console.log('🔥 LOGIN: Response data:', data);
-  }
-  
-  // Store the token in localStorage immediately so other API calls can use it
-  // Backend returns 'token', not 'access_token'
-  if (data && data.token) {
-    localStorage.setItem('auth_token', data.token);
-    if (config.DEBUG) {
-      //ccc
-      console.log('🔥 LOGIN: Token saved to localStorage');
+
+    const response = await fetchWithTimeout(`${API_BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        // Add iOS/Safari specific headers
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
+      },
+      body: JSON.stringify({ restaurant_code, password }),
+    }, 15000); // Increase timeout for slower connections
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      if (config.DEBUG) {
+        console.error('🔥 LOGIN ERROR:', response.status, response.statusText, errorData);
+        console.error('🔥 LOGIN: Response headers:', [...response.headers.entries()]);
+      }
+      
+      // Provide more specific error messages
+      let errorMessage = 'Login failed';
+      if (response.status === 401) {
+        errorMessage = 'Invalid restaurant code or password';
+      } else if (response.status === 403) {
+        errorMessage = 'Access denied';
+      } else if (response.status === 404) {
+        errorMessage = 'Restaurant not found';
+      } else if (response.status >= 500) {
+        errorMessage = 'Server error. Please try again later.';
+      } else {
+        errorMessage = errorData.detail || errorData.message || `Login failed: ${response.status}`;
+      }
+      
+      throw new Error(errorMessage);
     }
+    
+    const data = await response.json();
+    if (config.DEBUG) {
+      console.log('🔥 LOGIN: Response data:', data);
+    }
+    
+    // Store the token in localStorage immediately so other API calls can use it
+    // Backend returns 'token', not 'access_token'
+    if (data && data.token) {
+      try {
+        localStorage.setItem('auth_token', data.token);
+        if (config.DEBUG) {
+          console.log('🔥 LOGIN: Token saved to localStorage');
+        }
+      } catch (storageError) {
+        console.error('🔥 LOGIN: Failed to save token:', storageError);
+        throw new Error('Failed to save authentication. Please check your browser settings.');
+      }
+    } else {
+      throw new Error('Invalid response from server - no token received');
+    }
+    
+    return data;
+  } catch (error: any) {
+    if (config.DEBUG) {
+      console.error('🔥 LOGIN: Exception occurred:', error);
+      console.error('🔥 LOGIN: Error stack:', error.stack);
+    }
+    
+    // Re-throw with iOS/Mac specific guidance
+    if (error.message.includes('Failed to fetch') || error.message.includes('Network request failed')) {
+      throw new Error('Network connection failed. Please check your internet connection and try again.');
+    }
+    
+    if (error.message.includes('timeout')) {
+      throw new Error('Connection timeout. Please check your internet connection and try again.');
+    }
+    
+    throw error;
   }
-  
-  return data;
 };
 
 export const checkAuth = async (): Promise<User> => {
