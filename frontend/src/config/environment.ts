@@ -53,7 +53,7 @@ export const config = {
   UPLOAD_MAX_SIZE: parseInt(import.meta.env.VITE_UPLOAD_MAX_SIZE || '10485760'), // 10MB
   ENVIRONMENT: import.meta.env.MODE || 'development',
   DEBUG: import.meta.env.VITE_DEBUG === 'true',
-  REQUEST_TIMEOUT: parseInt(import.meta.env.VITE_REQUEST_TIMEOUT || '10000'), // 10 seconds
+  REQUEST_TIMEOUT: parseInt(import.meta.env.VITE_REQUEST_TIMEOUT || '20000'), // Increased to 20 seconds for iOS
 };
 
 // Debug: Log the API URL being used (only in debug mode)

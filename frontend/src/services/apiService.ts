@@ -5,18 +5,6 @@ import { fetchWithTimeout, fetchWithRetry } from '../utils/fetchUtils';
 
 const API_BASE_URL = config.API_BASE_URL;
 
-// Authentication
-interface LoginCredentials {
-  restaurant_code: string;
-  password: string;
-}
-
-interface AuthResponse {
-  token: string;
-  restaurant_id: string;
-  restaurant: any;
-}
-
 // Helper function to handle HTTP errors
 const handleResponse = async (response: Response) => {
   if (!response.ok) {
@@ -45,11 +33,18 @@ const getHeaders = (includeAuth = true) => {
 
 // Authentication APIs
 export const login = async (restaurant_code: string, password: string): Promise<any> => {
+  // Detect iOS for enhanced debugging and handling
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+               (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  
   if (config.DEBUG) {
     console.log('🔥 LOGIN: Attempting login with code:', restaurant_code);
     console.log('🔥 LOGIN: API URL:', API_BASE_URL);
     console.log('🔥 LOGIN: User Agent:', navigator.userAgent);
     console.log('🔥 LOGIN: Platform:', navigator.platform);
+    console.log('🔥 LOGIN: iOS Device:', isIOS);
+    console.log('🔥 LOGIN: Safari Browser:', isSafari);
   }
 
   try {
@@ -62,6 +57,9 @@ export const login = async (restaurant_code: string, password: string): Promise<
       throw new Error('Your browser storage is disabled. Please disable Private Mode or enable storage.');
     }
 
+    // iOS-specific timeout (longer for slower connections)
+    const timeoutMs = isIOS ? 25000 : 15000;
+    
     const response = await fetchWithTimeout(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: {
@@ -70,9 +68,11 @@ export const login = async (restaurant_code: string, password: string): Promise<
         // Add iOS/Safari specific headers
         'Cache-Control': 'no-cache',
         'Pragma': 'no-cache',
+        // Force HTTPS redirect on iOS
+        'Upgrade-Insecure-Requests': '1',
       },
       body: JSON.stringify({ restaurant_code, password }),
-    }, 15000); // Increase timeout for slower connections
+    }, timeoutMs);
     
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));

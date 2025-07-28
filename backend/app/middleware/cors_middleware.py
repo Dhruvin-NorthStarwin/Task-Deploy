@@ -38,7 +38,16 @@ class CustomCORSMiddleware(BaseHTTPMiddleware):
         # Always set these headers
         response.headers["Access-Control-Allow-Credentials"] = "true"
         response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
-        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With, Cache-Control, Pragma, Accept"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With, Cache-Control, Pragma, Accept, Upgrade-Insecure-Requests"
+        
+        # Add iOS-specific headers
+        response.headers["Access-Control-Expose-Headers"] = "Content-Length, X-JSON"
+        response.headers["Vary"] = "Origin, Access-Control-Request-Method, Access-Control-Request-Headers"
+        
+        # Security headers for iOS Safari
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
         
         # Handle OPTIONS preflight requests
         if request.method == "OPTIONS":

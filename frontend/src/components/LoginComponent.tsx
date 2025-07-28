@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import config from '../config/environment';
 import BrowserCompatibilityChecker from './common/BrowserCompatibilityChecker';
+import IOSNetworkTest from './common/IOSNetworkTest';
 
 interface Notification {
   message: string;
@@ -124,6 +125,9 @@ const LoginComponent: React.FC<{
 
         {/* Browser Compatibility Check */}
         <BrowserCompatibilityChecker />
+
+        {/* iOS Network Test */}
+        <IOSNetworkTest />
 
         {/* Login Form */}
         <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
