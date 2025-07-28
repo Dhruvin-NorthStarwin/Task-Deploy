@@ -211,24 +211,55 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
     setOpenDropdown(openDropdown === taskId ? null : taskId);
   };
 
-  const tabButtonBase = "flex-shrink-0 px-4 py-3 text-sm font-medium transition-colors duration-200";
-  const tabButtonInactive = "border-b-2 border-transparent text-gray-500 hover:text-gray-700";
-  const tabButtonActive = "border-b-2 border-indigo-600 text-indigo-600 font-semibold bg-white rounded-t-lg shadow-sm";
-
-  const filterButtonBase = "flex-shrink-0 px-4 py-2 text-sm rounded-lg border transition-all duration-200 font-semibold";
-  const filterButtonInactive = "bg-white/[.64] text-gray-700 border-gray-300 hover:border-gray-400 hover:text-gray-800 shadow-sm";
-  const filterButtonActive = "bg-indigo-600/[.98] text-white border-transparent shadow-lg";
-
   return (
     <>
-      {/* Logout button is rendered here. Remove if already rendered elsewhere. */}
+      {/* Custom styles for responsive design */}
       <style>{`
         .sleek-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
         .sleek-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .sleek-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
         .sleek-scrollbar::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
         .sleek-scrollbar { scrollbar-width: thin; scrollbar-color: #d1d5db transparent; }
+        
+        /* Mobile-first table responsive design */
+        @media (max-width: 768px) {
+          .mobile-table {
+            border: 0;
+          }
+          .mobile-table thead {
+            display: none;
+          }
+          .mobile-table tr {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            display: block;
+            margin-bottom: 12px;
+            padding: 16px;
+            background: white;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+          }
+          .mobile-table td {
+            border: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f3f4f6;
+          }
+          .mobile-table td:last-child {
+            border-bottom: none;
+          }
+          .mobile-table td::before {
+            content: attr(data-label);
+            font-weight: 600;
+            color: #6b7280;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+          }
+        }
       `}</style>
+      
       <AddTaskModal 
         isOpen={isAddModalOpen} 
         onClose={() => setIsAddModalOpen(false)} 
@@ -241,167 +272,348 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
         onTaskApprove={handleTaskApprove}
         onTaskDecline={handleTaskDecline}
       />
-      <div className="bg-gray-50 min-h-screen font-sans">
-        <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Task Management</h1>
-            <div className="flex gap-4">
+      
+      {/* Mobile-first responsive layout */}
+      <div className="bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen font-sans">
+        <div className="px-4 py-6 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+          
+          {/* Header - Fully responsive */}
+          <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 mb-6">
+            <div className="text-center sm:text-left">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
+                Admin Dashboard
+              </h1>
+              <p className="mt-1 text-sm text-gray-600">
+                Manage and oversee all restaurant tasks
+              </p>
+            </div>
+            <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
               <button 
                 onClick={() => setIsAddModalOpen(true)} 
-                className="w-full md:w-auto bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all shadow-sm hover:shadow-md"
+                className="w-full sm:w-auto bg-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
               >
-                + Add Task
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                Add New Task
               </button>
               <button 
                 onClick={onLogout} 
-                className="w-full md:w-auto bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all shadow-sm hover:shadow-md"
+                className="w-full sm:w-auto bg-red-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
               >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
                 Logout
               </button>
             </div>
           </div>
-          <div className="bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-gray-200">
-            <div className="flex flex-col md:flex-row items-center gap-4 mb-4">
-              <div className="relative w-full md:flex-grow md:max-w-xs">
-                <input 
-                  type="text" 
-                  placeholder="Search tasks..." 
-                  value={searchTerm} 
-                  onChange={(e) => setSearchTerm(e.target.value)} 
-                  className="w-full pl-4 pr-10 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow" 
-                />
-              </div>
-              <div className="w-full md:w-auto grid grid-cols-1 sm:grid-cols-2 md:flex md:items-center gap-4">
-                {/* Dropdowns removed as requested */}
-              </div>
-            </div>
-            <div className="border-b border-gray-200">
-              <div className="flex -mb-px items-center gap-4 overflow-x-auto sleek-scrollbar">
-                <button 
-                  onClick={() => setActiveView('priority')} 
-                  className={`${tabButtonBase} ${activeView === 'priority' ? tabButtonActive : tabButtonInactive}`}
-                >
-                  Priority Task
-                </button>
-                {DAYS.map(day => (
-                  <button 
-                    key={day} 
-                    onClick={() => setActiveView(day)} 
-                    className={`${tabButtonBase} capitalize ${activeView === day ? tabButtonActive : tabButtonInactive}`}
-                  >
-                    {day}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="mt-6 flex items-center gap-3 overflow-x-auto pb-3 sleek-scrollbar">
-              <button 
-                onClick={() => setCategoryFilter('all')} 
-                className={`${filterButtonBase} ${categoryFilter === 'all' ? filterButtonActive : filterButtonInactive}`}
-              >
-                All Tasks
-              </button>
-              {CATEGORIES.map(cat => (
-                <button 
-                  key={cat} 
-                  onClick={() => setCategoryFilter(cat)} 
-                  className={`${filterButtonBase} ${categoryFilter === cat ? filterButtonActive : filterButtonInactive}`}
-                >
-                  <span>{cat}</span>
-                </button>
-              ))}
-            </div>
-            <div className="mt-6 overflow-x-auto">
-              <table className="w-full text-sm text-left text-gray-700">
-                <thead className="bg-gray-50 text-xs text-gray-500 uppercase tracking-wider">
-                  <tr>
-                    <th scope="col" className="px-6 py-4 font-semibold">Task</th>
-                    <th scope="col" className="px-6 py-4 font-semibold">Initials</th>
-                    <th scope="col" className="px-6 py-4 font-semibold">Status</th>
-                    <th scope="col" className="px-6 py-4 font-semibold text-center">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {filteredTasks.map(task => (
-                    <tr 
-                      key={task.id} 
-                      onClick={() => setSelectedTask(task)} 
-                      className={`cursor-pointer transition-colors ${
-                        task.status === 'Done' 
-                          ? 'bg-gray-50 opacity-60 hover:bg-gray-100' 
-                          : 'hover:bg-gray-50'
+
+          {/* Main Panel - Responsive card design */}
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+            
+            {/* Search and Filters - Mobile optimized */}
+            <div className="p-4 sm:p-6 border-b border-gray-100 bg-gray-50">
+              <div className="flex flex-col space-y-4">
+                
+                {/* Search Bar */}
+                <div className="relative">
+                  <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  <input 
+                    type="text" 
+                    placeholder="Search tasks..." 
+                    value={searchTerm} 
+                    onChange={(e) => setSearchTerm(e.target.value)} 
+                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all bg-white shadow-sm text-base" 
+                  />
+                </div>
+
+                {/* Day Tabs - Horizontal scroll on mobile */}
+                <div className="border-b border-gray-200">
+                  <div className="flex gap-2 overflow-x-auto pb-2 sleek-scrollbar">
+                    <button 
+                      onClick={() => setActiveView('priority')} 
+                      className={`flex-shrink-0 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                        activeView === 'priority' 
+                          ? 'bg-red-500 text-white shadow-md' 
+                          : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
                       }`}
                     >
-                      <td className={`px-6 py-5 font-medium ${
-                        task.status === 'Done' 
-                          ? 'text-gray-500 line-through' 
-                          : 'text-gray-900'
-                      }`}>
-                        {task.task}
-                      </td>
-                      <td className={`px-6 py-5 ${
-                        task.status === 'Done' 
-                          ? 'text-gray-400' 
-                          : 'text-gray-600'
-                      }`}>
-                        {task.initials || '-'}
-                      </td>
-                      <td className="px-6 py-5"><StatusBadge status={task.status} /></td>
-                      <td className="px-6 py-5 text-center">
-                        <div className="relative">
+                      🔥 Priority
+                    </button>
+                    {DAYS.map(day => (
+                      <button 
+                        key={day} 
+                        onClick={() => setActiveView(day)} 
+                        className={`flex-shrink-0 px-4 py-2 text-sm font-medium rounded-lg capitalize transition-all duration-200 ${
+                          activeView === day 
+                            ? 'bg-indigo-500 text-white shadow-md' 
+                            : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                        }`}
+                      >
+                        {day}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Category Filters - Responsive grid */}
+                <div className="flex flex-wrap gap-2">
+                  <button 
+                    onClick={() => setCategoryFilter('all')} 
+                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                      categoryFilter === 'all' 
+                        ? 'bg-gray-800 text-white shadow-md' 
+                        : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                    }`}
+                  >
+                    All Categories
+                  </button>
+                  {CATEGORIES.map(cat => (
+                    <button 
+                      key={cat} 
+                      onClick={() => setCategoryFilter(cat)} 
+                      className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                        categoryFilter === cat 
+                          ? 'bg-green-500 text-white shadow-md' 
+                          : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Tasks Display - Responsive table/cards */}
+            <div className="p-4 sm:p-6">
+              {/* Desktop Table */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-sm text-left text-gray-700">
+                  <thead className="bg-gray-50 text-xs text-gray-500 uppercase tracking-wider rounded-lg">
+                    <tr>
+                      <th scope="col" className="px-6 py-4 font-semibold rounded-l-lg">Task</th>
+                      <th scope="col" className="px-6 py-4 font-semibold">Assigned To</th>
+                      <th scope="col" className="px-6 py-4 font-semibold">Status</th>
+                      <th scope="col" className="px-6 py-4 font-semibold text-center rounded-r-lg">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {filteredTasks.map(task => (
+                      <tr 
+                        key={task.id} 
+                        onClick={() => setSelectedTask(task)} 
+                        className={`cursor-pointer transition-all duration-200 hover:bg-gray-50 ${
+                          task.status === 'Done' ? 'opacity-60' : ''
+                        }`}
+                      >
+                        <td className={`px-6 py-4 font-medium ${
+                          task.status === 'Done' 
+                            ? 'text-gray-500 line-through' 
+                            : 'text-gray-900'
+                        }`}>
+                          <div className="flex items-center gap-3">
+                            <div className={`w-2 h-2 rounded-full ${
+                              task.taskType === 'Priority' ? 'bg-red-400' : 'bg-blue-400'
+                            }`}></div>
+                            {task.task}
+                          </div>
+                        </td>
+                        <td className={`px-6 py-4 ${
+                          task.status === 'Done' ? 'text-gray-400' : 'text-gray-600'
+                        }`}>
+                          <div className="flex items-center gap-2">
+                            {task.initials ? (
+                              <div className="w-8 h-8 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-sm font-semibold">
+                                {task.initials}
+                              </div>
+                            ) : (
+                              <div className="w-8 h-8 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center text-sm">
+                                ?
+                              </div>
+                            )}
+                            <span>{task.initials || 'Unassigned'}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <StatusBadge status={task.status} />
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <div className="relative">
+                            <button 
+                              className={`p-2 rounded-full transition-all ${
+                                task.status === 'Done'
+                                  ? 'text-gray-300 cursor-not-allowed'
+                                  : 'hover:bg-gray-100 text-gray-500 hover:text-gray-800'
+                              }`}
+                              onClick={(e) => {
+                                if (task.status !== 'Done') {
+                                  toggleDropdown(task.id, e);
+                                }
+                              }}
+                              disabled={task.status === 'Done'}
+                            >
+                              <ActionsIcon className="w-5 h-5" />
+                            </button>
+                            
+                            {openDropdown === task.id && task.status !== 'Done' && (
+                              <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-xl z-10 min-w-[140px] overflow-hidden">
+                                <button
+                                  onClick={() => handleEditTask(task)}
+                                  className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                  </svg>
+                                  Edit Task
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setOpenDropdown(null);
+                                    handleDeleteTask(task.id);
+                                  }}
+                                  className="w-full px-4 py-3 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                  Delete
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Cards */}
+              <div className="md:hidden space-y-4">
+                {filteredTasks.map(task => (
+                  <div 
+                    key={task.id}
+                    onClick={() => setSelectedTask(task)}
+                    className={`bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer ${
+                      task.status === 'Done' ? 'opacity-60' : ''
+                    }`}
+                  >
+                    {/* Task Header */}
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className={`w-2 h-2 rounded-full ${
+                            task.taskType === 'Priority' ? 'bg-red-400' : 'bg-blue-400'
+                          }`}></div>
+                          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                            {task.category}
+                          </span>
+                        </div>
+                        <h3 className={`font-semibold text-gray-900 ${
+                          task.status === 'Done' ? 'line-through text-gray-500' : ''
+                        }`}>
+                          {task.task}
+                        </h3>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <StatusBadge status={task.status} />
+                        {task.status !== 'Done' && (
                           <button 
-                            className={`p-2 rounded-full ${
-                              task.status === 'Done'
-                                ? 'text-gray-300 cursor-not-allowed'
-                                : 'hover:bg-gray-200 text-gray-500 hover:text-gray-800'
-                            }`}
                             onClick={(e) => {
-                              if (task.status !== 'Done') {
-                                toggleDropdown(task.id, e);
-                              }
+                              e.stopPropagation();
+                              toggleDropdown(task.id, e);
                             }}
-                            disabled={task.status === 'Done'}
-                            title={task.status === 'Done' ? 'Task completed - no actions available' : 'View task actions'}
+                            className="p-1 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
                           >
                             <ActionsIcon className="w-5 h-5" />
                           </button>
-                          
-                          {/* Dropdown Menu */}
-                          {openDropdown === task.id && task.status !== 'Done' && (
-                            <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[120px]">
-                              <button
-                                onClick={() => handleEditTask(task)}
-                                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 rounded-t-lg flex items-center gap-2"
-                              >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                                Edit
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setOpenDropdown(null);
-                                  handleDeleteTask(task.id);
-                                }}
-                                className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 rounded-b-lg flex items-center gap-2"
-                              >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                                Delete
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Task Details */}
+                    <div className="flex items-center justify-between text-sm text-gray-600">
+                      <div className="flex items-center gap-2">
+                        {task.initials ? (
+                          <div className="w-6 h-6 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-xs font-semibold">
+                            {task.initials}
+                          </div>
+                        ) : (
+                          <div className="w-6 h-6 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center text-xs">
+                            ?
+                          </div>
+                        )}
+                        <span>{task.initials || 'Unassigned'}</span>
+                      </div>
+                      <span className="text-xs text-gray-400 capitalize">
+                        {task.day === activeView ? 'Today' : task.day}
+                      </span>
+                    </div>
+
+                    {/* Mobile Action Dropdown */}
+                    {openDropdown === task.id && task.status !== 'Done' && (
+                      <div className="mt-3 pt-3 border-t border-gray-100 flex gap-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditTask(task);
+                          }}
+                          className="flex-1 bg-blue-50 text-blue-600 py-2 px-3 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors flex items-center justify-center gap-2"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                          Edit
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenDropdown(null);
+                            handleDeleteTask(task.id);
+                          }}
+                          className="flex-1 bg-red-50 text-red-600 py-2 px-3 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors flex items-center justify-center gap-2"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                          Delete
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Empty State */}
               {filteredTasks.length === 0 && (
-                <div className="text-center p-16 text-gray-500">
-                  <h3 className="text-lg font-semibold">No Tasks Found</h3>
-                  <p className="mt-1">Try adjusting your search or filter criteria.</p>
+                <div className="text-center py-16">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-600 mb-2">No Tasks Found</h3>
+                  <p className="text-gray-500 max-w-md mx-auto">
+                    {searchTerm || categoryFilter !== 'all' 
+                      ? 'Try adjusting your search or filter criteria to see more tasks.'
+                      : 'Get started by creating your first task for the team.'
+                    }
+                  </p>
+                  {!searchTerm && categoryFilter === 'all' && (
+                    <button 
+                      onClick={() => setIsAddModalOpen(true)}
+                      className="mt-4 bg-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-indigo-700 transition-all inline-flex items-center gap-2"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      </svg>
+                      Create First Task
+                    </button>
+                  )}
                 </div>
               )}
             </div>
