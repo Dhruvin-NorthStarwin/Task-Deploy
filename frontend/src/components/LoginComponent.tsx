@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import config from '../config/environment';
-import BrowserCompatibilityChecker from './common/BrowserCompatibilityChecker';
-import IOSNetworkTest from './common/IOSNetworkTest';
-import IOSEmergencyFix from './common/IOSEmergencyFix';
 
 interface Notification {
   message: string;
@@ -123,15 +120,6 @@ const LoginComponent: React.FC<{
           <h1 className="text-3xl font-bold text-gray-800 mb-2">RestroManage</h1>
           <p className="text-gray-600">Sign in to your restaurant dashboard</p>
         </div>
-
-        {/* Browser Compatibility Check */}
-        <BrowserCompatibilityChecker />
-
-        {/* iOS Emergency Fix */}
-        <IOSEmergencyFix />
-
-        {/* iOS Network Test */}
-        <IOSNetworkTest />
 
         {/* Login Form */}
         <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">

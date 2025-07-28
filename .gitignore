@@ -1,0 +1,50 @@
+# Google Cloud Service Account Keys
+*.json
+service-account-key.json
+mera-project-tereko-kya-a3a153db8f9a.json
+
+# Google OAuth Client Secrets
+client_secret_*.json
+client_secret_690205392308-03pp7kance0fk55q5bqihmj8nbfe6rjs.apps.googleusercontent.com.json
+
+# Environment files with secrets
+.env.production
+.env.local
+.env.railway
+
+# Sensitive configuration files
+**/service-account-key.json
+**/client_secret_*.json
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+logs/
+
+# Runtime files
+*.pid
+*.seed
+*.pid.lock
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build outputs
+dist/
+build/

@@ -36,7 +36,10 @@ async def upload_image(
     db_media = crud.create_media_file(db, media_data)
     
     # Update task with image URL
-    file_url = file_service.get_file_url(file_data["file_path"], "http://localhost:8000")
+    if file_data.get("storage_type") == "gcs":
+        file_url = file_data.get("file_url")
+    else:
+        file_url = file_service.get_file_url(file_data["file_path"], "http://localhost:8000", "local")
     crud.update_task(db, int(task_id), current_restaurant.id, 
                     schemas.TaskUpdate(image_url=file_url))
     
@@ -73,7 +76,10 @@ async def upload_video(
     db_media = crud.create_media_file(db, media_data)
     
     # Update task with video URL
-    file_url = file_service.get_file_url(file_data["file_path"], "http://localhost:8000")
+    if file_data.get("storage_type") == "gcs":
+        file_url = file_data.get("file_url")
+    else:
+        file_url = file_service.get_file_url(file_data["file_path"], "http://localhost:8000", "local")
     crud.update_task(db, int(task_id), current_restaurant.id, 
                     schemas.TaskUpdate(video_url=file_url))
     

@@ -41,6 +41,13 @@ class Settings(BaseSettings):
     ALLOWED_IMAGE_TYPES: List[str] = ["image/jpeg", "image/png", "image/gif", "image/webp"]
     ALLOWED_VIDEO_TYPES: List[str] = ["video/mp4", "video/webm", "video/avi", "video/mov"]
     
+    # Google Cloud Storage
+    GCS_BUCKET_NAME: str = Field(default="", env="GCS_BUCKET_NAME")
+    GOOGLE_APPLICATION_CREDENTIALS: str = Field(default="", env="GOOGLE_APPLICATION_CREDENTIALS")
+    GOOGLE_APPLICATION_CREDENTIALS_BASE64: str = Field(default="", env="GOOGLE_APPLICATION_CREDENTIALS_BASE64")
+    USE_CLOUD_STORAGE: bool = Field(default=False, env="USE_CLOUD_STORAGE")
+    GCS_BASE_URL: str = Field(default="https://storage.googleapis.com", env="GCS_BASE_URL")
+    
     @field_validator('MAX_FILE_SIZE', mode='before')
     @classmethod
     def parse_max_file_size(cls, v):
