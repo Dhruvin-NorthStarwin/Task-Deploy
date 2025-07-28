@@ -3,6 +3,10 @@ const getApiUrl = () => {
   const envUrl = import.meta.env.VITE_API_BASE_URL;
   const isDev = import.meta.env.MODE === 'development';
   
+  // Detect iOS for forced HTTPS
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+               (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  
   // Force HTTPS for specific known Railway deployments
   if (envUrl && envUrl.includes('radiant-amazement-production-d68f.up.railway.app')) {
     let httpsUrl = envUrl.replace('http://', 'https://');
@@ -15,6 +19,13 @@ const getApiUrl = () => {
     if (config.DEBUG) {
       console.log('🔒 Ensuring HTTPS and /api path for Railway backend:', httpsUrl);
     }
+    return httpsUrl;
+  }
+  
+  // Force HTTPS for iOS devices in production
+  if (!isDev && isIOS && envUrl && envUrl.startsWith('http://')) {
+    const httpsUrl = envUrl.replace('http://', 'https://');
+    console.log('🍎 iOS: Forced HTTPS for iOS device:', httpsUrl);
     return httpsUrl;
   }
   

@@ -33,10 +33,11 @@ const getHeaders = (includeAuth = true) => {
 
 // Authentication APIs
 export const login = async (restaurant_code: string, password: string): Promise<any> => {
-  // Detect iOS for enhanced debugging and handling
+  // Enhanced iOS detection
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  const isIOSSafari = isIOS && isSafari;
   
   if (config.DEBUG) {
     console.log('🔥 LOGIN: Attempting login with code:', restaurant_code);
@@ -45,33 +46,61 @@ export const login = async (restaurant_code: string, password: string): Promise<
     console.log('🔥 LOGIN: Platform:', navigator.platform);
     console.log('🔥 LOGIN: iOS Device:', isIOS);
     console.log('🔥 LOGIN: Safari Browser:', isSafari);
+    console.log('🔥 LOGIN: iOS Safari:', isIOSSafari);
   }
 
   try {
-    // Check localStorage availability first (Safari Private Mode issues)
+    // Enhanced localStorage check for iOS
     try {
-      localStorage.setItem('test', 'test');
-      localStorage.removeItem('test');
+      const testKey = 'ios_storage_test_' + Date.now();
+      localStorage.setItem(testKey, 'test');
+      const retrieved = localStorage.getItem(testKey);
+      localStorage.removeItem(testKey);
+      
+      if (retrieved !== 'test') {
+        throw new Error('Storage verification failed');
+      }
     } catch (storageError) {
       console.error('🔥 LOGIN: localStorage not available:', storageError);
-      throw new Error('Your browser storage is disabled. Please disable Private Mode or enable storage.');
+      if (isSafari) {
+        throw new Error('Safari Private Mode detected. Please disable Private Mode and try again.');
+      } else {
+        throw new Error('Browser storage is disabled. Please check your browser settings.');
+      }
     }
 
-    // iOS-specific timeout (longer for slower connections)
-    const timeoutMs = isIOS ? 25000 : 15000;
+    // iOS-specific timeout and retry logic
+    const timeoutMs = isIOSSafari ? 30000 : (isIOS ? 25000 : 15000);
     
-    const response = await fetchWithTimeout(`${API_BASE_URL}/auth/login`, {
+    // Enhanced headers for iOS
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+    };
+    
+    // Add iOS-specific headers
+    if (isIOS) {
+      headers['X-Requested-With'] = 'XMLHttpRequest';
+      headers['Upgrade-Insecure-Requests'] = '1';
+    }
+    
+    // Force HTTPS for iOS if not already
+    let apiUrl = API_BASE_URL;
+    if (isIOS && apiUrl.startsWith('http://')) {
+      apiUrl = apiUrl.replace('http://', 'https://');
+      console.log('🔒 iOS: Forced HTTPS URL:', apiUrl);
+    }
+    
+    const response = await fetchWithTimeout(`${apiUrl}/auth/login`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        // Add iOS/Safari specific headers
-        'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache',
-        // Force HTTPS redirect on iOS
-        'Upgrade-Insecure-Requests': '1',
-      },
+      headers,
       body: JSON.stringify({ restaurant_code, password }),
+      // iOS-specific fetch options
+      mode: 'cors',
+      credentials: 'omit', // Don't send cookies for iOS compatibility
     }, timeoutMs);
     
     if (!response.ok) {

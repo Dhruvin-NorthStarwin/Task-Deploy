@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import config from '../config/environment';
 import BrowserCompatibilityChecker from './common/BrowserCompatibilityChecker';
 import IOSNetworkTest from './common/IOSNetworkTest';
+import IOSEmergencyFix from './common/IOSEmergencyFix';
 
 interface Notification {
   message: string;
@@ -125,6 +126,9 @@ const LoginComponent: React.FC<{
 
         {/* Browser Compatibility Check */}
         <BrowserCompatibilityChecker />
+
+        {/* iOS Emergency Fix */}
+        <IOSEmergencyFix />
 
         {/* iOS Network Test */}
         <IOSNetworkTest />
