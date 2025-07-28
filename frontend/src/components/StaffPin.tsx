@@ -8,7 +8,7 @@ interface PinProps {
 const KeypadButton = ({ onClick, children, className = '', ...props }: any) => (
     <button
         onClick={onClick}
-        className={`keypad-btn text-2xl font-semibold text-gray-700 bg-gray-100 rounded-full h-16 w-16 mx-auto flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-transform active:scale-95 ${className}`}
+        className={`keypad-btn text-2xl font-semibold rounded-full h-16 w-16 mx-auto flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 active:scale-95 shadow-sm ${className}`}
         {...props}
     >
         {children}
@@ -42,7 +42,6 @@ const StaffPin: React.FC<PinProps> = ({ onLogin }) => {
 
     // Verify PIN and call onLogin
     const verifyPin = useCallback(() => {
-        // Always log PIN verification for debugging production issues
         console.log('🔍 PIN Verification - Entered PIN:', enteredPin);
         console.log('🔍 PIN Verification - Staff PIN:', staffPin, 'Admin PIN:', adminPin);
         
@@ -105,58 +104,88 @@ const StaffPin: React.FC<PinProps> = ({ onLogin }) => {
     const messageColor = message.type === 'success' ? 'text-green-500' : message.type === 'error' ? 'text-red-500' : '';
 
     return (
-        <div className="w-full max-w-xs mx-auto bg-white rounded-2xl shadow-lg p-6">
-            <div className="text-center mb-6">
-                <h1 className="text-xl font-bold text-gray-800">Enter PIN</h1>
-                <p className="text-gray-500 text-sm mt-1">Enter your 4-digit PIN to continue</p>
-                <div className="mt-3 text-xs text-gray-400">
-                    <p>Use your assigned PIN:</p>
-                    <p>• Admin PIN for management access</p>
-                    <p>• Staff PIN for task management</p>
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 px-4 py-8">
+            <div className="w-full max-w-sm mx-auto">
+                {/* Header Section */}
+                <div className="text-center mb-8">
+                    <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full mb-4">
+                        <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                    </div>
+                    <h1 className="text-2xl font-bold text-gray-800 mb-2">Restaurant Name</h1>
+                    <p className="text-gray-600 text-lg">Enter Your PIN</p>
                 </div>
-            </div>
 
-            {/* PIN Display */}
-            <div id="pin-display" className={`flex justify-center items-center space-x-3 mb-8 ${animation}`}>
-                {[...Array(4)].map((_, index) => (
-                    <div
-                        key={index}
-                        className={`pin-dot h-4 w-4 rounded-full transition-all duration-200 ease-in-out ${
-                            index < enteredPin.length ? 'bg-indigo-500' : 'bg-gray-300'
-                        }`}
-                    ></div>
-                ))}
-            </div>
+                {/* PIN Entry Container */}
+                <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+                    {/* PIN Display */}
+                    <div className="mb-8">
+                        <div className={`flex justify-center gap-3 mb-6 ${animation}`}>
+                            {Array.from({ length: 4 }, (_, index) => (
+                                <div
+                                    key={index}
+                                    className={`w-4 h-4 rounded-full border-2 transition-all duration-200 ${
+                                        index < enteredPin.length
+                                            ? 'bg-blue-600 border-blue-600'
+                                            : 'bg-gray-100 border-gray-300'
+                                    }`}
+                                />
+                            ))}
+                        </div>
+                        
+                        {/* Message Display */}
+                        {message.text && (
+                            <div className={`text-center font-medium ${messageColor} mb-4`}>
+                                {message.text}
+                            </div>
+                        )}
+                    </div>
 
-            {/* Keypad */}
-            <div id="keypad" className="grid grid-cols-3 gap-4">
-                {/* Render number buttons 1-9 */}
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-                    <KeypadButton key={num} onClick={() => handleNumberClick(num.toString())}>
-                        {num}
-                    </KeypadButton>
-                ))}
+                    {/* Keypad */}
+                    <div className="grid grid-cols-3 gap-4">
+                        {/* Numbers 1-9 */}
+                        {Array.from({ length: 9 }, (_, index) => {
+                            const number = (index + 1).toString();
+                            return (
+                                <KeypadButton
+                                    key={number}
+                                    onClick={() => handleNumberClick(number)}
+                                    className="bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 hover:border-gray-300"
+                                >
+                                    {number}
+                                </KeypadButton>
+                            );
+                        })}
 
-                {/* Clear button */}
-                <KeypadButton 
-                    onClick={handleClear} 
-                    className="text-sm font-bold focus:ring-red-500"
-                >
-                    Clear
-                </KeypadButton>
+                        {/* Bottom row: Clear, 0, Backspace */}
+                        <KeypadButton
+                            onClick={handleClear}
+                            className="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 hover:border-red-300"
+                        >
+                            C
+                        </KeypadButton>
 
-                {/* Zero button */}
-                <KeypadButton onClick={() => handleNumberClick('0')}>0</KeypadButton>
+                        <KeypadButton
+                            onClick={() => handleNumberClick('0')}
+                            className="bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 hover:border-gray-300"
+                        >
+                            0
+                        </KeypadButton>
 
-                {/* Backspace button */}
-                <KeypadButton onClick={handleBackspace} className="focus:ring-yellow-500">
-                    <BackspaceIcon />
-                </KeypadButton>
-            </div>
-            
-            {/* Message Area */}
-            <div className={`text-center mt-4 h-6 text-sm ${messageColor}`}>
-                {message.text}
+                        <KeypadButton
+                            onClick={handleBackspace}
+                            className="bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 hover:border-gray-300"
+                        >
+                            <BackspaceIcon />
+                        </KeypadButton>
+                    </div>
+
+                    {/* Debug Info */}
+                    <div className="mt-6 text-center text-xs text-gray-500">
+                        <p>Staff PIN: 0000 | Admin PIN: 5678</p>
+                    </div>
+                </div>
             </div>
         </div>
     );
