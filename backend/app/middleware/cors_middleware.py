@@ -23,31 +23,39 @@ class CustomCORSMiddleware(BaseHTTPMiddleware):
             self.use_wildcard = True
     
     async def dispatch(self, request: Request, call_next):
+        # Handle preflight OPTIONS requests immediately
+        if request.method == "OPTIONS":
+            response = Response()
+            response.headers["Access-Control-Allow-Origin"] = request.headers.get("origin", "*")
+            response.headers["Access-Control-Allow-Credentials"] = "true"
+            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
+            response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With, Cache-Control, Pragma, Accept, Upgrade-Insecure-Requests"
+            response.headers["Access-Control-Max-Age"] = "86400"  # 24 hours
+            return response
+        
         # Get the origin from the request
         origin = request.headers.get("origin", "")
         
-        # Prepare the response
+        # Call the next middleware/route
         response = await call_next(request)
         
-        # Always allow all origins by reflecting the request origin
+        # Set CORS headers without modifying Content-Length
         if origin:
             response.headers["Access-Control-Allow-Origin"] = origin
         else:
             response.headers["Access-Control-Allow-Origin"] = "*"
             
-        # Always set these headers
+        # Set other CORS headers
         response.headers["Access-Control-Allow-Credentials"] = "true"
         response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
         response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With, Cache-Control, Pragma, Accept, Upgrade-Insecure-Requests"
         
-        # Add iOS-specific headers
+        # Add iOS-specific headers without modifying content
         response.headers["Access-Control-Expose-Headers"] = "Content-Length, X-JSON"
-        response.headers["Vary"] = "Origin, Access-Control-Request-Method, Access-Control-Request-Headers"
+        response.headers["Vary"] = "Origin"
         
         # Security headers for iOS Safari
         response.headers["X-Content-Type-Options"] = "nosniff"
-        response.headers["X-Frame-Options"] = "DENY"
-        response.headers["X-XSS-Protection"] = "1; mode=block"
         
         # Handle OPTIONS preflight requests
         if request.method == "OPTIONS":

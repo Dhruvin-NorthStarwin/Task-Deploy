@@ -1,8 +1,8 @@
 // API Service for communicating with the backend
 import type { Task, User } from '../types';
 import config from '../config/environment';
-import { fetchWithTimeout, fetchWithRetry } from '../utils/fetchUtils';
-import { iosStorage } from '../utils/iosStorage';
+import { fetchWithRetryAndAuth, storeAuthTokenReliably } from '../utils/productionFetch';
+import { getAuthToken, getUserData } from '../utils/iosStorage';
 
 const API_BASE_URL = config.API_BASE_URL;
 
@@ -21,12 +21,12 @@ const getHeaders = (includeAuth = true) => {
   headers.append('Content-Type', 'application/json');
   
   if (includeAuth) {
-    // Try localStorage first for backwards compatibility, then fallback to memory
-    const token = localStorage.getItem('auth_token');
+    // Use enhanced storage utility for iOS compatibility
+    const token = getAuthToken();
     if (token) {
       headers.append('Authorization', `Bearer ${token}`);
     } else {
-      console.warn('⚠️ No auth token found in localStorage. Request will be unauthenticated.');
+      console.warn('⚠️ No auth token found. Request will be unauthenticated.');
     }
   }
   
@@ -71,8 +71,7 @@ export const login = async (restaurant_code: string, password: string): Promise<
       }
     }
 
-    // iOS-specific timeout and retry logic
-    const timeoutMs = isIOSSafari ? 30000 : (isIOS ? 25000 : 15000);
+    // iOS-specific timeout and retry logic handled by fetchWithRetryAndAuth
     
     // Enhanced headers for iOS
     const headers: Record<string, string> = {
@@ -96,7 +95,7 @@ export const login = async (restaurant_code: string, password: string): Promise<
       console.log('🔒 iOS: Forced HTTPS URL:', apiUrl);
     }
     
-    const response = await fetchWithTimeout(`${apiUrl}/auth/login`, {
+    const response = await fetchWithRetryAndAuth(`${apiUrl}/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -109,7 +108,7 @@ export const login = async (restaurant_code: string, password: string): Promise<
       // iOS-specific fetch options
       mode: 'cors',
       credentials: 'omit', // Don't send cookies for iOS compatibility
-    }, timeoutMs);
+    });
     
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -140,15 +139,14 @@ export const login = async (restaurant_code: string, password: string): Promise<
       console.log('🔥 LOGIN: Response data:', data);
     }
     
-    // Store the token using iOS-compatible storage immediately so other API calls can use it
+    // Store the token using enhanced storage for production reliability
     // Backend returns 'token', not 'access_token'
     if (data && data.token) {
       try {
-        // Store in both localStorage (for immediate use) and iOS-compatible storage (for reliability)
-        localStorage.setItem('auth_token', data.token);
-        iosStorage.setAuthToken(data.token); // Don't await to avoid blocking
+        // Use enhanced storage that works reliably in production
+        await storeAuthTokenReliably(data.token);
         if (config.DEBUG) {
-          console.log('🔥 LOGIN: Token saved to localStorage and iOS-compatible storage');
+          console.log('🔥 LOGIN: Token saved using enhanced production storage');
         }
       } catch (storageError) {
         console.error('🔥 LOGIN: Failed to save token:', storageError);
@@ -179,16 +177,16 @@ export const login = async (restaurant_code: string, password: string): Promise<
 };
 
 export const checkAuth = async (): Promise<User> => {
-  // Check if we have a token and user data in localStorage
-  const token = localStorage.getItem('auth_token');
+  // Check if we have a token using enhanced storage
+  const token = getAuthToken();
   if (!token) {
     throw new Error('No authentication token found');
   }
   
-  // Get user info from localStorage
-  const userData = localStorage.getItem('user_data');
+  // Get user info using enhanced storage
+  const userData = getUserData();
   if (userData) {
-    return JSON.parse(userData);
+    return userData;
   }
   
   throw new Error('No user information found');
@@ -213,7 +211,7 @@ export const register = async (registrationData: {
     });
   }
   
-  const response = await fetchWithTimeout(`${API_BASE_URL}/auth/register`, {
+  const response = await fetchWithRetryAndAuth(`${API_BASE_URL}/auth/register`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -265,7 +263,7 @@ export const getTasks = async (filters?: Record<string, any>): Promise<Task[]> =
     if (config.DEBUG) {
       console.log('🔥 DEBUGGING: About to fetch...');
     }
-    const response = await fetchWithRetry(url, {
+    const response = await fetchWithRetryAndAuth(url, {
       headers: getHeaders(true), // Always include auth for this endpoint
     });
     
