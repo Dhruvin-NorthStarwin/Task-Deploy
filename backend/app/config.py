@@ -4,8 +4,11 @@ from pydantic_settings import BaseSettings
 from pydantic import field_validator, Field
 
 class Settings(BaseSettings):
-    # Database - Railway automatically provides DATABASE_URL
-    DATABASE_URL: str = Field(default="sqlite:///./restro_manage.db", env="DATABASE_URL")
+    # Database - Railway PostgreSQL database
+    DATABASE_URL: str = Field(
+        default="postgresql://postgres:hXtqctJOiUofFjeCdncyRVqjrdSNuGNB@postgres.railway.internal:5432/railway", 
+        env="DATABASE_URL"
+    )
     
     # Security - Railway will provide these via environment variables
     SECRET_KEY: str = Field(default="your-secret-key-change-in-production", env="SECRET_KEY")

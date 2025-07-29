@@ -29,15 +29,11 @@ const getApiUrl = () => {
     return httpsUrl;
   }
   
-  // In development, use localhost (can be switched to HTTPS if needed)
-  if (isDev && !envUrl) {
-    return 'http://localhost:8000/api';
-  }
-
-  // In production, always use HTTPS for Railway fallback
-  if (!isDev && !envUrl) {
+  // Always use Railway production URLs - no localhost
+  // For development AND production, use Railway backend
+  if (!envUrl) {
     if (config.DEBUG) {
-      console.log('🚀 Using production Railway HTTPS URL');
+      console.log('🚀 Using Railway production backend URL (no localhost)');
     }
     return 'https://radiant-amazement-production-d68f.up.railway.app/api';
   }
