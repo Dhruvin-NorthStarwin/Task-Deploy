@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import * as apiService from '../services/apiService'; // Import the apiService
+import { iosStorage, getStorageStatus } from '../utils/iosStorage';
 
 interface User {
   id: string;
@@ -46,10 +47,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const checkExistingAuth = async () => {
       try {
         console.log('🔍 AuthContext: Checking existing auth...');
-        const token = localStorage.getItem('auth_token');
-        const userData = localStorage.getItem('user_data');
-        const savedRole = localStorage.getItem('user_role') as 'staff' | 'admin' | null;
-        const pinVerified = localStorage.getItem('pin_verified') === 'true';
+        console.log('📦 Storage status:', getStorageStatus());
+        
+        const token = await iosStorage.getAuthToken();
+        const userData = await iosStorage.getUserData();
+        const savedRole = await iosStorage.getItem('user_role') as 'staff' | 'admin' | null;
+        const pinVerified = await iosStorage.getItem('pin_verified') === 'true';
         
         console.log('🔍 AuthContext: Found in storage:', {
           hasToken: !!token,
@@ -61,12 +64,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (token && userData) {
           // The token itself is the source of truth, no need for time-based check here
           // The backend will validate it on each request.
-          const parsedUserData = JSON.parse(userData);
-          setUser(parsedUserData);
+          setUser(userData);
           setUserRoleState(savedRole);
           setIsPinVerified(pinVerified);
           
           console.log('✅ AuthContext: Auth state restored successfully');
+          console.log('📦 iOS-compatible storage working!');
         } else {
           console.log('❌ AuthContext: No valid auth data found');
         }
@@ -94,17 +97,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         cookieEnabled: navigator.cookieEnabled,
         language: navigator.language
       });
-      
-      // Test localStorage availability before proceeding
-      try {
-        const testKey = 'storage_test_' + Date.now();
-        localStorage.setItem(testKey, 'test');
-        localStorage.removeItem(testKey);
-        console.log('✅ AuthContext: localStorage is available');
-      } catch (storageError) {
-        console.error('❌ AuthContext: localStorage not available:', storageError);
-        throw new Error('Browser storage is not available. Please disable Private Mode or check browser settings.');
-      }
+      console.log('📦 Storage status before login:', getStorageStatus());
       
       const response = await apiService.login(restaurantCode, password);
       
@@ -113,14 +106,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         console.log('✅ AuthContext: Login successful, storing data...');
         
         try {
-          // Store auth data with error handling
-          localStorage.setItem('auth_token', token);
-          localStorage.setItem('user_data', JSON.stringify(restaurant));
-          console.log('✅ AuthContext: Data stored successfully');
+          // Store auth data with iOS-compatible storage
+          const tokenStored = await iosStorage.setAuthToken(token);
+          const userDataStored = await iosStorage.setUserData(restaurant);
+          
+          if (!tokenStored || !userDataStored) {
+            throw new Error('Failed to store authentication data - all storage methods failed');
+          }
+          
+          console.log('✅ AuthContext: Data stored successfully with iOS-compatible storage');
+          console.log('📦 Storage status after login:', getStorageStatus());
           
           // Verify data was stored
-          const storedToken = localStorage.getItem('auth_token');
-          const storedData = localStorage.getItem('user_data');
+          const storedToken = await iosStorage.getAuthToken();
+          const storedData = await iosStorage.getUserData();
           if (!storedToken || !storedData) {
             throw new Error('Failed to verify stored authentication data');
           }
@@ -163,30 +162,36 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
     // Clear all auth-related data from state and storage
     setUser(null);
     setUserRoleState(null);
     setIsPinVerified(false);
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('user_data');
-    localStorage.removeItem('user_role');
-    localStorage.removeItem('pin_verified');
-    localStorage.removeItem('login_timestamp'); // Also clear this legacy item
+    
+    // Clear from iOS-compatible storage
+    await iosStorage.clearAuth();
+    await iosStorage.removeItem('user_role');
+    await iosStorage.removeItem('pin_verified');
+    await iosStorage.removeItem('login_timestamp'); // Also clear this legacy item
+    
+    console.log('🧹 Cleared all auth data from iOS-compatible storage');
+    
     // Optionally, redirect to login page
     window.location.href = '/login';
   };
 
-  const setUserRole = (role: 'staff' | 'admin') => {
+  const setUserRole = async (role: 'staff' | 'admin') => {
     console.log('🔑 AuthContext: Setting user role to:', role);
     console.log('🔑 AuthContext: Current state - isAuthenticated:', !!user);
     
     setUserRoleState(role);
     setIsPinVerified(true);
-    localStorage.setItem('user_role', role);
-    localStorage.setItem('pin_verified', 'true');
     
-    console.log('✅ AuthContext: Role and PIN verification set successfully');
+    // Store with iOS-compatible storage
+    await iosStorage.setItem('user_role', role);
+    await iosStorage.setItem('pin_verified', 'true');
+    
+    console.log('✅ AuthContext: Role and PIN verification set successfully with iOS storage');
     console.log('🔑 AuthContext: New state - userRole:', role, 'isPinVerified: true');
   };
 

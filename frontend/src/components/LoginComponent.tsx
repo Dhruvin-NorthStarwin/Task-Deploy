@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import config from '../config/environment';
+import IOSStorageDebug from './common/IOSStorageDebug';
 
 interface Notification {
   message: string;
@@ -120,6 +121,9 @@ const LoginComponent: React.FC<{
           <h1 className="text-3xl font-bold text-gray-800 mb-2">RestroManage</h1>
           <p className="text-gray-600">Sign in to your restaurant dashboard</p>
         </div>
+
+        {/* iOS Storage Debug Info */}
+        <IOSStorageDebug />
 
         {/* Login Form */}
         <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">

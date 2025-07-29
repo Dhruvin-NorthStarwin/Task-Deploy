@@ -2,6 +2,7 @@
 import type { Task, User } from '../types';
 import config from '../config/environment';
 import { fetchWithTimeout, fetchWithRetry } from '../utils/fetchUtils';
+import { iosStorage } from '../utils/iosStorage';
 
 const API_BASE_URL = config.API_BASE_URL;
 
@@ -20,6 +21,7 @@ const getHeaders = (includeAuth = true) => {
   headers.append('Content-Type', 'application/json');
   
   if (includeAuth) {
+    // Try localStorage first for backwards compatibility, then fallback to memory
     const token = localStorage.getItem('auth_token');
     if (token) {
       headers.append('Authorization', `Bearer ${token}`);
@@ -138,13 +140,15 @@ export const login = async (restaurant_code: string, password: string): Promise<
       console.log('🔥 LOGIN: Response data:', data);
     }
     
-    // Store the token in localStorage immediately so other API calls can use it
+    // Store the token using iOS-compatible storage immediately so other API calls can use it
     // Backend returns 'token', not 'access_token'
     if (data && data.token) {
       try {
+        // Store in both localStorage (for immediate use) and iOS-compatible storage (for reliability)
         localStorage.setItem('auth_token', data.token);
+        iosStorage.setAuthToken(data.token); // Don't await to avoid blocking
         if (config.DEBUG) {
-          console.log('🔥 LOGIN: Token saved to localStorage');
+          console.log('🔥 LOGIN: Token saved to localStorage and iOS-compatible storage');
         }
       } catch (storageError) {
         console.error('🔥 LOGIN: Failed to save token:', storageError);
