@@ -41,8 +41,8 @@ export const fetchWithRetryAndAuth = async (
       // Prepare headers
       const headers = new Headers(options.headers);
       
-      // Add auth token if required
-      if (includeAuth) {
+      // Add auth token if required and not already present
+      if (includeAuth && !headers.has('Authorization')) {
         // Try multiple storage methods to get the token
         let token = null;
         

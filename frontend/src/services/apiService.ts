@@ -16,13 +16,13 @@ const handleResponse = async (response: Response) => {
 };
 
 // Helper to get headers with auth token
-const getHeaders = (includeAuth = true) => {
+const getHeaders = async (includeAuth = true) => {
   const headers = new Headers();
   headers.append('Content-Type', 'application/json');
   
   if (includeAuth) {
     // Use enhanced storage utility for iOS compatibility
-    const token = getAuthToken();
+    const token = await getAuthToken();
     if (token) {
       headers.append('Authorization', `Bearer ${token}`);
     } else {
@@ -178,13 +178,13 @@ export const login = async (restaurant_code: string, password: string): Promise<
 
 export const checkAuth = async (): Promise<User> => {
   // Check if we have a token using enhanced storage
-  const token = getAuthToken();
+  const token = await getAuthToken();
   if (!token) {
     throw new Error('No authentication token found');
   }
   
   // Get user info using enhanced storage
-  const userData = getUserData();
+  const userData = await getUserData();
   if (userData) {
     return userData;
   }
@@ -264,7 +264,7 @@ export const getTasks = async (filters?: Record<string, any>): Promise<Task[]> =
       console.log('🔥 DEBUGGING: About to fetch...');
     }
     const response = await fetchWithRetryAndAuth(url, {
-      headers: getHeaders(true), // Always include auth for this endpoint
+      headers: await getHeaders(true), // Always include auth for this endpoint
     });
     
     if (config.DEBUG) {
@@ -337,12 +337,12 @@ export const createTask = async (task: Omit<Task, 'id' | 'status'>): Promise<Tas
     console.log('Creating task with auth:', backendTask);
   }
   
-  const response = await fetch(`${API_BASE_URL}/tasks/`, {
+  const response = await fetchWithRetryAndAuth(`${API_BASE_URL}/tasks/`, {
     method: 'POST',
-    headers: getHeaders(true), // Ensure auth token is included
+    headers: await getHeaders(true), // Ensure auth token is included
     body: JSON.stringify(backendTask),
   });
-  
+
   return handleResponse(response);
 };
 
@@ -368,9 +368,9 @@ export const updateTaskStatus = async (taskId: number, status: string): Promise<
       throw new Error(`Unsupported status update: ${status}. Use 'submit', 'approve', or 'decline'`);
   }
   
-  const response = await fetch(endpoint, {
+  const response = await fetchWithRetryAndAuth(endpoint, {
     method: 'PATCH',
-    headers: getHeaders(),
+    headers: await getHeaders(),
     body: JSON.stringify({}), // Most status endpoints don't need additional data
   });
   
@@ -382,9 +382,9 @@ export const submitTask = async (taskId: number, imageUrl?: string, videoUrl?: s
     console.log('🔥 SUBMIT: Submitting task', taskId, 'with media:', { imageUrl, videoUrl, initials });
   }
   
-  const response = await fetch(`${API_BASE_URL}/tasks/${taskId}/submit`, {
+  const response = await fetchWithRetryAndAuth(`${API_BASE_URL}/tasks/${taskId}/submit`, {
     method: 'PATCH',
-    headers: getHeaders(),
+    headers: await getHeaders(),
     body: JSON.stringify({
       image_url: imageUrl,
       video_url: videoUrl,
@@ -409,9 +409,9 @@ export const approveTask = async (taskId: number): Promise<Task> => {
     console.log('🔥 APPROVE: Approving task', taskId);
   }
   
-  const response = await fetch(`${API_BASE_URL}/tasks/${taskId}/approve`, {
+  const response = await fetchWithRetryAndAuth(`${API_BASE_URL}/tasks/${taskId}/approve`, {
     method: 'PATCH',
-    headers: getHeaders(),
+    headers: await getHeaders(),
   });
   
   if (!response.ok) {
@@ -431,9 +431,9 @@ export const declineTask = async (taskId: number, reason: string): Promise<Task>
     console.log('🔥 DECLINE: Declining task', taskId, 'with reason:', reason);
   }
   
-  const response = await fetch(`${API_BASE_URL}/tasks/${taskId}/decline`, {
+  const response = await fetchWithRetryAndAuth(`${API_BASE_URL}/tasks/${taskId}/decline`, {
     method: 'PATCH',
-    headers: getHeaders(),
+    headers: await getHeaders(),
     body: JSON.stringify({
       reason: reason,
     }),
@@ -456,9 +456,9 @@ export const deleteTask = async (taskId: number): Promise<void> => {
     console.log('🔥 DELETE: Deleting task', taskId);
   }
   
-  const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
+  const response = await fetchWithRetryAndAuth(`${API_BASE_URL}/tasks/${taskId}`, {
     method: 'DELETE',
-    headers: getHeaders(),
+    headers: await getHeaders(),
   });
   
   if (!response.ok) {
@@ -491,9 +491,9 @@ export const updateTaskInitials = async (taskId: number, initials: string): Prom
     console.log('🔥 UPDATE INITIALS: Updating task', taskId, 'with initials:', initials);
   }
   
-  const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
+  const response = await fetchWithRetryAndAuth(`${API_BASE_URL}/tasks/${taskId}`, {
     method: 'PUT',
-    headers: getHeaders(),
+    headers: await getHeaders(),
     body: JSON.stringify({
       initials: initials,
     }),
@@ -517,13 +517,16 @@ export const uploadFile = async (taskId: number, file: File, type: 'image' | 'vi
   formData.append('file', file);
   formData.append('task_id', taskId.toString());
   
-  const token = localStorage.getItem('auth_token');
+  // Use enhanced token retrieval
+  const token = await getAuthToken();
   const headers: Record<string, string> = {};
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
+  } else {
+    console.warn('⚠️ No auth token found for file upload');
   }
   
-  const response = await fetch(`${API_BASE_URL}/upload/${type}`, {
+  const response = await fetchWithRetryAndAuth(`${API_BASE_URL}/upload/${type}`, {
     method: 'POST',
     headers: headers,
     body: formData,
