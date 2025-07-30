@@ -141,16 +141,16 @@ const SignupComponent: React.FC<SignupProps> = ({ onShowLogin, onRegistrationSuc
     
     try {
       const response = await apiService.register({
-        restaurantName: restaurantName.trim(),
-        cuisineType: cuisineType.trim(),
+        name: restaurantName.trim(),
+        cuisine_type: cuisineType.trim(),
         locations: locations.map(loc => ({
-          addressLine1: loc.addressLine1.trim(),
-          townCity: loc.townCity.trim(),
+          address_line1: loc.addressLine1.trim(),
+          town_city: loc.townCity.trim(),
           postcode: loc.postcode.trim().toUpperCase()
         })),
-        contactEmail: contactEmail.trim().toLowerCase(),
-        contactPhone: contactPhone.trim(),
-        password
+        contact_email: contactEmail.trim().toLowerCase(),
+        contact_phone: contactPhone.trim(),
+        password: password.trim()
       });
 
       if (response.success && response.data) {
