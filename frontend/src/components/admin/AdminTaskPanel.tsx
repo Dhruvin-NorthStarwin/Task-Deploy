@@ -275,33 +275,34 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
       
       {/* Mobile-first responsive layout */}
       <div className="bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen font-sans">
-        <div className="px-4 py-6 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div className="px-3 py-4 sm:px-4 sm:py-6 lg:px-8 max-w-7xl mx-auto">
           
           {/* Header - Fully responsive */}
-          <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 mb-6">
+          <div className="flex flex-col space-y-3 sm:space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0 mb-4 sm:mb-6">
             <div className="text-center sm:text-left">
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
+              <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 tracking-tight">
                 Admin Dashboard
               </h1>
-              <p className="mt-1 text-sm text-gray-600">
+              <p className="mt-1 text-xs sm:text-sm text-gray-600">
                 Manage and oversee all restaurant tasks
               </p>
             </div>
-            <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
+            <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2 lg:space-x-3">
               <button 
                 onClick={() => setIsAddModalOpen(true)} 
-                className="w-full sm:w-auto bg-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                className="w-full sm:w-auto bg-indigo-600 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-semibold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-2 text-sm sm:text-base"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
-                Add New Task
+                <span className="hidden xs:inline">Add New Task</span>
+                <span className="xs:hidden">Add Task</span>
               </button>
               <button 
                 onClick={onLogout} 
-                className="w-full sm:w-auto bg-red-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                className="w-full sm:w-auto bg-red-500 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-semibold hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-2 text-sm sm:text-base"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
                 Logout
@@ -310,7 +311,7 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
           </div>
 
           {/* Main Panel - Responsive card design */}
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+          <div className="bg-white rounded-lg sm:rounded-xl lg:rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
             
             {/* Search and Filters - Mobile optimized */}
             <div className="p-4 sm:p-6 border-b border-gray-100 bg-gray-50">
@@ -330,60 +331,66 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
                   />
                 </div>
 
-                {/* Day Tabs - Horizontal scroll on mobile */}
-                <div className="border-b border-gray-200">
-                  <div className="flex gap-2 overflow-x-auto pb-2 sleek-scrollbar">
+                {/* Day Tabs - Enhanced mobile scrolling */}
+                <div className="border-b border-gray-200 px-2 sm:px-4">
+                  <div className="flex gap-1 sm:gap-2 overflow-x-auto pb-2 sleek-scrollbar">
                     <button 
                       onClick={() => setActiveView('priority')} 
-                      className={`flex-shrink-0 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                      className={`flex-shrink-0 px-3 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-medium rounded-lg transition-all duration-200 min-w-max ${
                         activeView === 'priority' 
                           ? 'bg-red-500 text-white shadow-md' 
                           : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
                       }`}
                     >
-                      🔥 Priority
+                      <span className="hidden xs:inline">🔥 Priority</span>
+                      <span className="xs:hidden">🔥</span>
                     </button>
                     {DAYS.map(day => (
                       <button 
                         key={day} 
                         onClick={() => setActiveView(day)} 
-                        className={`flex-shrink-0 px-4 py-2 text-sm font-medium rounded-lg capitalize transition-all duration-200 ${
+                        className={`flex-shrink-0 px-3 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-medium rounded-lg capitalize transition-all duration-200 min-w-max ${
                           activeView === day 
                             ? 'bg-indigo-500 text-white shadow-md' 
                             : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
                         }`}
                       >
-                        {day}
+                        <span className="hidden sm:inline">{day}</span>
+                        <span className="sm:hidden">{day.slice(0, 3)}</span>
                       </button>
                     ))}
                   </div>
                 </div>
 
-                {/* Category Filters - Responsive grid */}
-                <div className="flex flex-wrap gap-2">
-                  <button 
-                    onClick={() => setCategoryFilter('all')} 
-                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
-                      categoryFilter === 'all' 
-                        ? 'bg-gray-800 text-white shadow-md' 
-                        : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
-                    }`}
-                  >
-                    All Categories
-                  </button>
-                  {CATEGORIES.map(cat => (
+                {/* Category Filters - Enhanced mobile layout */}
+                <div className="px-2 sm:px-4 pb-3 sm:pb-4">
+                  <div className="flex flex-wrap gap-1 sm:gap-2">
                     <button 
-                      key={cat} 
-                      onClick={() => setCategoryFilter(cat)} 
-                      className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
-                        categoryFilter === cat 
-                          ? 'bg-green-500 text-white shadow-md' 
+                      onClick={() => setCategoryFilter('all')} 
+                      className={`px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium rounded-lg transition-all duration-200 min-w-max ${
+                        categoryFilter === 'all' 
+                          ? 'bg-gray-800 text-white shadow-md' 
                           : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
                       }`}
                     >
-                      {cat}
+                      <span className="hidden xs:inline">All Categories</span>
+                      <span className="xs:hidden">All</span>
                     </button>
-                  ))}
+                    {CATEGORIES.map(cat => (
+                      <button 
+                        key={cat} 
+                        onClick={() => setCategoryFilter(cat)} 
+                        className={`px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium rounded-lg transition-all duration-200 min-w-max ${
+                          categoryFilter === cat 
+                            ? 'bg-green-500 text-white shadow-md' 
+                            : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                        }`}
+                      >
+                        <span className="hidden sm:inline">{cat}</span>
+                        <span className="sm:hidden">{cat.length > 8 ? cat.slice(0, 6) + '...' : cat}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -492,34 +499,34 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
                 </table>
               </div>
 
-              {/* Mobile Cards */}
-              <div className="md:hidden space-y-4">
+              {/* Mobile Cards - Enhanced for small screens */}
+              <div className="md:hidden space-y-3 sm:space-y-4">
                 {filteredTasks.map(task => (
                   <div 
                     key={task.id}
                     onClick={() => setSelectedTask(task)}
-                    className={`bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer ${
+                    className={`bg-white border border-gray-200 rounded-lg sm:rounded-xl p-3 sm:p-4 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer ${
                       task.status === 'Done' ? 'opacity-60' : ''
                     }`}
                   >
                     {/* Task Header */}
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1">
+                    <div className="flex items-start justify-between mb-2 sm:mb-3">
+                      <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <div className={`w-2 h-2 rounded-full ${
+                          <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${
                             task.taskType === 'Priority' ? 'bg-red-400' : 'bg-blue-400'
                           }`}></div>
-                          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide truncate">
                             {task.category}
                           </span>
                         </div>
-                        <h3 className={`font-semibold text-gray-900 ${
+                        <h3 className={`font-semibold text-sm sm:text-base text-gray-900 line-clamp-2 ${
                           task.status === 'Done' ? 'line-through text-gray-500' : ''
                         }`}>
                           {task.task}
                         </h3>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1 sm:gap-2 ml-2">
                         <StatusBadge status={task.status} />
                         {task.status !== 'Done' && (
                           <button 
@@ -527,19 +534,19 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
                               e.stopPropagation();
                               toggleDropdown(task.id, e);
                             }}
-                            className="p-1 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+                            className="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
                           >
-                            <ActionsIcon className="w-5 h-5" />
+                            <ActionsIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                           </button>
                         )}
                       </div>
                     </div>
 
                     {/* Task Details */}
-                    <div className="flex items-center justify-between text-sm text-gray-600">
+                    <div className="flex items-center justify-between text-xs sm:text-sm text-gray-600">
                       <div className="flex items-center gap-2">
                         {task.initials ? (
-                          <div className="w-6 h-6 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-xs font-semibold">
+                          <div className="w-5 h-5 sm:w-6 sm:h-6 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-xs font-semibold">
                             {task.initials}
                           </div>
                         ) : (
