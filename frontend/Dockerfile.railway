@@ -1,0 +1,25 @@
+# Simple Dockerfile optimized for Railway deployment
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies with npm install (more reliable than npm ci on some platforms)
+RUN npm install --frozen-lockfile
+
+# Copy source code
+COPY . .
+
+# Build the application
+RUN npm run build
+
+# Install serve to serve the built files
+RUN npm install -g serve
+
+# Expose port (Railway will set the PORT environment variable)
+EXPOSE $PORT
+
+# Start command that uses Railway's PORT environment variable
+CMD ["sh", "-c", "serve -s dist -l ${PORT:-3000}"]
