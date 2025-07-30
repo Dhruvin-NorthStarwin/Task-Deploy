@@ -275,29 +275,29 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
       />
       
       {/* Mobile-first responsive layout */}
-      <div className="bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen font-sans">
-        <div className="px-3 py-4 sm:px-4 sm:py-6 lg:px-8 max-w-7xl mx-auto">
+      <div className="bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen font-sans mobile-optimized">
+        <div className="px-2 py-3 xxs:px-3 xxs:py-4 mobile:px-4 mobile:py-6 lg:px-8 max-w-7xl mx-auto mobile-safe">
           
           {/* Header - Fully responsive */}
-          <div className="flex flex-col space-y-3 sm:space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0 mb-4 sm:mb-6">
-            <div className="text-center sm:text-left">
-              <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 tracking-tight">
+          <div className="flex flex-col space-y-3 mobile:space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0 mb-4 mobile:mb-6 dashboard-header">
+            <div className="text-center mobile:text-left">
+              <h1 className="dashboard-title mobile:text-2xl lg:text-3xl font-bold text-gray-900 tracking-tight">
                 Admin Dashboard
               </h1>
-              <p className="mt-1 text-xs sm:text-sm text-gray-600">
+              <p className="mt-1 mobile-subtitle">
                 Manage and oversee all restaurant tasks
               </p>
             </div>
-            <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2 lg:space-x-3">
+            <div className="button-group flex flex-col space-y-2 mobile:flex-row mobile:space-y-0 mobile:space-x-2 lg:space-x-3">
               <PWAInstallButton />
               <button 
                 onClick={() => setIsAddModalOpen(true)} 
-                className="w-full sm:w-auto bg-indigo-600 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-semibold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-2 text-sm sm:text-base"
+                className="w-full mobile:w-auto bg-indigo-600 text-white px-4 mobile:px-6 py-3 rounded-mobile font-semibold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-2 mobile-base min-h-touch"
               >
-                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
-                <span className="hidden xs:inline">Add New Task</span>
+                <span className="hidden mobile:inline">Add New Task</span>
                 <span className="xs:hidden">Add Task</span>
               </button>
               <button 
@@ -502,33 +502,33 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
               </div>
 
               {/* Mobile Cards - Enhanced for small screens */}
-              <div className="md:hidden space-y-3 sm:space-y-4">
+              <div className="md:hidden space-y-3 mobile:space-y-4">
                 {filteredTasks.map(task => (
                   <div 
                     key={task.id}
                     onClick={() => setSelectedTask(task)}
-                    className={`bg-white border border-gray-200 rounded-lg sm:rounded-xl p-3 sm:p-4 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer ${
+                    className={`mobile-task-card mobile-card cursor-pointer ${
                       task.status === 'Done' ? 'opacity-60' : ''
                     }`}
                   >
                     {/* Task Header */}
-                    <div className="flex items-start justify-between mb-2 sm:mb-3">
+                    <div className="flex items-start justify-between mb-2 mobile:mb-3">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${
+                          <div className={`w-2 h-2 rounded-full ${
                             task.taskType === 'Priority' ? 'bg-red-400' : 'bg-blue-400'
                           }`}></div>
-                          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide truncate">
+                          <span className="mobile-caption font-semibold uppercase tracking-wide truncate">
                             {task.category}
                           </span>
                         </div>
-                        <h3 className={`font-semibold text-sm sm:text-base text-gray-900 line-clamp-2 ${
-                          task.status === 'Done' ? 'line-through text-gray-500' : ''
+                        <h3 className={`mobile-task-title ${
+                          task.status === 'Done' ? 'line-through text-gray-500' : 'text-gray-900'
                         }`}>
                           {task.task}
                         </h3>
                       </div>
-                      <div className="flex items-center gap-1 sm:gap-2 ml-2">
+                      <div className="flex items-center gap-2 ml-2">
                         <StatusBadge status={task.status} />
                         {task.status !== 'Done' && (
                           <button 
@@ -536,16 +536,16 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
                               e.stopPropagation();
                               toggleDropdown(task.id, e);
                             }}
-                            className="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+                            className="p-2 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors min-h-touch min-w-touch"
                           >
-                            <ActionsIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+                            <ActionsIcon className="w-5 h-5" />
                           </button>
                         )}
                       </div>
                     </div>
 
                     {/* Task Details */}
-                    <div className="flex items-center justify-between text-xs sm:text-sm text-gray-600">
+                    <div className="mobile-task-meta flex items-center justify-between text-gray-600">
                       <div className="flex items-center gap-2">
                         {task.initials ? (
                           <div className="w-5 h-5 sm:w-6 sm:h-6 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-xs font-semibold">
