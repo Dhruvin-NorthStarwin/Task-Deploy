@@ -8,7 +8,7 @@
     "build": "vite build --mode production && npm run copy-pwa-files",
     "build:production": "tsc -b && vite build --mode production && npm run copy-pwa-files", 
     "build:full": "tsc -b && vite build --mode production && npm run copy-pwa-files",
-    "copy-pwa-files": "copy public\\sw.js dist\\sw.js && copy public\\manifest.json dist\\manifest.json",
+    "copy-pwa-files": "node -e \"const fs=require('fs'); fs.copyFileSync('public/sw.js', 'dist/sw.js'); fs.copyFileSync('public/manifest.json', 'dist/manifest.json');\"",
     "start": "serve -s dist -l $PORT",
     "lint": "eslint .",
     "preview": "vite preview"
