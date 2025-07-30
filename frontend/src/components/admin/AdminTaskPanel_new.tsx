@@ -51,43 +51,24 @@ const TaskItem = ({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-100 mb-4 lg:mb-0 lg:bg-transparent lg:border-none lg:shadow-none lg:rounded-none lg:grid lg:grid-cols-12 lg:gap-4 lg:items-center lg:p-2 lg:border-b cursor-pointer hover:bg-gray-50">
+    <div className="block lg:grid lg:grid-cols-12 lg:gap-4 lg:items-center bg-white p-4 rounded-lg shadow-sm border border-gray-100 lg:p-2 lg:shadow-none lg:border-b lg:rounded-none cursor-pointer hover:bg-gray-50">
       {/* Task Name (Mobile and Desktop) */}
-      <div className="lg:col-span-5 p-4 lg:p-0 flex items-center gap-3" onClick={() => onSelect(task)}>
-        <span className={`h-3 w-3 rounded-full flex-shrink-0 ${task.status === 'Declined' ? 'bg-red-500' : task.status === 'Done' ? 'bg-green-500' : 'bg-gray-400'}`}></span>
-        <p className="font-semibold text-gray-800 text-base lg:text-sm">{task.task}</p>
+      <div className="lg:col-span-5 flex items-center gap-3" onClick={() => onSelect(task)}>
+        <span className={`h-2.5 w-2.5 rounded-full ${task.status === 'Declined' ? 'bg-red-500' : task.status === 'Done' ? 'bg-green-500' : 'bg-gray-400'}`}></span>
+        <p className="font-semibold text-gray-800">{task.task}</p>
       </div>
       
-      {/* Mobile Info Section */}
-      <div className="lg:hidden px-4 pb-4 space-y-3">
-        {/* Day on Mobile */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">Day:</span>
-            <span className="capitalize font-medium text-gray-700">{task.day}</span>
-          </div>
-          <StatusBadge status={task.status} />
-        </div>
-        
-        {/* Assigned To on Mobile */}
+      {/* Assigned To (Mobile and Desktop) */}
+      <div className="lg:col-span-2 mt-4 lg:mt-0 flex items-center justify-between lg:justify-start" onClick={() => onSelect(task)}>
         <div className="flex items-center gap-2 text-sm text-gray-500">
-          <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">Assigned:</span>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center justify-center h-7 w-7 rounded-full bg-indigo-100 text-indigo-600 font-bold text-xs">
-              {task.initials ? task.initials.toUpperCase() : '?'}
-            </div>
-            <span className="font-medium text-gray-700">{task.initials || 'Unassigned'}</span>
+          <div className="flex items-center justify-center h-8 w-8 rounded-full bg-indigo-100 text-indigo-600 font-bold text-xs">
+            {task.initials ? task.initials.toUpperCase() : '?'}
           </div>
+          <span className="lg:hidden">Assigned To:</span>
+          <span>{task.initials || 'Unassigned'}</span>
         </div>
-      </div>
-
-      {/* Desktop Layout */}
-      {/* Assigned To (Desktop only) */}
-      <div className="hidden lg:flex lg:col-span-2 items-center gap-2 text-sm text-gray-500" onClick={() => onSelect(task)}>
-        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-indigo-100 text-indigo-600 font-bold text-xs">
-          {task.initials ? task.initials.toUpperCase() : '?'}
-        </div>
-        <span>{task.initials || 'Unassigned'}</span>
+        {/* Status Badge (Only visible on mobile view of the card) */}
+        <div className="lg:hidden"><StatusBadge status={task.status} /></div>
       </div>
 
       {/* Day (Desktop only) */}
@@ -107,7 +88,7 @@ const TaskItem = ({
         
         {/* Dropdown Menu */}
         {openDropdown === task.id && (
-          <div className="absolute top-full right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-48 overflow-y-auto sleek-scrollbar">
+          <div className="absolute top-full right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
             <div className="py-1">
               {task.status === 'Submitted' && (
                 <>
@@ -174,9 +155,7 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
   // API Integration
   const fetchTasks = async () => {
     try {
-      console.log('AdminTaskPanel: Fetching tasks...');
       const tasksData = await apiService.getTasks();
-      console.log('AdminTaskPanel: Tasks fetched:', tasksData);
       setTasks(tasksData);
     } catch (error) {
       console.error('AdminTaskPanel: Failed to fetch tasks:', error);
@@ -284,30 +263,13 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
 
   return (
     <div className="bg-gray-50 min-h-screen font-sans">
-      <style>{`.sleek-scrollbar::-webkit-scrollbar { height: 4px; width: 4px; } .sleek-scrollbar::-webkit-scrollbar-track { background: transparent; } .sleek-scrollbar::-webkit-scrollbar-thumb { background-color: #e2e8f0; border-radius: 10px; }`}</style>
-      
-      {/* Debug Info (remove in production) */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="lg:hidden fixed top-20 left-4 bg-black text-white text-xs p-2 rounded z-50">
-          Tasks: {tasks.length} | Filtered: {filteredTasks.length}
-        </div>
-      )}
+      <style>{`.sleek-scrollbar::-webkit-scrollbar { height: 4px; } .sleek-scrollbar::-webkit-scrollbar-track { background: transparent; } .sleek-scrollbar::-webkit-scrollbar-thumb { background-color: #e2e8f0; border-radius: 10px; }`}</style>
       
       {/* Mobile Header */}
       <header className="lg:hidden bg-white p-4 shadow-sm flex justify-between items-center sticky top-0 z-20">
-        <button 
-          onClick={onLogout}
-          className="text-gray-600 hover:text-gray-800"
-        >
-          <MenuIcon className="h-6 w-6" />
-        </button>
+        <button className="text-gray-600"><MenuIcon className="h-6 w-6" /></button>
         <h1 className="font-bold text-lg text-gray-800">Admin Dashboard</h1>
-        <button 
-          onClick={() => setAddTaskModalOpen(true)}
-          className="text-indigo-600 hover:text-indigo-700"
-        >
-          <PlusIcon className="h-6 w-6" />
-        </button>
+        <div className="w-6"></div>
       </header>
 
       {/* Main Content */}
@@ -392,7 +354,7 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
             </div>
 
             {/* Task Items */}
-            <div className="space-y-3 lg:space-y-0 mt-4 lg:mt-0">
+            <div className="space-y-4 lg:space-y-0">
               {filteredTasks.length > 0 ? (
                 filteredTasks.map(task => (
                   <TaskItem 
@@ -407,14 +369,14 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
                   />
                 ))
               ) : (
-                <div className="text-center py-10 px-4 bg-white rounded-lg shadow-sm mt-4">
+                <div className="text-center py-10 px-4 bg-white rounded-lg shadow-sm lg:col-span-12">
                   <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                     </svg>
                   </div>
                   <h3 className="text-lg font-semibold text-gray-700 mb-2">No tasks found</h3>
-                  <p className="text-gray-500 mb-4 max-w-md mx-auto text-sm">
+                  <p className="text-gray-500 mb-4 max-w-md mx-auto">
                     {searchTerm || selectedCategory !== 'all' 
                       ? 'Try adjusting your search or filter criteria to see more tasks.'
                       : 'Get started by creating your first task for the team.'
