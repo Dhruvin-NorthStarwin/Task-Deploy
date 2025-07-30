@@ -57,30 +57,30 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, onAddTask 
   };
 
   return (
-    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4">
+      <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-xs sm:max-w-lg max-h-[95vh] sm:max-h-[90vh] flex flex-col">
         {/* Header - Fixed */}
-        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 flex-shrink-0">
-          <h2 className="text-lg sm:text-xl font-bold text-gray-800">Add New Task</h2>
+        <div className="flex items-center justify-between p-3 sm:p-4 md:p-6 border-b border-gray-200 flex-shrink-0">
+          <h2 className="text-base sm:text-lg md:text-xl font-bold text-gray-800">Add New Task</h2>
           <button 
             onClick={onClose} 
-            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+            className="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 transition-colors"
             aria-label="Close modal"
           >
-            <CloseIcon className="w-5 h-5 text-gray-500" />
+            <CloseIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
           </button>
         </div>
         
         {/* Content - Scrollable */}
-        <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 overflow-y-auto flex-1">
+        <div className="p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4 md:space-y-6 overflow-y-auto flex-1">
           {/* Category and Task Name */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">Category</label>
+              <label className="text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2 block">Category</label>
               <select 
                 value={category} 
                 onChange={e => setCategory(e.target.value as Category)} 
-                className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white text-base"
+                className="w-full border border-gray-300 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white text-sm sm:text-base"
               >
                 {CATEGORIES.map(cat => (
                   <option key={cat} value={cat}>{cat}</option>
@@ -88,13 +88,13 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, onAddTask 
               </select>
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">Task Name</label>
+              <label className="text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2 block">Task Name</label>
               <input 
                 type="text" 
                 placeholder="Enter task name" 
                 value={taskName} 
                 onChange={e => setTaskName(e.target.value)} 
-                className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-base" 
+                className="w-full border border-gray-300 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm sm:text-base" 
               />
             </div>
           </div>

@@ -146,21 +146,21 @@ const SignupComponent: React.FC<{ onShowLogin: () => void, onRegistrationSuccess
 
   return (
     <>
-      <div className="w-full max-w-2xl">
-        <div className="bg-white rounded-2xl shadow-2xl p-8 md:p-12">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-800">Register Your Restaurant</h1>
-            <p className="text-gray-600 mt-2">Partner with us and reach more customers across the UK.</p>
+      <div className="w-full max-w-sm sm:max-w-md lg:max-w-2xl">
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl p-4 sm:p-6 md:p-8 lg:p-12">
+          <div className="text-center mb-4 sm:mb-6 md:mb-8">
+            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-gray-800">Register Your Restaurant</h1>
+            <p className="text-gray-600 mt-1 sm:mt-2 text-xs sm:text-sm md:text-base">Partner with us and reach more customers across the UK.</p>
           </div>
           <form onSubmit={handleSubmit} noValidate>
             {/* Form fields */}
-            <div className="mb-5">
-              <label htmlFor="restaurantName" className="block mb-2 text-sm font-medium text-gray-700">Restaurant Name</label>
-              <input type="text" value={restaurantName} onChange={(e) => setRestaurantName(e.target.value)} className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500" required />
+            <div className="mb-3 sm:mb-4 md:mb-5">
+              <label htmlFor="restaurantName" className="block mb-1 sm:mb-2 text-xs sm:text-sm font-medium text-gray-700">Restaurant Name</label>
+              <input type="text" value={restaurantName} onChange={(e) => setRestaurantName(e.target.value)} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 text-sm sm:text-base" required />
             </div>
-            <div className="mb-5">
-              <label htmlFor="cuisineType" className="block mb-2 text-sm font-medium text-gray-700">Cuisine Type</label>
-              <input type="text" value={cuisineType} onChange={(e) => setCuisineType(e.target.value)} className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500" required />
+            <div className="mb-3 sm:mb-4 md:mb-5">
+              <label htmlFor="cuisineType" className="block mb-1 sm:mb-2 text-xs sm:text-sm font-medium text-gray-700">Cuisine Type</label>
+              <input type="text" value={cuisineType} onChange={(e) => setCuisineType(e.target.value)} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 text-sm sm:text-base" required />
             </div>
             {/* Locations */}
             <div className="mb-5">

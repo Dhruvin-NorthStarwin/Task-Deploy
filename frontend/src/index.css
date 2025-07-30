@@ -51,7 +51,7 @@ body {
 }
 
 /* Mobile touch improvements */
-@media (max-width: 768px) {
+@media (max-width: 640px) {
   /* Improve touch targets */
   button, [role="button"], input[type="button"], input[type="submit"] {
     min-height: 44px;
@@ -67,6 +67,67 @@ body {
   /* Smooth scrolling for mobile */
   * {
     -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Mobile table improvements */
+  .mobile-table {
+    display: block;
+  }
+  
+  .mobile-table tbody,
+  .mobile-table tr,
+  .mobile-table td {
+    display: block;
+  }
+  
+  .mobile-table tr {
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    margin-bottom: 0.75rem;
+    padding: 1rem;
+    background: white;
+  }
+  
+  .mobile-table td {
+    border: none;
+    padding: 0.5rem 0;
+    position: relative;
+    padding-left: 40%;
+    text-align: left;
+  }
+  
+  .mobile-table td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 0;
+    width: 35%;
+    padding-right: 0.5rem;
+    white-space: nowrap;
+    font-weight: 600;
+    color: #6b7280;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+  }
+}
+
+/* Better responsive breakpoints */
+@media (max-width: 475px) {
+  /* Extra small screens */
+  .container {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+  
+  /* Compact spacing */
+  .space-y-compact > * + * {
+    margin-top: 0.5rem;
+  }
+  
+  /* Smaller buttons on very small screens */
+  .btn-compact {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
   }
 }
 
