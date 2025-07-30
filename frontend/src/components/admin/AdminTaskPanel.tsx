@@ -1,443 +1,287 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import type { Task, Day, Category, Status } from '../../types';
-import StatusBadge from '../common/StatusBadge';
-import AddTaskModal from './AddTaskModal';
-import TaskDetailModal from './TaskDetailModal';
-import apiService from '../../services/apiService';
+import React, { useState } from 'react';
+import type { Task, Category, TaskType, Day } from '../../types';
+import { CATEGORIES, DAYS } from '../../data/tasks';
+import { CloseIcon } from '../common/Icons';
 
-interface AdminTaskPanelProps {
-  onLogout: () => void;
+interface AddTaskModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onAddTask: (tasks: Omit<Task, 'id' | 'status'>[]) => void;
 }
 
-// --- HELPER ICONS ---
-const MenuIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-);
-const SearchIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-);
-const MoreVerticalIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
-);
-const PlusIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-);
+const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, onAddTask }) => {
+  const [category, setCategory] = useState<Category>('Cleaning');
+  const [taskName, setTaskName] = useState('');
+  const [description, setDescription] = useState('');
+  const [imageRequired, setImageRequired] = useState(false);
+  const [videoRequired, setVideoRequired] = useState(false);
+  const [taskType, setTaskType] = useState<TaskType>('Daily');
+  const [selectedDays, setSelectedDays] = useState<Day[]>([]);
+  const [initials, setInitials] = useState('');
 
-type MainFilter = Day | 'priority';
+  if (!isOpen) return null;
 
-// Task Item Component - handles both mobile and desktop views
-const TaskItem = ({ 
-  task, 
-  onSelect, 
-  onStatusChange,
-  onTaskApprove,
-  onTaskDecline,
-  openDropdown,
-  onToggleDropdown
-}: { 
-  task: Task; 
-  onSelect: (task: Task) => void;
-  onStatusChange: (taskId: number, newStatus: Status) => void;
-  onTaskApprove: (taskId: number) => void;
-  onTaskDecline: (taskId: number, reason: string) => void;
-  openDropdown: number | null;
-  onToggleDropdown: (taskId: number, event: React.MouseEvent) => void;
-}) => {
-  const handleDeclineTask = () => {
-    const reason = prompt('Please provide a reason for declining this task:');
-    if (reason && reason.trim()) {
-      onTaskDecline(task.id, reason.trim());
+  const handleDayToggle = (day: Day) => {
+    setSelectedDays(prev => prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]);
+  };
+
+  const handleSelectAllDays = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedDays(e.target.checked ? DAYS : []);
+  };
+
+  const handleSubmit = () => {
+    if (!taskName || (taskType === 'Daily' && selectedDays.length === 0)) {
+      alert("Please provide a task name and select at least one day for a Daily Task.");
+      return;
     }
+    const daysToCreate = taskType === 'Daily' ? selectedDays : [DAYS[(new Date().getDay() + 6) % 7]];
+    const newTasks = daysToCreate.map(day => ({ 
+      task: taskName, 
+      description, 
+      category, 
+      imageRequired, 
+      videoRequired,
+      taskType, 
+      day,
+      initials: initials || undefined
+    }));
+    onAddTask(newTasks);
+    onClose();
+    // Reset form
+    setTaskName('');
+    setDescription('');
+    setImageRequired(false);
+    setVideoRequired(false);
+    setTaskType('Daily');
+    setSelectedDays([]);
   };
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 cursor-pointer hover:bg-gray-50 lg:grid lg:grid-cols-12 lg:gap-4 lg:items-center lg:p-2 lg:shadow-none lg:border-b lg:rounded-none lg:bg-transparent lg:border-gray-200 relative">
-      {/* Mobile Layout */}
-      <div className="lg:hidden">
-        <div className="flex justify-between items-start" onClick={() => onSelect(task)}>
-          <div className="flex items-center gap-3">
-            <span className={`h-2.5 w-2.5 rounded-full ${task.status === 'Declined' ? 'bg-red-500' : task.status === 'Done' ? 'bg-green-500' : 'bg-gray-400'}`}></span>
-            <p className="font-semibold text-gray-800">{task.task}</p>
-          </div>
-          <button onClick={(e) => onToggleDropdown(task.id, e)} className="text-gray-400 hover:text-gray-600 relative z-10">
-            <MoreVerticalIcon className="h-5 w-5" />
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4">
+      <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-xs sm:max-w-lg lg:max-w-2xl max-h-[95vh] sm:max-h-[90vh] flex flex-col">
+        {/* Header - Fixed and responsive */}
+        <div className="flex items-center justify-between p-3 sm:p-4 lg:p-6 border-b border-gray-200 flex-shrink-0">
+          <h2 className="text-base sm:text-lg lg:text-xl font-bold text-gray-800">Add New Task</h2>
+          <button 
+            onClick={onClose} 
+            className="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 transition-colors"
+            aria-label="Close modal"
+          >
+            <CloseIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
           </button>
         </div>
-        <div className="mt-4 flex items-center justify-between" onClick={() => onSelect(task)}>
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <div className="flex items-center justify-center h-8 w-8 rounded-full bg-indigo-100 text-indigo-600 font-bold text-xs">
-              {task.initials ? task.initials.toUpperCase() : '?'}
-            </div>
-            <span>{task.initials || 'Unassigned'}</span>
-          </div>
-          <StatusBadge status={task.status} />
-        </div>
-      </div>
-
-      {/* Desktop Layout */}
-      <div className="hidden lg:flex lg:col-span-5 items-center gap-3" onClick={() => onSelect(task)}>
-        <span className={`h-2.5 w-2.5 rounded-full ${task.status === 'Declined' ? 'bg-red-500' : task.status === 'Done' ? 'bg-green-500' : 'bg-gray-400'}`}></span>
-        <p className="font-semibold text-gray-800">{task.task}</p>
-      </div>
-      
-      <div className="hidden lg:flex lg:col-span-2 items-center gap-2 text-sm text-gray-500" onClick={() => onSelect(task)}>
-        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-indigo-100 text-indigo-600 font-bold text-xs">
-          {task.initials ? task.initials.toUpperCase() : '?'}
-        </div>
-        <span>{task.initials || 'Unassigned'}</span>
-      </div>
-
-      <div className="hidden lg:block lg:col-span-2 text-sm text-gray-600 capitalize" onClick={() => onSelect(task)}>{task.day}</div>
-      
-      <div className="hidden lg:block lg:col-span-2" onClick={() => onSelect(task)}><StatusBadge status={task.status} /></div>
-
-      {/* Actions (Desktop only) */}
-      <div className="hidden lg:flex lg:col-span-1 justify-end relative">
-        <button 
-          onClick={(e) => onToggleDropdown(task.id, e)} 
-          className="text-gray-400 hover:text-gray-600 p-2"
-        >
-          <MoreVerticalIcon className="h-5 w-5" />
-        </button>
         
-        {/* Dropdown Menu - Mobile positioned relative to the three dots */}
-        {openDropdown === task.id && (
-          <div className="absolute top-full right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-48 overflow-y-auto sleek-scrollbar lg:right-0">
-            <div className="py-1">
-              {task.status === 'Submitted' && (
-                <>
-                  <button
-                    onClick={() => onTaskApprove(task.id)}
-                    className="w-full text-left px-4 py-2 text-sm text-green-600 hover:bg-green-50"
-                  >
-                    Approve Task
-                  </button>
-                  <button
-                    onClick={handleDeclineTask}
-                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                  >
-                    Decline Task
-                  </button>
-                </>
-              )}
-              <button
-                onClick={() => onStatusChange(task.id, 'Unknown')}
-                className="w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
-              >
-                Reset Status
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
-  // State management
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [activeMainFilter, setActiveMainFilter] = useState<MainFilter>('monday');
-  const [selectedCategory, setSelectedCategory] = useState<Category | 'all'>('all');
-  const [isAddTaskModalOpen, setAddTaskModalOpen] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [openDropdown, setOpenDropdown] = useState<number | null>(null);
-
-  // Initialize with current day
-  useEffect(() => {
-    const dayIndex = (new Date().getDay() + 6) % 7;
-    const dayMap: Day[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-    setActiveMainFilter(dayMap[dayIndex]);
-    fetchTasks();
-  }, []);
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = () => {
-      setOpenDropdown(null);
-    };
-    
-    if (openDropdown !== null) {
-      document.addEventListener('click', handleClickOutside);
-      return () => {
-        document.removeEventListener('click', handleClickOutside);
-      };
-    }
-  }, [openDropdown]);
-
-  // API Integration
-  const fetchTasks = async () => {
-    try {
-      console.log('AdminTaskPanel: Fetching tasks...');
-      const tasksData = await apiService.getTasks();
-      console.log('AdminTaskPanel: Tasks fetched:', tasksData);
-      setTasks(tasksData);
-    } catch (error) {
-      console.error('AdminTaskPanel: Failed to fetch tasks:', error);
-    }
-  };
-
-  const handleAddTask = async (newTasks: Omit<Task, 'id' | 'status'>[]) => {
-    try {
-      const createdTasks: Task[] = [];
-      
-      for (const task of newTasks) {
-        try {
-          const createdTask = await apiService.createTask(task);
-          createdTasks.push(createdTask);
-        } catch (error) {
-          console.error('Error creating single task:', error);
-        }
-      }
-      
-      if (createdTasks.length > 0) {
-        setTasks(prevTasks => [...prevTasks, ...createdTasks]);
-      }
-      
-      setAddTaskModalOpen(false);
-    } catch (error) {
-      console.error('AdminTaskPanel: Error in handleAddTask:', error);
-    }
-  };
-
-  const handleStatusChange = async (taskId: number, newStatus: Status) => {
-    try {
-      const updatedTask = await apiService.updateTaskStatus(taskId, newStatus);
-      setTasks(prevTasks => prevTasks.map(t => 
-        t.id === taskId ? { ...t, status: updatedTask.status } : t
-      ));
-      
-      if (selectedTask && selectedTask.id === taskId) {
-        setSelectedTask({ ...selectedTask, status: updatedTask.status });
-      }
-      
-      setOpenDropdown(null);
-    } catch (error) {
-      console.error('Failed to update task status:', error);
-    }
-  };
-
-  const handleTaskApprove = async (taskId: number) => {
-    try {
-      const updatedTask = await apiService.approveTask(taskId);
-      setTasks(prevTasks => prevTasks.map(t => 
-        t.id === taskId ? { ...t, status: updatedTask.status } : t
-      ));
-      
-      if (selectedTask && selectedTask.id === taskId) {
-        setSelectedTask({ ...selectedTask, status: updatedTask.status });
-      }
-      
-      setOpenDropdown(null);
-    } catch (error) {
-      console.error('Failed to approve task:', error);
-    }
-  };
-
-  const handleTaskDecline = async (taskId: number, reason: string) => {
-    try {
-      const updatedTask = await apiService.declineTask(taskId, reason);
-      setTasks(prevTasks => prevTasks.map(t => 
-        t.id === taskId ? { ...t, status: updatedTask.status, declineReason: reason } : t
-      ));
-      
-      if (selectedTask && selectedTask.id === taskId) {
-        setSelectedTask({ ...selectedTask, status: updatedTask.status, declineReason: reason });
-      }
-      
-      setOpenDropdown(null);
-    } catch (error) {
-      console.error('Failed to decline task:', error);
-    }
-  };
-
-  const toggleDropdown = (taskId: number, event: React.MouseEvent) => {
-    event.stopPropagation();
-    setOpenDropdown(openDropdown === taskId ? null : taskId);
-  };
-
-  // Filter logic
-  const mainFilters: MainFilter[] = ['priority', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-  const categoryFilters: (Category | 'all')[] = ['all', 'Cleaning', 'Cutting', 'Refilling', 'Other'];
-
-  const filteredTasks = useMemo(() => {
-    return tasks.filter(task => {
-      const matchesCategory = selectedCategory === 'all' || task.category === selectedCategory;
-      const matchesSearch = task.task.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      let matchesMainFilter = false;
-      if (activeMainFilter === 'priority') {
-        matchesMainFilter = task.taskType === 'Priority';
-      } else {
-        matchesMainFilter = task.day === activeMainFilter;
-      }
-
-      return matchesCategory && matchesSearch && matchesMainFilter;
-    });
-  }, [tasks, activeMainFilter, selectedCategory, searchTerm]);
-
-  return (
-    <div className="bg-gray-50 min-h-screen font-sans">
-      <style>{`.sleek-scrollbar::-webkit-scrollbar { height: 4px; width: 4px; } .sleek-scrollbar::-webkit-scrollbar-track { background: transparent; } .sleek-scrollbar::-webkit-scrollbar-thumb { background-color: #e2e8f0; border-radius: 10px; }`}</style>
-      
-      {/* Debug Info (remove in production) */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="lg:hidden fixed top-20 left-4 bg-black text-white text-xs p-2 rounded z-50">
-          Tasks: {tasks.length} | Filtered: {filteredTasks.length}
-        </div>
-      )}
-      
-      {/* Mobile Header */}
-      <header className="lg:hidden bg-white p-4 shadow-sm flex justify-between items-center sticky top-0 z-20">
-        <button 
-          onClick={onLogout}
-          className="text-gray-600 hover:text-gray-800"
-        >
-          <MenuIcon className="h-6 w-6" />
-        </button>
-        <h1 className="font-bold text-lg text-gray-800">Admin Dashboard</h1>
-        <button 
-          onClick={() => setAddTaskModalOpen(true)}
-          className="text-indigo-600 hover:text-indigo-700"
-        >
-          <PlusIcon className="h-6 w-6" />
-        </button>
-      </header>
-
-      {/* Main Content */}
-      <main className="p-4 lg:p-8">
-        <div className="max-w-7xl mx-auto">
-          {/* Desktop Header */}
-          <div className="hidden lg:flex justify-between items-center mb-6">
+        {/* Content - Scrollable with enhanced responsive design */}
+        <div className="p-3 sm:p-4 lg:p-6 space-y-3 sm:space-y-4 lg:space-y-6 overflow-y-auto flex-1">
+          {/* Category and Task Name - Improved responsive grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-              <p className="text-gray-500 mt-1">Manage and oversee all restaurant tasks</p>
-            </div>
-            <div className="flex items-center gap-4">
-              <button 
-                onClick={onLogout}
-                className="px-4 py-2 bg-red-500 text-white font-semibold rounded-lg shadow-sm hover:bg-red-600 transition-colors"
+              <label className="text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2 block">Category</label>
+              <select 
+                value={category} 
+                onChange={e => setCategory(e.target.value as Category)} 
+                className="w-full border border-gray-300 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white text-sm sm:text-base"
               >
-                Logout
-              </button>
-              <button 
-                onClick={() => setAddTaskModalOpen(true)} 
-                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow-sm hover:bg-indigo-700 transition-colors"
-              >
-                <PlusIcon className="h-5 w-5"/>
-                Add Task
-              </button>
+                {CATEGORIES.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
             </div>
-          </div>
-
-          {/* Filters Panel */}
-          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-            <div className="relative">
-              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <div>
+              <label className="text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2 block">Task Name</label>
               <input 
                 type="text" 
-                placeholder="Search tasks..." 
-                value={searchTerm} 
-                onChange={(e) => setSearchTerm(e.target.value)} 
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                placeholder="Enter task name" 
+                value={taskName} 
+                onChange={e => setTaskName(e.target.value)} 
+                className="w-full border border-gray-300 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm sm:text-base" 
               />
             </div>
-            <div className="mt-4 overflow-x-auto pb-2 sleek-scrollbar">
-              <div className="flex space-x-2">
-                {mainFilters.map(filter => (
-                  <button 
-                    key={filter} 
-                    onClick={() => setActiveMainFilter(filter)} 
-                    className={`px-4 py-1.5 text-sm font-semibold rounded-lg whitespace-nowrap transition-colors capitalize ${
-                      activeMainFilter === filter ? 'bg-red-500 text-white shadow-md' : 'bg-gray-100 text-gray-600'
-                    }`}
-                  >
-                    {filter === 'priority' ? '🔥 Priority' : filter}
-                  </button>
-                ))}
+          </div>
+          
+          {/* Description - Enhanced responsive design */}
+          <div>
+            <label className="text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2 block">Description (Optional)</label>
+            <textarea 
+              value={description} 
+              onChange={e => setDescription(e.target.value)} 
+              placeholder="Add more details about the task..." 
+              rows={3} 
+              className="w-full border border-gray-300 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm sm:text-base resize-none" 
+            />
+          </div>
+          
+          {/* Initials - Enhanced responsive design */}
+          <div>
+            <label className="text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2 block">Assign to (Optional)</label>
+            <input
+              type="text"
+              placeholder="Enter initials (e.g. AB)"
+              value={initials}
+              onChange={e => setInitials(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm sm:text-base"
+              maxLength={5}
+            />
+          </div>
+          
+          {/* Requirements Row - Enhanced responsive grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
+            {/* Image Required */}
+            <div>
+              <label className="text-xs sm:text-sm font-medium text-gray-700 mb-2 sm:mb-3 block">Image Required</label>
+              <div className="grid grid-cols-2 gap-2">
+                <button 
+                  onClick={() => setImageRequired(true)} 
+                  className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold border transition-all ${
+                    imageRequired 
+                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-md' 
+                      : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
+                  }`}
+                >
+                  Yes
+                </button>
+                <button 
+                  onClick={() => setImageRequired(false)} 
+                  className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold border transition-all ${
+                    !imageRequired 
+                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-md' 
+                      : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
+                  }`}
+                >
+                  No
+                </button>
               </div>
             </div>
-            <div className="mt-3 overflow-x-auto pb-2 border-t border-gray-200 pt-3 sleek-scrollbar">
-              <div className="flex space-x-2">
-                {categoryFilters.map(cat => (
-                  <button 
-                    key={cat} 
-                    onClick={() => setSelectedCategory(cat)} 
-                    className={`px-4 py-1.5 text-sm font-semibold rounded-lg whitespace-nowrap transition-colors ${
-                      selectedCategory === cat ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-600'
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
+            
+            {/* Video Required */}
+            <div>
+              <label className="text-xs sm:text-sm font-medium text-gray-700 mb-2 sm:mb-3 block">Video Required</label>
+              <div className="grid grid-cols-2 gap-2">
+                <button 
+                  onClick={() => setVideoRequired(true)} 
+                  className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold border transition-all ${
+                    videoRequired 
+                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-md' 
+                      : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
+                  }`}
+                >
+                  Yes
+                </button>
+                <button 
+                  onClick={() => setVideoRequired(false)} 
+                  className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold border transition-all ${
+                    !videoRequired 
+                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-md' 
+                      : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
+                  }`}
+                >
+                  No
+                </button>
               </div>
             </div>
           </div>
-
-          {/* Task List / Table */}
-          <div className="mt-6">
-            {/* Desktop Table Header */}
-            <div className="hidden lg:grid lg:grid-cols-12 gap-4 px-4 py-2 text-xs font-bold text-gray-500 uppercase tracking-wider">
-              <div className="col-span-5">Task</div>
-              <div className="col-span-2">Assigned To</div>
-              <div className="col-span-2">Day</div>
-              <div className="col-span-2">Status</div>
-              <div className="col-span-1 text-right">Actions</div>
+          
+          {/* Task Type - Enhanced responsive design */}
+          <div>
+            <label className="text-xs sm:text-sm font-medium text-gray-700 mb-2 sm:mb-3 block">Task Type</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button 
+                onClick={() => setTaskType('Daily')} 
+                className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold border transition-all ${
+                  taskType === 'Daily' 
+                    ? 'bg-blue-600 text-white border-blue-600 shadow-md' 
+                    : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
+                }`}
+              >
+                📅 Daily Task
+              </button>
+              <button 
+                onClick={() => setTaskType('Priority')} 
+                className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold border transition-all ${
+                  taskType === 'Priority' 
+                    ? 'bg-red-600 text-white border-red-600 shadow-md' 
+                    : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
+                }`}
+              >
+                🔥 Priority Task
+              </button>
             </div>
-
-            {/* Task Items */}
-            <div className="space-y-4 lg:space-y-0 mt-4 lg:mt-0 pb-20 lg:pb-0">
-              {filteredTasks.length > 0 ? (
-                filteredTasks.map(task => (
-                  <TaskItem 
-                    key={task.id} 
-                    task={task} 
-                    onSelect={setSelectedTask}
-                    onStatusChange={handleStatusChange}
-                    onTaskApprove={handleTaskApprove}
-                    onTaskDecline={handleTaskDecline}
-                    openDropdown={openDropdown}
-                    onToggleDropdown={toggleDropdown}
+          </div>
+          
+          {/* Day Selection for Daily Tasks - Enhanced responsive design */}
+          {taskType === 'Daily' ? (
+            <div>
+              <label className="text-xs sm:text-sm font-medium text-gray-700 mb-2 sm:mb-3 block">Select Days</label>
+              <div className="space-y-3 sm:space-y-4">
+                <div className="flex items-center p-2 sm:p-3 bg-gray-50 rounded-lg sm:rounded-xl">
+                  <input 
+                    type="checkbox" 
+                    onChange={handleSelectAllDays} 
+                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" 
+                    id="select-all"
                   />
-                ))
-              ) : (
-                <div className="text-center py-10 px-4 bg-white rounded-lg shadow-sm mt-4">
-                  <p className="text-gray-500">No tasks found.</p>
+                  <label htmlFor="select-all" className="ml-2 sm:ml-3 text-xs sm:text-sm font-medium text-gray-700">
+                    Select All Days
+                  </label>
                 </div>
-              )}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
+                  {DAYS.map(day => (
+                    <div key={day} className="flex items-center p-2 sm:p-3 bg-white border border-gray-200 rounded-lg sm:rounded-xl hover:bg-gray-50 transition-colors">
+                      <input 
+                        type="checkbox" 
+                        checked={selectedDays.includes(day)} 
+                        onChange={() => handleDayToggle(day)} 
+                        className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" 
+                        id={`day-${day}`}
+                      />
+                      <label htmlFor={`day-${day}`} className="ml-2 sm:ml-3 text-xs sm:text-sm text-gray-700 capitalize cursor-pointer">
+                        <span className="hidden sm:inline">{day}</span>
+                        <span className="sm:hidden">{day.substring(0, 3)}</span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div>
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg sm:rounded-xl p-3 sm:p-4">
+                <div className="flex items-start gap-2 sm:gap-3">
+                  <div className="text-yellow-600 flex-shrink-0">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="text-xs sm:text-sm font-medium text-yellow-800 mb-1">Priority Task</h4>
+                    <p className="text-xs sm:text-sm text-yellow-700">
+                      Priority tasks are created for immediate completion and will appear in the Priority tab.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-      </main>
-      
-      {/* Floating Action Button (Mobile Only) */}
-      <button 
-        onClick={() => setAddTaskModalOpen(true)} 
-        className="lg:hidden fixed bottom-6 right-6 h-14 w-14 bg-indigo-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-indigo-700 transition-all z-30"
-      >
-        <PlusIcon className="h-7 w-7"/>
-      </button>
-
-      {/* Modals */}
-      {isAddTaskModalOpen && (
-        <AddTaskModal 
-          isOpen={isAddTaskModalOpen} 
-          onClose={() => setAddTaskModalOpen(false)} 
-          onAddTask={handleAddTask} 
-        />
-      )}
-      {selectedTask && (
-        <TaskDetailModal 
-          task={selectedTask} 
-          onClose={() => setSelectedTask(null)} 
-          onStatusChange={handleStatusChange} 
-          onTaskApprove={handleTaskApprove}
-          onTaskDecline={handleTaskDecline}
-        />
-      )}
+        
+        {/* Footer - Enhanced responsive design */}
+        <div className="flex flex-col sm:flex-row items-center justify-end p-3 sm:p-4 lg:p-6 border-t border-gray-200 gap-2 sm:gap-3 flex-shrink-0 bg-gray-50 rounded-b-xl sm:rounded-b-2xl">
+          <button 
+            onClick={onClose} 
+            className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 transition-all min-h-[44px]"
+          >
+            Cancel
+          </button>
+          <button 
+            onClick={handleSubmit} 
+            className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 min-h-[44px]"
+          >
+            Create Task
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
 
-export default AdminTaskPanel;
+export default AddTaskModal;
