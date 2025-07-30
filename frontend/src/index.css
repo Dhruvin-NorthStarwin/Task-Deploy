@@ -23,6 +23,8 @@ body {
 .sleek-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: #d1d5db transparent;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .sleek-scrollbar::-webkit-scrollbar {
@@ -48,6 +50,33 @@ body {
 
 .sleek-scrollbar::-webkit-scrollbar-corner {
   background: transparent;
+}
+
+/* Horizontal scroll for mobile tabs */
+.mobile-scroll-x {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.mobile-scroll-x::-webkit-scrollbar {
+  display: none;
+}
+
+/* Fix width and height issues */
+.mobile-tab-container {
+  display: flex;
+  gap: 0.5rem;
+  padding-bottom: 0.5rem;
+  min-width: max-content;
+}
+
+.mobile-tab-item {
+  flex-shrink: 0;
+  white-space: nowrap;
+  min-width: fit-content;
 }
 
 /* Mobile touch improvements */

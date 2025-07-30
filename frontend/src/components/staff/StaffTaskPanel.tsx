@@ -276,61 +276,67 @@ const StaffTaskPanel: React.FC<StaffTaskPanelProps> = ({ onLogout }) => {
                   />
                 </div>
 
-                {/* Day Tabs - Horizontal scroll on mobile */}
+                {/* Day Tabs - Horizontal scroll with simple mobile classes */}
                 <div className="border-b border-gray-200">
-                  <div className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-2 sleek-scrollbar">
-                    <button 
-                      onClick={() => setActiveView('priority')} 
-                      className={`flex-shrink-0 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-md sm:rounded-lg transition-all duration-200 ${
-                        activeView === 'priority' 
-                          ? 'bg-red-500 text-white shadow-md' 
-                          : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
-                      }`}
-                    >
-                      🔥 Priority
-                    </button>
-                    {DAYS.map(day => (
+                  <div className="mobile-scroll-x">
+                    <div className="mobile-tab-container">
                       <button 
-                        key={day} 
-                        onClick={() => setActiveView(day)} 
-                        className={`flex-shrink-0 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-md sm:rounded-lg capitalize transition-all duration-200 ${
-                          activeView === day 
-                            ? 'bg-blue-500 text-white shadow-md' 
+                        onClick={() => setActiveView('priority')} 
+                        className={`mobile-tab-item px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                          activeView === 'priority' 
+                            ? 'bg-red-500 text-white shadow-md' 
                             : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
                         }`}
                       >
-                        <span className="hidden sm:inline">{day}</span>
-                        <span className="sm:hidden">{day.substring(0, 3)}</span>
+                        🔥 Priority
                       </button>
-                    ))}
+                      {DAYS.map(day => (
+                        <button 
+                          key={day} 
+                          onClick={() => setActiveView(day)} 
+                          className={`mobile-tab-item px-4 py-2 text-sm font-medium rounded-lg capitalize transition-all duration-200 ${
+                            activeView === day 
+                              ? 'bg-blue-500 text-white shadow-md' 
+                              : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                          }`}
+                        >
+                          <span className="hidden sm:inline">{day}</span>
+                          <span className="sm:hidden">{day.substring(0, 3)}</span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
-                {/* Category Filters - Responsive grid */}
-                <div className="flex flex-wrap gap-2">
-                  <button 
-                    onClick={() => setCategoryFilter('all')} 
-                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
-                      categoryFilter === 'all' 
-                        ? 'bg-gray-800 text-white shadow-md' 
-                        : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
-                    }`}
-                  >
-                    All Categories
-                  </button>
-                  {CATEGORIES.map(cat => (
-                    <button 
-                      key={cat} 
-                      onClick={() => setCategoryFilter(cat)} 
-                      className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
-                        categoryFilter === cat 
-                          ? 'bg-green-500 text-white shadow-md' 
-                          : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
+                {/* Category Filters - Horizontal scroll for mobile */}
+                <div className="border-t border-gray-200 pt-3">
+                  <div className="mobile-scroll-x">
+                    <div className="mobile-tab-container">
+                      <button 
+                        onClick={() => setCategoryFilter('all')} 
+                        className={`mobile-tab-item px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                          categoryFilter === 'all' 
+                            ? 'bg-gray-800 text-white shadow-md' 
+                            : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                        }`}
+                      >
+                        All Categories
+                      </button>
+                      {CATEGORIES.map(cat => (
+                        <button 
+                          key={cat} 
+                          onClick={() => setCategoryFilter(cat)} 
+                          className={`mobile-tab-item px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                            categoryFilter === cat 
+                              ? 'bg-green-500 text-white shadow-md' 
+                              : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                          }`}
+                        >
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
 
                 {/* Status Filters - Mobile optimized */}
