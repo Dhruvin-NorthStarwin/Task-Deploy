@@ -51,70 +51,88 @@ const TaskItem = ({
   };
 
   return (
-    <div className="block lg:grid lg:grid-cols-12 lg:gap-4 lg:items-center bg-white p-4 rounded-lg shadow-sm border border-gray-100 lg:p-2 lg:shadow-none lg:border-b lg:rounded-none cursor-pointer hover:bg-gray-50">
-      {/* Task Name (Mobile and Desktop) */}
-      <div className="lg:col-span-5 flex items-center gap-3" onClick={() => onSelect(task)}>
-        <span className={`h-2.5 w-2.5 rounded-full ${task.status === 'Declined' ? 'bg-red-500' : task.status === 'Done' ? 'bg-green-500' : 'bg-gray-400'}`}></span>
-        <p className="font-semibold text-gray-800">{task.task}</p>
-      </div>
-      
-      {/* Assigned To (Mobile and Desktop) */}
-      <div className="lg:col-span-2 mt-4 lg:mt-0 flex items-center justify-between lg:justify-start" onClick={() => onSelect(task)}>
-        <div className="flex items-center gap-2 text-sm text-gray-500">
+    <div className="w-full block lg:grid lg:grid-cols-12 lg:gap-4 lg:items-center bg-white p-4 rounded-lg shadow-sm border border-gray-100 lg:p-2 lg:shadow-none lg:border-b lg:rounded-none cursor-pointer hover:bg-gray-50">
+      {/* Mobile Layout */}
+      <div className="lg:hidden" onClick={() => onSelect(task)}>
+        {/* Task Name and Status Row */}
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-3 flex-1">
+            <span className={`h-2.5 w-2.5 rounded-full ${task.status === 'Declined' ? 'bg-red-500' : task.status === 'Done' ? 'bg-green-500' : 'bg-gray-400'}`}></span>
+            <p className="font-semibold text-gray-800 flex-1">{task.task}</p>
+          </div>
+          <StatusBadge status={task.status} />
+        </div>
+        
+        {/* Initials Below Task Title */}
+        <div className="flex items-center gap-2 text-sm text-gray-500 ml-5">
           <div className="flex items-center justify-center h-8 w-8 rounded-full bg-indigo-100 text-indigo-600 font-bold text-xs">
             {task.initials ? task.initials.toUpperCase() : '?'}
           </div>
-          <span className="lg:hidden">Assigned To:</span>
           <span>{task.initials || 'Unassigned'}</span>
         </div>
-        {/* Status Badge (Only visible on mobile view of the card) */}
-        <div className="lg:hidden"><StatusBadge status={task.status} /></div>
       </div>
 
-      {/* Day (Desktop only) */}
-      <div className="hidden lg:block lg:col-span-2 text-sm text-gray-600 capitalize" onClick={() => onSelect(task)}>{task.day}</div>
-      
-      {/* Status (Desktop only) */}
-      <div className="hidden lg:block lg:col-span-2" onClick={() => onSelect(task)}><StatusBadge status={task.status} /></div>
-
-      {/* Actions (Desktop only) */}
-      <div className="hidden lg:flex lg:col-span-1 justify-end relative">
-        <button 
-          onClick={(e) => onToggleDropdown(task.id, e)} 
-          className="text-gray-400 hover:text-gray-600 p-2"
-        >
-          <MoreVerticalIcon className="h-5 w-5" />
-        </button>
+      {/* Desktop Layout */}
+      <div className="hidden lg:contents">
+        {/* Task Name (Desktop) */}
+        <div className="lg:col-span-5 flex items-center gap-3" onClick={() => onSelect(task)}>
+          <span className={`h-2.5 w-2.5 rounded-full ${task.status === 'Declined' ? 'bg-red-500' : task.status === 'Done' ? 'bg-green-500' : 'bg-gray-400'}`}></span>
+          <p className="font-semibold text-gray-800">{task.task}</p>
+        </div>
         
-        {/* Dropdown Menu */}
-        {openDropdown === task.id && (
-          <div className="absolute top-full right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-            <div className="py-1">
-              {task.status === 'Submitted' && (
-                <>
-                  <button
-                    onClick={() => onTaskApprove(task.id)}
-                    className="w-full text-left px-4 py-2 text-sm text-green-600 hover:bg-green-50"
-                  >
-                    Approve Task
-                  </button>
-                  <button
-                    onClick={handleDeclineTask}
-                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                  >
-                    Decline Task
-                  </button>
-                </>
-              )}
-              <button
-                onClick={() => onStatusChange(task.id, 'Unknown')}
-                className="w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
-              >
-                Reset Status
-              </button>
-            </div>
+        {/* Assigned To (Desktop) */}
+        <div className="lg:col-span-2 flex items-center gap-2 text-sm text-gray-500" onClick={() => onSelect(task)}>
+          <div className="flex items-center justify-center h-8 w-8 rounded-full bg-indigo-100 text-indigo-600 font-bold text-xs">
+            {task.initials ? task.initials.toUpperCase() : '?'}
           </div>
-        )}
+          <span>{task.initials || 'Unassigned'}</span>
+        </div>
+
+        {/* Day (Desktop only) */}
+        <div className="lg:col-span-2 text-sm text-gray-600 capitalize" onClick={() => onSelect(task)}>{task.day}</div>
+        
+        {/* Status (Desktop only) */}
+        <div className="lg:col-span-2" onClick={() => onSelect(task)}><StatusBadge status={task.status} /></div>
+
+        {/* Actions (Desktop only) */}
+        <div className="lg:col-span-1 flex justify-end relative">
+          <button 
+            onClick={(e) => onToggleDropdown(task.id, e)} 
+            className="text-gray-400 hover:text-gray-600 p-2"
+          >
+            <MoreVerticalIcon className="h-5 w-5" />
+          </button>
+          
+          {/* Dropdown Menu */}
+          {openDropdown === task.id && (
+            <div className="absolute top-full right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+              <div className="py-1">
+                {task.status === 'Submitted' && (
+                  <>
+                    <button
+                      onClick={() => onTaskApprove(task.id)}
+                      className="w-full text-left px-4 py-2 text-sm text-green-600 hover:bg-green-50"
+                    >
+                      Approve Task
+                    </button>
+                    <button
+                      onClick={handleDeclineTask}
+                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                    >
+                      Decline Task
+                    </button>
+                  </>
+                )}
+                <button
+                  onClick={() => onStatusChange(task.id, 'Unknown')}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
+                >
+                  Reset Status
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -354,7 +372,7 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
             </div>
 
             {/* Task Items */}
-            <div className="space-y-4 lg:space-y-0">
+            <div className="w-full space-y-4 lg:space-y-0">
               {filteredTasks.length > 0 ? (
                 filteredTasks.map(task => (
                   <TaskItem 
