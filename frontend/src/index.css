@@ -239,3 +239,53 @@ select:focus-visible {
     min-width: 44px;
   }
 }
+
+/* Mobile-First Ultra Responsive Design for Login */
+@media (max-width: 374px) {
+  /* Ultra small phones */
+  .login-container {
+    padding: 0.5rem !important;
+  }
+  
+  input, button {
+    font-size: 14px !important;
+    padding: 8px 12px !important;
+  }
+  
+  h1 {
+    font-size: 1.25rem !important;
+  }
+}
+
+@media (min-width: 375px) and (max-width: 474px) {
+  /* Standard mobile phones */
+  .login-form {
+    padding: 1rem !important;
+  }
+}
+
+@media (max-width: 640px) {
+  /* All mobile devices */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  input[type="text"], 
+  input[type="password"] {
+    font-size: 16px !important; /* Prevents zoom on iOS */
+    -webkit-appearance: none;
+    appearance: none;
+    border-radius: 8px;
+  }
+  
+  button {
+    min-height: 44px !important; /* iOS touch target */
+    -webkit-appearance: none;
+    appearance: none;
+    border-radius: 8px;
+  }
+  
+  .form-container {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+}
