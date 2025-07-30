@@ -1,0 +1,30 @@
+<!-- Placeholder image for admin mobile screenshot -->
+<svg width="414" height="896" xmlns="http://www.w3.org/2000/svg">
+  <rect width="414" height="896" fill="#f8fafc"/>
+  <rect x="0" y="0" width="414" height="64" fill="#ffffff" stroke="#e5e7eb"/>
+  <text x="207" y="38" font-family="Arial" font-size="16" font-weight="bold" text-anchor="middle" fill="#1f2937">Admin Dashboard</text>
+  <rect x="20" y="84" width="374" height="48" rx="8" fill="#ffffff" stroke="#e5e7eb"/>
+  <text x="70" y="114" font-family="Arial" font-size="14" fill="#6b7280">Search tasks...</text>
+  <rect x="20" y="152" width="374" height="40" fill="#ffffff"/>
+  <rect x="30" y="162" width="70" height="24" rx="12" fill="#3b82f6"/>
+  <text x="65" y="178" font-family="Arial" font-size="12" fill="#ffffff" text-anchor="middle">Monday</text>
+  <rect x="110" y="162" width="70" height="24" rx="12" fill="#e5e7eb"/>
+  <text x="145" y="178" font-family="Arial" font-size="12" fill="#4b5563" text-anchor="middle">Tuesday</text>
+  <rect x="20" y="200" width="374" height="40" fill="#ffffff"/>
+  <rect x="30" y="210" width="50" height="24" rx="12" fill="#1f2937"/>
+  <text x="55" y="226" font-family="Arial" font-size="12" fill="#ffffff" text-anchor="middle">All</text>
+  <rect x="90" y="210" width="70" height="24" rx="12" fill="#e5e7eb"/>
+  <text x="125" y="226" font-family="Arial" font-size="12" fill="#4b5563" text-anchor="middle">Cleaning</text>
+  <!-- Task cards -->
+  <rect x="20" y="260" width="374" height="100" rx="8" fill="#ffffff" stroke="#e5e7eb"/>
+  <circle cx="30" cy="280" r="5" fill="#3b82f6"/>
+  <text x="50" y="285" font-family="Arial" font-size="14" font-weight="bold" fill="#1f2937">Admin Dashboard</text>
+  <circle cx="40" cy="330" r="15" fill="#e0e7ff"/>
+  <text x="40" y="335" font-family="Arial" font-size="14" font-weight="bold" fill="#4f46e5" text-anchor="middle">AD</text>
+  <text x="65" y="335" font-family="Arial" font-size="12" fill="#6b7280">AD</text>
+  <rect x="300" y="320" width="74" height="24" rx="12" fill="#f3f4f6"/>
+  <text x="337" y="335" font-family="Arial" font-size="12" fill="#4b5563" text-anchor="middle">Unknown</text>
+  <!-- Add Button -->
+  <circle cx="374" cy="856" r="30" fill="#3b82f6"/>
+  <text x="374" y="862" font-family="Arial" font-size="24" fill="#ffffff" text-anchor="middle">+</text>
+</svg>

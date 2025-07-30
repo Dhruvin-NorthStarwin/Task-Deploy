@@ -12,27 +12,58 @@
   "icons": [
     {
       "src": "/vite.svg",
-      "sizes": "any",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/vite.svg",
+      "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any maskable"
     }
   ],
   "categories": ["business", "productivity"],
-  "screenshots": [],
+  "screenshots": [
+    {
+      "src": "/screenshots/admin-mobile.jpg",
+      "sizes": "414x896",
+      "type": "image/jpeg",
+      "platform": "narrow",
+      "label": "Admin Dashboard on Mobile"
+    },
+    {
+      "src": "/screenshots/admin-desktop.jpg",
+      "sizes": "1280x800",
+      "type": "image/jpeg", 
+      "platform": "wide",
+      "label": "Admin Dashboard on Desktop"
+    }
+  ],
   "shortcuts": [
     {
       "name": "Staff Dashboard",
       "short_name": "Staff",
       "description": "Access staff task management",
       "url": "/staff",
-      "icons": []
+      "icons": [
+        {
+          "src": "/icons/staff.svg",
+          "sizes": "96x96"
+        }
+      ]
     },
     {
       "name": "Admin Dashboard", 
       "short_name": "Admin",
       "description": "Access admin task management",
       "url": "/admin",
-      "icons": []
+      "icons": [
+        {
+          "src": "/icons/admin.svg",
+          "sizes": "96x96"
+        }
+      ]
     }
   ]
 }
