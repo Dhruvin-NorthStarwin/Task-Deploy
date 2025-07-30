@@ -51,38 +51,35 @@ const TaskItem = ({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-100 mb-4 lg:mb-0 lg:bg-transparent lg:border-none lg:shadow-none lg:rounded-none lg:grid lg:grid-cols-12 lg:gap-4 lg:items-center lg:p-2 lg:border-b cursor-pointer hover:bg-gray-50">
-      {/* Task Name (Mobile and Desktop) */}
-      <div className="lg:col-span-5 p-4 lg:p-0 flex items-center gap-3" onClick={() => onSelect(task)}>
-        <span className={`h-3 w-3 rounded-full flex-shrink-0 ${task.status === 'Declined' ? 'bg-red-500' : task.status === 'Done' ? 'bg-green-500' : 'bg-gray-400'}`}></span>
-        <p className="font-semibold text-gray-800 text-base lg:text-sm">{task.task}</p>
-      </div>
-      
-      {/* Mobile Info Section */}
-      <div className="lg:hidden px-4 pb-4 space-y-3">
-        {/* Day on Mobile */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">Day:</span>
-            <span className="capitalize font-medium text-gray-700">{task.day}</span>
+    <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 cursor-pointer hover:bg-gray-50 lg:grid lg:grid-cols-12 lg:gap-4 lg:items-center lg:p-2 lg:shadow-none lg:border-b lg:rounded-none lg:bg-transparent lg:border-gray-200 relative">
+      {/* Mobile Layout */}
+      <div className="lg:hidden">
+        <div className="flex justify-between items-start" onClick={() => onSelect(task)}>
+          <div className="flex items-center gap-3">
+            <span className={`h-2.5 w-2.5 rounded-full ${task.status === 'Declined' ? 'bg-red-500' : task.status === 'Done' ? 'bg-green-500' : 'bg-gray-400'}`}></span>
+            <p className="font-semibold text-gray-800">{task.task}</p>
           </div>
-          <StatusBadge status={task.status} />
+          <button onClick={(e) => onToggleDropdown(task.id, e)} className="text-gray-400 hover:text-gray-600 relative z-10">
+            <MoreVerticalIcon className="h-5 w-5" />
+          </button>
         </div>
-        
-        {/* Assigned To on Mobile */}
-        <div className="flex items-center gap-2 text-sm text-gray-500">
-          <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">Assigned:</span>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center justify-center h-7 w-7 rounded-full bg-indigo-100 text-indigo-600 font-bold text-xs">
+        <div className="mt-4 flex items-center justify-between" onClick={() => onSelect(task)}>
+          <div className="flex items-center gap-2 text-sm text-gray-500">
+            <div className="flex items-center justify-center h-8 w-8 rounded-full bg-indigo-100 text-indigo-600 font-bold text-xs">
               {task.initials ? task.initials.toUpperCase() : '?'}
             </div>
-            <span className="font-medium text-gray-700">{task.initials || 'Unassigned'}</span>
+            <span>{task.initials || 'Unassigned'}</span>
           </div>
+          <StatusBadge status={task.status} />
         </div>
       </div>
 
       {/* Desktop Layout */}
-      {/* Assigned To (Desktop only) */}
+      <div className="hidden lg:flex lg:col-span-5 items-center gap-3" onClick={() => onSelect(task)}>
+        <span className={`h-2.5 w-2.5 rounded-full ${task.status === 'Declined' ? 'bg-red-500' : task.status === 'Done' ? 'bg-green-500' : 'bg-gray-400'}`}></span>
+        <p className="font-semibold text-gray-800">{task.task}</p>
+      </div>
+      
       <div className="hidden lg:flex lg:col-span-2 items-center gap-2 text-sm text-gray-500" onClick={() => onSelect(task)}>
         <div className="flex items-center justify-center h-8 w-8 rounded-full bg-indigo-100 text-indigo-600 font-bold text-xs">
           {task.initials ? task.initials.toUpperCase() : '?'}
@@ -90,10 +87,8 @@ const TaskItem = ({
         <span>{task.initials || 'Unassigned'}</span>
       </div>
 
-      {/* Day (Desktop only) */}
       <div className="hidden lg:block lg:col-span-2 text-sm text-gray-600 capitalize" onClick={() => onSelect(task)}>{task.day}</div>
       
-      {/* Status (Desktop only) */}
       <div className="hidden lg:block lg:col-span-2" onClick={() => onSelect(task)}><StatusBadge status={task.status} /></div>
 
       {/* Actions (Desktop only) */}
@@ -105,9 +100,9 @@ const TaskItem = ({
           <MoreVerticalIcon className="h-5 w-5" />
         </button>
         
-        {/* Dropdown Menu */}
+        {/* Dropdown Menu - Mobile positioned relative to the three dots */}
         {openDropdown === task.id && (
-          <div className="absolute top-full right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-48 overflow-y-auto sleek-scrollbar">
+          <div className="absolute top-full right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-48 overflow-y-auto sleek-scrollbar lg:right-0">
             <div className="py-1">
               {task.status === 'Submitted' && (
                 <>
@@ -392,7 +387,7 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
             </div>
 
             {/* Task Items */}
-            <div className="space-y-3 lg:space-y-0 mt-4 lg:mt-0">
+            <div className="space-y-4 lg:space-y-0 mt-4 lg:mt-0 pb-20 lg:pb-0">
               {filteredTasks.length > 0 ? (
                 filteredTasks.map(task => (
                   <TaskItem 
@@ -408,25 +403,7 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
                 ))
               ) : (
                 <div className="text-center py-10 px-4 bg-white rounded-lg shadow-sm mt-4">
-                  <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                    </svg>
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-700 mb-2">No tasks found</h3>
-                  <p className="text-gray-500 mb-4 max-w-md mx-auto text-sm">
-                    {searchTerm || selectedCategory !== 'all' 
-                      ? 'Try adjusting your search or filter criteria to see more tasks.'
-                      : 'Get started by creating your first task for the team.'
-                    }
-                  </p>
-                  <button 
-                    onClick={() => setAddTaskModalOpen(true)}
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-colors shadow-lg"
-                  >
-                    <PlusIcon className="w-5 h-5" />
-                    Add First Task
-                  </button>
+                  <p className="text-gray-500">No tasks found.</p>
                 </div>
               )}
             </div>
@@ -437,9 +414,9 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
       {/* Floating Action Button (Mobile Only) */}
       <button 
         onClick={() => setAddTaskModalOpen(true)} 
-        className="lg:hidden fixed bottom-6 right-6 h-12 w-12 bg-indigo-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-indigo-700 transition-all z-30"
+        className="lg:hidden fixed bottom-6 right-6 h-14 w-14 bg-indigo-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-indigo-700 transition-all z-30"
       >
-        <PlusIcon className="h-5 w-5"/>
+        <PlusIcon className="h-7 w-7"/>
       </button>
 
       {/* Modals */}
