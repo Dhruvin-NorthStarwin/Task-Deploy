@@ -15,7 +15,7 @@ svg {
   flex-shrink: 0;
 }
 
-/* Mobile responsive adjustments */
+/* Enhanced Mobile responsive adjustments */
 @media (max-width: 640px) {
   /* Improve touch targets */
   button {
@@ -26,26 +26,56 @@ svg {
   input, textarea, select {
     font-size: 16px; /* Prevents zoom on iOS */
   }
+  
+  /* Mobile-friendly spacing */
+  .mobile-card {
+    border-radius: 12px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Touch-friendly interactions */
+  .mobile-touch {
+    min-height: 44px;
+    min-width: 44px;
+  }
 }
 
-/* Scrollbar improvements */
-.custom-scrollbar {
+/* Touch target utilities */
+.min-h-touch {
+  min-height: 44px;
+}
+
+.min-w-touch {
+  min-width: 44px;
+}
+
+/* Enhanced scrollbar improvements */
+.custom-scrollbar, .sleek-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: #cbd5e0 transparent;
 }
 
-.custom-scrollbar::-webkit-scrollbar {
+.custom-scrollbar::-webkit-scrollbar, .sleek-scrollbar::-webkit-scrollbar {
   width: 6px;
-  height: 6px;
+  height: 4px;
 }
 
-.custom-scrollbar::-webkit-scrollbar-track {
+.custom-scrollbar::-webkit-scrollbar-track, .sleek-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #cbd5e0;
-  border-radius: 3px;
+.custom-scrollbar::-webkit-scrollbar-thumb, .sleek-scrollbar::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover, .sleek-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #cbd5e1;
+}
+
+/* Mobile-first animation utilities */
+.active\:scale-98:active {
+  transform: scale(0.98);
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
