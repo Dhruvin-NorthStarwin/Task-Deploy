@@ -5,6 +5,7 @@ import StatusBadge from '../common/StatusBadge';
 import { ActionsIcon } from '../common/Icons';
 import AddTaskModal from './AddTaskModal';
 import TaskDetailModal from './TaskDetailModal';
+import PWAInstallButton from '../common/PWAInstallButton';
 import apiService from '../../services/apiService';
 
 interface AdminTaskPanelProps {
@@ -288,6 +289,7 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
               </p>
             </div>
             <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2 lg:space-x-3">
+              <PWAInstallButton />
               <button 
                 onClick={() => setIsAddModalOpen(true)} 
                 className="w-full sm:w-auto bg-indigo-600 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-semibold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-2 text-sm sm:text-base"

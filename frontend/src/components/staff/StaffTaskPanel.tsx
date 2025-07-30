@@ -3,6 +3,7 @@ import type { Task, Day, Category, Status } from '../../types';
 import { CATEGORIES, DAYS } from '../../data/tasks';
 import StatusBadge from '../common/StatusBadge';
 import StaffTaskDetailModal from './StaffTaskDetailModal';
+import PWAInstallButton from '../common/PWAInstallButton';
 import apiService from '../../services/apiService';
 
 interface StaffTaskPanelProps {
@@ -231,6 +232,7 @@ const StaffTaskPanel: React.FC<StaffTaskPanelProps> = ({ onLogout }) => {
               </p>
             </div>
             <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
+              <PWAInstallButton />
               <button 
                 onClick={fetchTasks}
                 className="w-full sm:w-auto bg-blue-600 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-2 text-sm sm:text-base"

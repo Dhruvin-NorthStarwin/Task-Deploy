@@ -25,6 +25,23 @@ export default defineConfig(({ mode }) => {
         '/api': 'http://localhost:8000'
       }
     },
+    // PWA Configuration
+    build: {
+      rollupOptions: {
+        input: {
+          main: 'index.html',
+          sw: 'public/sw.js'
+        },
+        output: {
+          assetFileNames: (assetInfo) => {
+            if (assetInfo.name === 'sw.js') {
+              return 'sw.js'
+            }
+            return 'assets/[name]-[hash][extname]'
+          }
+        }
+      }
+    },
     // Make sure env vars are available to the app
     define: {
       'import.meta.env.VITE_API_BASE_URL': JSON.stringify(env.VITE_API_BASE_URL || 'https://radiant-amazement-production-d68f.up.railway.app/api'),
