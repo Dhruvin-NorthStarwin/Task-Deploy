@@ -1,0 +1,38 @@
+{
+  "name": "RestroManage Task Module",
+  "short_name": "RestroManage",
+  "description": "Restaurant task management system for staff and admin users",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Staff Dashboard",
+      "short_name": "Staff",
+      "description": "Access staff task management",
+      "url": "/staff",
+      "icons": []
+    },
+    {
+      "name": "Admin Dashboard", 
+      "short_name": "Admin",
+      "description": "Access admin task management",
+      "url": "/admin",
+      "icons": []
+    }
+  ]
+}
