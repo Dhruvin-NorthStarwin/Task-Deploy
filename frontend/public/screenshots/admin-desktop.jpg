@@ -1,0 +1,36 @@
+<!-- Placeholder image for admin desktop screenshot -->
+<svg width="1280" height="800" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1280" height="800" fill="#f8fafc"/>
+  <rect x="0" y="0" width="1280" height="80" fill="#ffffff" stroke="#e5e7eb"/>
+  <text x="60" y="30" font-family="Arial" font-size="20" font-weight="bold" fill="#1f2937">Admin Dashboard</text>
+  <text x="60" y="55" font-family="Arial" font-size="14" fill="#6b7280">Manage and oversee all restaurant tasks</text>
+  <rect x="1040" y="25" width="100" height="36" rx="6" fill="#3b82f6"/>
+  <text x="1090" y="47" font-family="Arial" font-size="14" fill="#ffffff" text-anchor="middle">Add Task</text>
+  <rect x="1150" y="25" width="100" height="36" rx="6" fill="#ef4444"/>
+  <text x="1200" y="47" font-family="Arial" font-size="14" fill="#ffffff" text-anchor="middle">Logout</text>
+  
+  <rect x="200" y="120" width="880" height="600" rx="8" fill="#ffffff" stroke="#e5e7eb"/>
+  <rect x="220" y="150" width="840" height="40" rx="6" fill="#ffffff" stroke="#d1d5db"/>
+  <text x="260" y="175" font-family="Arial" font-size="14" fill="#6b7280">Search tasks...</text>
+  
+  <!-- Table header -->
+  <rect x="220" y="220" width="840" height="50" fill="#f9fafb"/>
+  <line x1="220" y1="270" x2="1060" y2="270" stroke="#e5e7eb" stroke-width="1"/>
+  <text x="250" y="250" font-family="Arial" font-size="12" font-weight="bold" fill="#4b5563">TASK</text>
+  <text x="500" y="250" font-family="Arial" font-size="12" font-weight="bold" fill="#4b5563">CATEGORY</text>
+  <text x="700" y="250" font-family="Arial" font-size="12" font-weight="bold" fill="#4b5563">ASSIGNED TO</text>
+  <text x="900" y="250" font-family="Arial" font-size="12" font-weight="bold" fill="#4b5563">STATUS</text>
+  <text x="1020" y="250" font-family="Arial" font-size="12" font-weight="bold" fill="#4b5563">ACTIONS</text>
+  
+  <!-- Table rows -->
+  <rect x="220" y="270" width="840" height="60" fill="#ffffff"/>
+  <line x1="220" y1="330" x2="1060" y2="330" stroke="#e5e7eb" stroke-width="1"/>
+  <circle cx="235" cy="300" r="4" fill="#3b82f6"/>
+  <text x="250" y="304" font-family="Arial" font-size="14" fill="#111827">Clean kitchen floors</text>
+  <text x="500" y="304" font-family="Arial" font-size="14" fill="#4b5563">Cleaning</text>
+  <circle cx="690" cy="300" r="15" fill="#e0e7ff"/>
+  <text x="690" y="304" font-family="Arial" font-size="12" font-weight="bold" fill="#4f46e5" text-anchor="middle">JD</text>
+  <text x="715" y="304" font-family="Arial" font-size="14" fill="#4b5563">John Doe</text>
+  <rect x="900" y="285" width="80" height="30" rx="15" fill="#dbeafe"/>
+  <text x="940" y="304" font-family="Arial" font-size="12" fill="#2563eb" text-anchor="middle">Done</text>
+</svg>

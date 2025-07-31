@@ -28,8 +28,8 @@ const NotificationComponent: React.FC<{ notification: Notification | null }> = (
   if (!notification) return null;
   const bgColor = notification.type === 'success' ? 'bg-green-500' : 'bg-red-500';
   return (
-    <div className={`fixed top-5 right-5 text-white py-3 px-6 rounded-lg shadow-lg transition-opacity duration-300 z-50 ${bgColor}`}>
-      <p>{notification.message}</p>
+    <div className={`fixed top-3 left-2 right-2 xs:top-4 xs:left-4 xs:right-4 sm:top-5 sm:left-auto sm:right-5 sm:max-w-md text-white py-2 xs:py-3 px-3 xs:px-4 sm:px-6 rounded-md sm:rounded-lg shadow-lg transition-opacity duration-300 z-50 ${bgColor}`}>
+      <p className="text-xs xs:text-sm sm:text-base break-words">{notification.message}</p>
     </div>
   );
 };
@@ -109,28 +109,28 @@ const LoginComponent: React.FC<{
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 px-4 py-8">
-      <div className="w-full max-w-md">
-        {/* Logo Section */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full mb-4">
-            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-2 sm:p-4 flex items-center justify-center mobile-optimized">
+      <div className="w-full max-w-xs xxs:max-w-sm mobile:max-w-md lg:max-w-lg mobile-safe">
+        {/* Logo Section - Ultra Mobile Optimized */}
+        <div className="text-center mb-3 sm:mb-4 md:mb-6 mobile-margin">
+          <div className="inline-flex items-center justify-center w-12 h-12 xxs:w-14 xxs:h-14 mobile:w-16 mobile:h-16 bg-blue-600 rounded-mobile mb-2 sm:mb-3 shadow-lg">
+            <svg className="w-6 h-6 xxs:w-7 xxs:h-7 mobile:w-8 mobile:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">RestroManage</h1>
-          <p className="text-gray-600">Sign in to your restaurant dashboard</p>
+          <h1 className="mobile-title xxs:text-xl mobile:text-2xl lg:text-3xl font-bold text-gray-800 mb-1">RestroManage</h1>
+          <p className="mobile-subtitle xxs:text-sm mobile:text-base px-2">Sign in to your restaurant dashboard</p>
         </div>
 
         {/* iOS Storage Debug Info */}
         <IOSStorageDebug />
 
-        {/* Login Form */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Restaurant Code Field */}
+        {/* Login Form - Ultra Responsive */}
+        <div className="mobile-card xxs:p-4 mobile:p-6 lg:p-8 form-container">
+          <form onSubmit={handleSubmit} className="space-y-4 xxs:space-y-5 mobile:space-y-6">
+            {/* Restaurant Code Field - Ultra Responsive */}
             <div>
-              <label htmlFor="restaurantCode" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="restaurantCode" className="block mobile-subtitle font-medium text-gray-700 mb-2">
                 Restaurant Code
               </label>
               <input
@@ -138,16 +138,16 @@ const LoginComponent: React.FC<{
                 type="text"
                 value={restaurantCode}
                 onChange={(e) => setRestaurantCode(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-lg"
-                placeholder="Enter your restaurant code"
+                className="w-full min-h-touch px-3 xxs:px-4 mobile:px-4 py-3 border border-gray-300 rounded-mobile focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 mobile-base font-medium"
+                placeholder="Enter restaurant code"
                 required
                 autoComplete="username"
               />
             </div>
 
-            {/* Password Field */}
+            {/* Password Field - Ultra Responsive */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="password" className="block mobile-subtitle font-medium text-gray-700 mb-2">
                 Password
               </label>
               <div className="relative">
@@ -156,26 +156,26 @@ const LoginComponent: React.FC<{
                   type={isPasswordVisible ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-lg"
-                  placeholder="Enter your password"
+                  className="w-full min-h-touch px-3 xxs:px-4 mobile:px-4 py-3 pr-12 border border-gray-300 rounded-mobile focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 mobile-base font-medium"
+                  placeholder="Enter password"
                   required
                   autoComplete="current-password"
                 />
                 <button
                   type="button"
                   onClick={() => setIsPasswordVisible(!isPasswordVisible)}
-                  className="absolute inset-y-0 right-3 flex items-center hover:text-blue-500 transition-colors"
+                  className="absolute inset-y-0 right-3 flex items-center hover:text-blue-500 transition-colors min-h-touch min-w-touch"
                 >
                   <PasswordToggleIcon isVisible={isPasswordVisible} />
                 </button>
               </div>
             </div>
 
-            {/* Login Button */}
+            {/* Login Button - Ultra Responsive */}
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed flex items-center justify-center text-lg"
+              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold min-h-touch-lg px-4 mobile:px-6 rounded-mobile transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed flex items-center justify-center mobile-base shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:transform-none"
             >
               {isLoading ? (
                 <>
@@ -183,32 +183,32 @@ const LoginComponent: React.FC<{
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Signing in...
+                  <span className="mobile-base">Signing in...</span>
                 </>
               ) : (
-                'LOGIN'
+                <span className="mobile-base font-bold">LOGIN</span>
               )}
             </button>
 
-            {/* Signup Link */}
-            <div className="text-center">
-              <p className="text-gray-600">
+            {/* Signup Link - Mobile Optimized */}
+            <div className="text-center pt-2 mobile:pt-3">
+              <p className="mobile-subtitle">
                 Don't have an account?{' '}
                 <button
                   type="button"
                   onClick={onShowSignup}
-                  className="text-blue-600 hover:text-blue-700 font-medium transition-colors duration-200"
+                  className="text-blue-600 hover:text-blue-700 font-medium transition-colors duration-200 underline min-h-touch"
                 >
                   Sign Up
                 </button>
               </p>
             </div>
 
-            {/* Debug Info (only in development) */}
+            {/* Debug Info (only in development) - Mobile Optimized */}
             {config.DEBUG && (
-              <div className="mt-4 p-3 bg-gray-100 rounded-lg text-xs text-gray-600">
-                <p>Debug: API URL = {config.API_BASE_URL}</p>
-                <p>Debug: Environment = {config.ENVIRONMENT}</p>
+              <div className="mt-2 xs:mt-3 sm:mt-4 p-2 xs:p-3 bg-gray-100 rounded-md sm:rounded-lg text-xs text-gray-600">
+                <p className="break-all">API URL = {config.API_BASE_URL}</p>
+                <p>Environment = {config.ENVIRONMENT}</p>
               </div>
             )}
           </form>

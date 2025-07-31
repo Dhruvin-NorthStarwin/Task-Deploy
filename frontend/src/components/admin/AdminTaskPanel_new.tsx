@@ -51,84 +51,88 @@ const TaskItem = ({
   };
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 cursor-pointer hover:bg-gray-50 lg:grid lg:grid-cols-12 lg:gap-4 lg:items-center lg:p-2 lg:shadow-none lg:border-b lg:rounded-none lg:bg-transparent lg:border-gray-200 relative">
+    <div className="w-full block lg:grid lg:grid-cols-12 lg:gap-4 lg:items-center bg-white p-4 rounded-lg shadow-sm border border-gray-100 lg:p-2 lg:shadow-none lg:border-b lg:rounded-none cursor-pointer hover:bg-gray-50">
       {/* Mobile Layout */}
-      <div className="lg:hidden">
-        <div className="flex justify-between items-start" onClick={() => onSelect(task)}>
-          <div className="flex items-center gap-3">
+      <div className="lg:hidden" onClick={() => onSelect(task)}>
+        {/* Task Name and Status Row */}
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-3 flex-1">
             <span className={`h-2.5 w-2.5 rounded-full ${task.status === 'Declined' ? 'bg-red-500' : task.status === 'Done' ? 'bg-green-500' : 'bg-gray-400'}`}></span>
-            <p className="font-semibold text-gray-800">{task.task}</p>
-          </div>
-          <button onClick={(e) => onToggleDropdown(task.id, e)} className="text-gray-400 hover:text-gray-600 relative z-10">
-            <MoreVerticalIcon className="h-5 w-5" />
-          </button>
-        </div>
-        <div className="mt-4 flex items-center justify-between" onClick={() => onSelect(task)}>
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <div className="flex items-center justify-center h-8 w-8 rounded-full bg-indigo-100 text-indigo-600 font-bold text-xs">
-              {task.initials ? task.initials.toUpperCase() : '?'}
-            </div>
-            <span>{task.initials || 'Unassigned'}</span>
+            <p className="font-semibold text-gray-800 flex-1">{task.task}</p>
           </div>
           <StatusBadge status={task.status} />
+        </div>
+        
+        {/* Initials Below Task Title */}
+        <div className="flex items-center gap-2 text-sm text-gray-500 ml-5">
+          <div className="flex items-center justify-center h-8 w-8 rounded-full bg-indigo-100 text-indigo-600 font-bold text-xs">
+            {task.initials ? task.initials.toUpperCase() : '?'}
+          </div>
+          <span>{task.initials || 'Unassigned'}</span>
         </div>
       </div>
 
       {/* Desktop Layout */}
-      <div className="hidden lg:flex lg:col-span-5 items-center gap-3" onClick={() => onSelect(task)}>
-        <span className={`h-2.5 w-2.5 rounded-full ${task.status === 'Declined' ? 'bg-red-500' : task.status === 'Done' ? 'bg-green-500' : 'bg-gray-400'}`}></span>
-        <p className="font-semibold text-gray-800">{task.task}</p>
-      </div>
-      
-      <div className="hidden lg:flex lg:col-span-2 items-center gap-2 text-sm text-gray-500" onClick={() => onSelect(task)}>
-        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-indigo-100 text-indigo-600 font-bold text-xs">
-          {task.initials ? task.initials.toUpperCase() : '?'}
+      <div className="hidden lg:contents">
+        {/* Task Name (Desktop) */}
+        <div className="lg:col-span-5 flex items-center gap-3" onClick={() => onSelect(task)}>
+          <span className={`h-2.5 w-2.5 rounded-full ${task.status === 'Declined' ? 'bg-red-500' : task.status === 'Done' ? 'bg-green-500' : 'bg-gray-400'}`}></span>
+          <p className="font-semibold text-gray-800">{task.task}</p>
         </div>
-        <span>{task.initials || 'Unassigned'}</span>
-      </div>
-
-      <div className="hidden lg:block lg:col-span-2 text-sm text-gray-600 capitalize" onClick={() => onSelect(task)}>{task.day}</div>
-      
-      <div className="hidden lg:block lg:col-span-2" onClick={() => onSelect(task)}><StatusBadge status={task.status} /></div>
-
-      {/* Actions (Desktop only) */}
-      <div className="hidden lg:flex lg:col-span-1 justify-end relative">
-        <button 
-          onClick={(e) => onToggleDropdown(task.id, e)} 
-          className="text-gray-400 hover:text-gray-600 p-2"
-        >
-          <MoreVerticalIcon className="h-5 w-5" />
-        </button>
         
-        {/* Dropdown Menu - Mobile positioned relative to the three dots */}
-        {openDropdown === task.id && (
-          <div className="absolute top-full right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-48 overflow-y-auto sleek-scrollbar lg:right-0">
-            <div className="py-1">
-              {task.status === 'Submitted' && (
-                <>
-                  <button
-                    onClick={() => onTaskApprove(task.id)}
-                    className="w-full text-left px-4 py-2 text-sm text-green-600 hover:bg-green-50"
-                  >
-                    Approve Task
-                  </button>
-                  <button
-                    onClick={handleDeclineTask}
-                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                  >
-                    Decline Task
-                  </button>
-                </>
-              )}
-              <button
-                onClick={() => onStatusChange(task.id, 'Unknown')}
-                className="w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
-              >
-                Reset Status
-              </button>
-            </div>
+        {/* Assigned To (Desktop) */}
+        <div className="lg:col-span-2 flex items-center gap-2 text-sm text-gray-500" onClick={() => onSelect(task)}>
+          <div className="flex items-center justify-center h-8 w-8 rounded-full bg-indigo-100 text-indigo-600 font-bold text-xs">
+            {task.initials ? task.initials.toUpperCase() : '?'}
           </div>
-        )}
+          <span>{task.initials || 'Unassigned'}</span>
+        </div>
+
+        {/* Day (Desktop only) */}
+        <div className="lg:col-span-2 text-sm text-gray-600 capitalize" onClick={() => onSelect(task)}>{task.day}</div>
+        
+        {/* Status (Desktop only) */}
+        <div className="lg:col-span-2" onClick={() => onSelect(task)}><StatusBadge status={task.status} /></div>
+
+        {/* Actions (Desktop only) */}
+        <div className="lg:col-span-1 flex justify-end relative">
+          <button 
+            onClick={(e) => onToggleDropdown(task.id, e)} 
+            className="text-gray-400 hover:text-gray-600 p-2"
+          >
+            <MoreVerticalIcon className="h-5 w-5" />
+          </button>
+          
+          {/* Dropdown Menu */}
+          {openDropdown === task.id && (
+            <div className="absolute top-full right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+              <div className="py-1">
+                {task.status === 'Submitted' && (
+                  <>
+                    <button
+                      onClick={() => onTaskApprove(task.id)}
+                      className="w-full text-left px-4 py-2 text-sm text-green-600 hover:bg-green-50"
+                    >
+                      Approve Task
+                    </button>
+                    <button
+                      onClick={handleDeclineTask}
+                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                    >
+                      Decline Task
+                    </button>
+                  </>
+                )}
+                <button
+                  onClick={() => onStatusChange(task.id, 'Unknown')}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-gray-50"
+                >
+                  Reset Status
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -169,9 +173,7 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
   // API Integration
   const fetchTasks = async () => {
     try {
-      console.log('AdminTaskPanel: Fetching tasks...');
       const tasksData = await apiService.getTasks();
-      console.log('AdminTaskPanel: Tasks fetched:', tasksData);
       setTasks(tasksData);
     } catch (error) {
       console.error('AdminTaskPanel: Failed to fetch tasks:', error);
@@ -279,30 +281,13 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
 
   return (
     <div className="bg-gray-50 min-h-screen font-sans">
-      <style>{`.sleek-scrollbar::-webkit-scrollbar { height: 4px; width: 4px; } .sleek-scrollbar::-webkit-scrollbar-track { background: transparent; } .sleek-scrollbar::-webkit-scrollbar-thumb { background-color: #e2e8f0; border-radius: 10px; }`}</style>
-      
-      {/* Debug Info (remove in production) */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="lg:hidden fixed top-20 left-4 bg-black text-white text-xs p-2 rounded z-50">
-          Tasks: {tasks.length} | Filtered: {filteredTasks.length}
-        </div>
-      )}
+      <style>{`.sleek-scrollbar::-webkit-scrollbar { height: 4px; } .sleek-scrollbar::-webkit-scrollbar-track { background: transparent; } .sleek-scrollbar::-webkit-scrollbar-thumb { background-color: #e2e8f0; border-radius: 10px; }`}</style>
       
       {/* Mobile Header */}
       <header className="lg:hidden bg-white p-4 shadow-sm flex justify-between items-center sticky top-0 z-20">
-        <button 
-          onClick={onLogout}
-          className="text-gray-600 hover:text-gray-800"
-        >
-          <MenuIcon className="h-6 w-6" />
-        </button>
+        <button className="text-gray-600"><MenuIcon className="h-6 w-6" /></button>
         <h1 className="font-bold text-lg text-gray-800">Admin Dashboard</h1>
-        <button 
-          onClick={() => setAddTaskModalOpen(true)}
-          className="text-indigo-600 hover:text-indigo-700"
-        >
-          <PlusIcon className="h-6 w-6" />
-        </button>
+        <div className="w-6"></div>
       </header>
 
       {/* Main Content */}
@@ -387,7 +372,7 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
             </div>
 
             {/* Task Items */}
-            <div className="space-y-4 lg:space-y-0 mt-4 lg:mt-0 pb-20 lg:pb-0">
+            <div className="w-full space-y-4 lg:space-y-0">
               {filteredTasks.length > 0 ? (
                 filteredTasks.map(task => (
                   <TaskItem 
@@ -402,8 +387,26 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
                   />
                 ))
               ) : (
-                <div className="text-center py-10 px-4 bg-white rounded-lg shadow-sm mt-4">
-                  <p className="text-gray-500">No tasks found.</p>
+                <div className="text-center py-10 px-4 bg-white rounded-lg shadow-sm lg:col-span-12">
+                  <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-700 mb-2">No tasks found</h3>
+                  <p className="text-gray-500 mb-4 max-w-md mx-auto">
+                    {searchTerm || selectedCategory !== 'all' 
+                      ? 'Try adjusting your search or filter criteria to see more tasks.'
+                      : 'Get started by creating your first task for the team.'
+                    }
+                  </p>
+                  <button 
+                    onClick={() => setAddTaskModalOpen(true)}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-colors shadow-lg"
+                  >
+                    <PlusIcon className="w-5 h-5" />
+                    Add First Task
+                  </button>
                 </div>
               )}
             </div>
@@ -414,9 +417,9 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
       {/* Floating Action Button (Mobile Only) */}
       <button 
         onClick={() => setAddTaskModalOpen(true)} 
-        className="lg:hidden fixed bottom-6 right-6 h-14 w-14 bg-indigo-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-indigo-700 transition-all z-30"
+        className="lg:hidden fixed bottom-6 right-6 h-12 w-12 bg-indigo-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-indigo-700 transition-all z-30"
       >
-        <PlusIcon className="h-7 w-7"/>
+        <PlusIcon className="h-5 w-5"/>
       </button>
 
       {/* Modals */}

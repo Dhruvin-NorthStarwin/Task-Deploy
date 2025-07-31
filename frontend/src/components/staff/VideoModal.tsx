@@ -26,7 +26,7 @@ const VideoModal: React.FC<VideoModalProps> = ({ isOpen, onClose, onCapture }) =
   }, [isOpen]);
 
   useEffect(() => {
-    let interval: number;
+    let interval: NodeJS.Timeout;
     if (isRecording) {
       interval = setInterval(() => {
         setRecordingTime(prev => prev + 1);

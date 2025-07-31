@@ -1,0 +1,91 @@
+/* Mobile optimizations for the admin interface */
+
+/* Better touch targets */
+.mobile-touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Optimized typography for mobile */
+.mobile-text {
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.mobile-text-sm {
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.mobile-text-lg {
+  font-size: 18px;
+  line-height: 1.4;
+  font-weight: 600;
+}
+
+/* Mobile-friendly scrollbars */
+.mobile-scrollbar::-webkit-scrollbar {
+  height: 4px;
+}
+
+.mobile-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.mobile-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+/* Enhanced mobile interactions */
+.mobile-press-effect:active {
+  transform: scale(0.97);
+  transition: transform 0.1s;
+}
+
+/* Improved mobile form elements */
+.mobile-input {
+  font-size: 16px; /* Prevents zoom on iOS */
+  padding: 12px 16px;
+  border-radius: 8px;
+}
+
+/* Mobile card styling */
+.mobile-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.mobile-card:active {
+  transform: scale(0.98);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* Safe area insets for notched devices */
+.mobile-safe-area {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Mobile bottom spacing to account for navigation */
+.mobile-pb-safe {
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+}
+
+/* Mobile dropdown menu styling */
+.mobile-dropdown {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Mobile header styling */
+.mobile-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
