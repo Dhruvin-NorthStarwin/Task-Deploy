@@ -7,6 +7,7 @@ export default {
   theme: {
     extend: {
       screens: {
+        'xxs': '350px', // Ultra small screens
         'xs': '475px', // Extra small screens
       },
       spacing: {
