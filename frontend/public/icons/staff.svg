@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="96px" height="96px" viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg">
+  <title>Staff Icon</title>
+  <g fill="none" fill-rule="evenodd">
+    <circle fill="#10B981" cx="48" cy="48" r="48"/>
+    <path d="M32,36 L64,36 C66.209139,36 68,37.790861 68,40 L68,64 C68,66.209139 66.209139,68 64,68 L32,68 C29.790861,68 28,66.209139 28,64 L28,40 C28,37.790861 29.790861,36 32,36 Z" fill="#FFFFFF"/>
+    <rect fill="#DCFCE7" x="36" y="48" width="16" height="4" rx="2"/>
+    <rect fill="#DCFCE7" x="36" y="56" width="16" height="4" rx="2"/>
+    <path d="M60,54 L56,58 L54,56 L52,58 L56,62 L62,56 L60,54 Z" fill="#10B981"/>
+    <circle fill="#10B981" cx="48" cy="28" r="12"/>
+    <path d="M52,28 C52,30.209139 50.209139,32 48,32 C45.790861,32 44,30.209139 44,28 C44,25.790861 45.790861,24 48,24 C50.209139,24 52,25.790861 52,28 Z" fill="#FFFFFF"/>
+  </g>
+</svg>

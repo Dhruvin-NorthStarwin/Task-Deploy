@@ -58,78 +58,78 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
   };
 
   return (
-    <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-opacity duration-500 ${show ? 'opacity-100' : 'opacity-0'}`}>
+    <div className={`fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 transition-opacity duration-500 ${show ? 'opacity-100' : 'opacity-0'}`}>
       <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={handleClose}></div>
-      <div className={`bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col transition-all duration-500 ${show ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}>
-        {/* Header - Fixed */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
-          <h2 className="text-lg font-bold text-gray-800">{task.task}</h2>
-          <button onClick={handleClose} className="p-1 rounded-full hover:bg-gray-100">
-            <CloseIcon className="w-5 h-5 text-gray-500" />
+      <div className={`bg-white rounded-lg sm:rounded-xl shadow-2xl w-full max-w-xs sm:max-w-lg lg:max-w-2xl max-h-[95vh] sm:max-h-[90vh] lg:max-h-[85vh] flex flex-col transition-all duration-500 ${show ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}>
+        {/* Header - Mobile Optimized */}
+        <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-200 flex-shrink-0">
+          <h2 className="text-base sm:text-lg font-bold text-gray-800 truncate pr-3">{task.task}</h2>
+          <button onClick={handleClose} className="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 min-h-touch min-w-touch flex items-center justify-center">
+            <CloseIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
           </button>
         </div>
 
-        {/* Content - Scrollable */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {/* Content - Mobile Optimized Scrollable */}
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
           {/* Task Description Section */}
-          <div className="bg-gray-50 rounded-lg p-3">
-            <h4 className="text-sm font-semibold text-gray-800 mb-2 flex items-center gap-2">
+          <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
+            <h4 className="text-sm sm:text-base font-semibold text-gray-800 mb-2 flex items-center gap-2">
               <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
               Task Description
             </h4>
-            <p className="text-xs text-gray-700 leading-relaxed">{task.description || 'No description provided.'}</p>
+            <p className="text-xs sm:text-sm text-gray-700 leading-relaxed">{task.description || 'No description provided.'}</p>
           </div>
 
           {/* Task Status Section */}
-          <div className="bg-white border border-gray-200 rounded-lg p-3">
-            <h4 className="text-sm font-semibold text-gray-800 mb-2 flex items-center gap-2">
+          <div className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4">
+            <h4 className="text-sm sm:text-base font-semibold text-gray-800 mb-2 flex items-center gap-2">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
               Current Status
             </h4>
             
             {task.status === 'Unknown' && (
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-2">
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
-                  <span className="text-xs font-medium text-gray-700">Waiting for Staff Submission</span>
+                  <span className="text-xs sm:text-sm font-medium text-gray-700">Waiting for Staff Submission</span>
                 </div>
-                <p className="text-xs text-gray-600 mt-1">Task has been assigned but not yet submitted by staff</p>
+                <p className="text-xs sm:text-sm text-gray-600 mt-1">Task has been assigned but not yet submitted by staff</p>
               </div>
             )}
             
             {task.status === 'Submitted' && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-2">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                 <div className="flex items-center gap-2 mb-1">
                   <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
-                  <span className="text-xs font-medium text-blue-700">Task Submitted - Ready for Review</span>
+                  <span className="text-xs sm:text-sm font-medium text-blue-700">Task Submitted - Ready for Review</span>
                 </div>
-                <p className="text-xs text-blue-600">Staff has submitted this task and it's waiting for your review</p>
+                <p className="text-xs sm:text-sm text-blue-600">Staff has submitted this task and it's waiting for your review</p>
               </div>
             )}
             
             {task.status === 'Done' && (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-2">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  <span className="text-xs font-medium text-green-700">Task Approved & Completed ✓</span>
+                  <span className="text-xs sm:text-sm font-medium text-green-700">Task Approved & Completed ✓</span>
                 </div>
-                <p className="text-xs text-green-600 mt-1">This task has been reviewed and approved</p>
+                <p className="text-xs sm:text-sm text-green-600 mt-1">This task has been reviewed and approved</p>
               </div>
             )}
             
             {task.status === 'Declined' && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-2">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
                 <div className="flex items-center gap-2 mb-1">
                   <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                  <span className="text-xs font-medium text-red-700">Task Declined</span>
+                  <span className="text-xs sm:text-sm font-medium text-red-700">Task Declined</span>
                 </div>
-                <p className="text-xs text-red-600">Task was declined and is waiting for staff resubmission</p>
+                <p className="text-xs sm:text-sm text-red-600">Task was declined and is waiting for staff resubmission</p>
               </div>
             )}
           </div>
 
-          {/* Submitted Media Section */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {/* Submitted Media Section - Mobile First */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
             {(task.imageRequired || task.imageUrl) && (
               <div className="bg-white border border-gray-200 rounded-lg p-3">
                 <h4 className="text-sm font-semibold text-gray-800 mb-2 flex items-center gap-2">
@@ -222,27 +222,27 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
           )}
         </div>
 
-        {/* Footer - Fixed with Action Buttons */}
-        <div className="border-t border-gray-200 p-4 bg-gray-50 rounded-b-xl flex-shrink-0">
+        {/* Footer - Mobile Optimized Action Buttons */}
+        <div className="border-t border-gray-200 p-3 sm:p-4 bg-gray-50 rounded-b-lg sm:rounded-b-xl flex-shrink-0">
           {task.status === 'Submitted' && (
-            <div className="space-y-2">
+            <div className="space-y-2 sm:space-y-3">
               {!showDeclineForm ? (
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
                   <button 
                     onClick={() => onTaskApprove(task.id)} 
-                    className="flex-1 px-4 py-2.5 text-sm font-semibold rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors shadow-lg"
+                    className="w-full sm:flex-1 px-4 py-3 sm:py-2.5 text-sm sm:text-base font-semibold rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors shadow-lg min-h-touch"
                   >
-                    Approve Task
+                    ✓ Approve Task
                   </button>
                   <button 
                     onClick={handleDeclineClick} 
-                    className="flex-1 px-4 py-2.5 text-sm font-semibold rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors shadow-lg"
+                    className="w-full sm:flex-1 px-4 py-3 sm:py-2.5 text-sm sm:text-base font-semibold rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors shadow-lg min-h-touch"
                   >
-                    Decline Task
+                    ✗ Decline Task
                   </button>
                 </div>
               ) : (
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
                   <button 
                     onClick={() => {
                       if (declineReason.trim()) {
@@ -251,7 +251,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                         setDeclineReason('');
                       }
                     }} 
-                    className="flex-1 px-4 py-2.5 text-sm font-semibold rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed shadow-lg"
+                    className="w-full sm:flex-1 px-4 py-3 sm:py-2.5 text-sm sm:text-base font-semibold rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed shadow-lg min-h-touch"
                     disabled={!declineReason.trim()}
                   >
                     Submit Decline
@@ -261,7 +261,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                       setShowDeclineForm(false);
                       setDeclineReason('');
                     }} 
-                    className="px-4 py-2.5 text-sm font-semibold rounded-lg bg-gray-300 text-gray-700 hover:bg-gray-400 transition-colors"
+                    className="w-full sm:w-auto px-4 py-3 sm:py-2.5 text-sm sm:text-base font-semibold rounded-lg bg-gray-300 text-gray-700 hover:bg-gray-400 transition-colors min-h-touch"
                   >
                     Cancel
                   </button>
@@ -274,7 +274,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
             <div className="text-center">
               <button 
                 onClick={handleClose}
-                className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"
+                className="w-full sm:w-auto px-6 py-3 sm:py-2 text-sm sm:text-base font-medium text-gray-600 hover:text-gray-800 transition-colors min-h-touch"
               >
                 Close
               </button>

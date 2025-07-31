@@ -1,0 +1,69 @@
+{
+  "name": "RestroManage Task Module",
+  "short_name": "RestroManage",
+  "description": "Restaurant task management system for staff and admin users",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/icons/app-icon.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/app-icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "screenshots": [
+    {
+      "src": "/screenshots/admin-mobile.svg",
+      "sizes": "414x896",
+      "type": "image/svg+xml",
+      "platform": "narrow",
+      "label": "Admin Dashboard on Mobile"
+    },
+    {
+      "src": "/screenshots/admin-desktop.svg",
+      "sizes": "1280x800",
+      "type": "image/svg+xml", 
+      "platform": "wide",
+      "label": "Admin Dashboard on Desktop"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Staff Dashboard",
+      "short_name": "Staff",
+      "description": "Access staff task management",
+      "url": "/staff",
+      "icons": [
+        {
+          "src": "/icons/staff.svg",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Admin Dashboard", 
+      "short_name": "Admin",
+      "description": "Access admin task management",
+      "url": "/admin",
+      "icons": [
+        {
+          "src": "/icons/admin.svg",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+}

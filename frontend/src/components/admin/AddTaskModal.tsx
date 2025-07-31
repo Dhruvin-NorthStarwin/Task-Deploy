@@ -58,10 +58,10 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, onAddTask 
 
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4">
-      <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-xs sm:max-w-lg max-h-[95vh] sm:max-h-[90vh] flex flex-col">
-        {/* Header - Fixed */}
-        <div className="flex items-center justify-between p-3 sm:p-4 md:p-6 border-b border-gray-200 flex-shrink-0">
-          <h2 className="text-base sm:text-lg md:text-xl font-bold text-gray-800">Add New Task</h2>
+      <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-xs sm:max-w-lg lg:max-w-2xl max-h-[95vh] sm:max-h-[90vh] flex flex-col">
+        {/* Header - Fixed and responsive */}
+        <div className="flex items-center justify-between p-3 sm:p-4 lg:p-6 border-b border-gray-200 flex-shrink-0">
+          <h2 className="text-base sm:text-lg lg:text-xl font-bold text-gray-800">Add New Task</h2>
           <button 
             onClick={onClose} 
             className="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 transition-colors"
@@ -71,9 +71,9 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, onAddTask 
           </button>
         </div>
         
-        {/* Content - Scrollable */}
-        <div className="p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4 md:space-y-6 overflow-y-auto flex-1">
-          {/* Category and Task Name */}
+        {/* Content - Scrollable with enhanced responsive design */}
+        <div className="p-3 sm:p-4 lg:p-6 space-y-3 sm:space-y-4 lg:space-y-6 overflow-y-auto flex-1">
+          {/* Category and Task Name - Improved responsive grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <label className="text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2 block">Category</label>
@@ -99,40 +99,40 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, onAddTask 
             </div>
           </div>
           
-          {/* Description */}
+          {/* Description - Enhanced responsive design */}
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-2 block">Description (Optional)</label>
+            <label className="text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2 block">Description (Optional)</label>
             <textarea 
               value={description} 
               onChange={e => setDescription(e.target.value)} 
               placeholder="Add more details about the task..." 
               rows={3} 
-              className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-base resize-none" 
+              className="w-full border border-gray-300 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm sm:text-base resize-none" 
             />
           </div>
           
-          {/* Initials */}
+          {/* Initials - Enhanced responsive design */}
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-2 block">Assign to (Optional)</label>
+            <label className="text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2 block">Assign to (Optional)</label>
             <input
               type="text"
               placeholder="Enter initials (e.g. AB)"
               value={initials}
               onChange={e => setInitials(e.target.value)}
-              className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-base"
+              className="w-full border border-gray-300 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm sm:text-base"
               maxLength={5}
             />
           </div>
           
-          {/* Requirements Row */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+          {/* Requirements Row - Enhanced responsive grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
             {/* Image Required */}
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-3 block">Image Required</label>
+              <label className="text-xs sm:text-sm font-medium text-gray-700 mb-2 sm:mb-3 block">Image Required</label>
               <div className="grid grid-cols-2 gap-2">
                 <button 
                   onClick={() => setImageRequired(true)} 
-                  className={`px-4 py-3 rounded-xl text-sm font-semibold border transition-all ${
+                  className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold border transition-all ${
                     imageRequired 
                       ? 'bg-indigo-600 text-white border-indigo-600 shadow-md' 
                       : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
@@ -142,7 +142,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, onAddTask 
                 </button>
                 <button 
                   onClick={() => setImageRequired(false)} 
-                  className={`px-4 py-3 rounded-xl text-sm font-semibold border transition-all ${
+                  className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold border transition-all ${
                     !imageRequired 
                       ? 'bg-indigo-600 text-white border-indigo-600 shadow-md' 
                       : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
@@ -155,11 +155,11 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, onAddTask 
             
             {/* Video Required */}
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-3 block">Video Required</label>
+              <label className="text-xs sm:text-sm font-medium text-gray-700 mb-2 sm:mb-3 block">Video Required</label>
               <div className="grid grid-cols-2 gap-2">
                 <button 
                   onClick={() => setVideoRequired(true)} 
-                  className={`px-4 py-3 rounded-xl text-sm font-semibold border transition-all ${
+                  className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold border transition-all ${
                     videoRequired 
                       ? 'bg-indigo-600 text-white border-indigo-600 shadow-md' 
                       : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
@@ -169,7 +169,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, onAddTask 
                 </button>
                 <button 
                   onClick={() => setVideoRequired(false)} 
-                  className={`px-4 py-3 rounded-xl text-sm font-semibold border transition-all ${
+                  className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold border transition-all ${
                     !videoRequired 
                       ? 'bg-indigo-600 text-white border-indigo-600 shadow-md' 
                       : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
@@ -181,13 +181,13 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, onAddTask 
             </div>
           </div>
           
-          {/* Task Type */}
+          {/* Task Type - Enhanced responsive design */}
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-3 block">Task Type</label>
-            <div className="grid grid-cols-2 gap-3">
+            <label className="text-xs sm:text-sm font-medium text-gray-700 mb-2 sm:mb-3 block">Task Type</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <button 
                 onClick={() => setTaskType('Daily')} 
-                className={`px-4 py-3 rounded-xl text-sm font-semibold border transition-all ${
+                className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold border transition-all ${
                   taskType === 'Daily' 
                     ? 'bg-blue-600 text-white border-blue-600 shadow-md' 
                     : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
@@ -197,7 +197,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, onAddTask 
               </button>
               <button 
                 onClick={() => setTaskType('Priority')} 
-                className={`px-4 py-3 rounded-xl text-sm font-semibold border transition-all ${
+                className={`px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold border transition-all ${
                   taskType === 'Priority' 
                     ? 'bg-red-600 text-white border-red-600 shadow-md' 
                     : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
@@ -208,25 +208,25 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, onAddTask 
             </div>
           </div>
           
-          {/* Day Selection for Daily Tasks */}
+          {/* Day Selection for Daily Tasks - Enhanced responsive design */}
           {taskType === 'Daily' ? (
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-3 block">Select Days</label>
-              <div className="space-y-4">
-                <div className="flex items-center p-3 bg-gray-50 rounded-xl">
+              <label className="text-xs sm:text-sm font-medium text-gray-700 mb-2 sm:mb-3 block">Select Days</label>
+              <div className="space-y-3 sm:space-y-4">
+                <div className="flex items-center p-2 sm:p-3 bg-gray-50 rounded-lg sm:rounded-xl">
                   <input 
                     type="checkbox" 
                     onChange={handleSelectAllDays} 
                     className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" 
                     id="select-all"
                   />
-                  <label htmlFor="select-all" className="ml-3 text-sm font-medium text-gray-700">
+                  <label htmlFor="select-all" className="ml-2 sm:ml-3 text-xs sm:text-sm font-medium text-gray-700">
                     Select All Days
                   </label>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
                   {DAYS.map(day => (
-                    <div key={day} className="flex items-center p-3 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors">
+                    <div key={day} className="flex items-center p-2 sm:p-3 bg-white border border-gray-200 rounded-lg sm:rounded-xl hover:bg-gray-50 transition-colors">
                       <input 
                         type="checkbox" 
                         checked={selectedDays.includes(day)} 
@@ -234,8 +234,9 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, onAddTask 
                         className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" 
                         id={`day-${day}`}
                       />
-                      <label htmlFor={`day-${day}`} className="ml-3 text-sm text-gray-700 capitalize cursor-pointer">
-                        {day}
+                      <label htmlFor={`day-${day}`} className="ml-2 sm:ml-3 text-xs sm:text-sm text-gray-700 capitalize cursor-pointer">
+                        <span className="hidden sm:inline">{day}</span>
+                        <span className="sm:hidden">{day.substring(0, 3)}</span>
                       </label>
                     </div>
                   ))}
@@ -244,16 +245,16 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, onAddTask 
             </div>
           ) : (
             <div>
-              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
-                <div className="flex items-start gap-3">
-                  <div className="text-yellow-600">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg sm:rounded-xl p-3 sm:p-4">
+                <div className="flex items-start gap-2 sm:gap-3">
+                  <div className="text-yellow-600 flex-shrink-0">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
                   <div>
-                    <h4 className="text-sm font-medium text-yellow-800 mb-1">Priority Task</h4>
-                    <p className="text-sm text-yellow-700">
+                    <h4 className="text-xs sm:text-sm font-medium text-yellow-800 mb-1">Priority Task</h4>
+                    <p className="text-xs sm:text-sm text-yellow-700">
                       Priority tasks are created for immediate completion and will appear in the Priority tab.
                     </p>
                   </div>
@@ -263,17 +264,17 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, onAddTask 
           )}
         </div>
         
-        {/* Footer - Fixed */}
-        <div className="flex flex-col sm:flex-row items-center justify-end p-4 sm:p-6 border-t border-gray-200 gap-3 flex-shrink-0 bg-gray-50 rounded-b-2xl">
+        {/* Footer - Enhanced responsive design */}
+        <div className="flex flex-col sm:flex-row items-center justify-end p-3 sm:p-4 lg:p-6 border-t border-gray-200 gap-2 sm:gap-3 flex-shrink-0 bg-gray-50 rounded-b-xl sm:rounded-b-2xl">
           <button 
             onClick={onClose} 
-            className="w-full sm:w-auto px-6 py-3 rounded-xl text-sm font-semibold bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 transition-all"
+            className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 transition-all min-h-[44px]"
           >
             Cancel
           </button>
           <button 
             onClick={handleSubmit} 
-            className="w-full sm:w-auto px-6 py-3 rounded-xl text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5"
+            className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 min-h-[44px]"
           >
             Create Task
           </button>

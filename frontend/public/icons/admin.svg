@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="96px" height="96px" viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg">
+  <title>Admin Icon</title>
+  <g fill="none" fill-rule="evenodd">
+    <circle fill="#3B82F6" cx="48" cy="48" r="48"/>
+    <path d="M30,32 L66,32 C68.209139,32 70,33.790861 70,36 L70,66 C70,68.209139 68.209139,70 66,70 L30,70 C27.790861,70 26,68.209139 26,66 L26,36 C26,33.790861 27.790861,32 30,32 Z" fill="#FFFFFF"/>
+    <rect fill="#E0E7FF" x="34" y="44" width="28" height="4" rx="2"/>
+    <rect fill="#E0E7FF" x="34" y="52" width="28" height="4" rx="2"/>
+    <rect fill="#E0E7FF" x="34" y="60" width="28" height="4" rx="2"/>
+    <circle fill="#3B82F6" cx="48" cy="28" r="12"/>
+    <path d="M52,28 C52,30.209139 50.209139,32 48,32 C45.790861,32 44,30.209139 44,28 C44,25.790861 45.790861,24 48,24 C50.209139,24 52,25.790861 52,28 Z" fill="#FFFFFF"/>
+  </g>
+</svg>

@@ -1,7 +1,7 @@
 # Google Cloud Service Account Keys
-*.json
 service-account-key.json
 mera-project-tereko-kya-a3a153db8f9a.json
+**/*service-account-key*.json
 
 # Google OAuth Client Secrets
 client_secret_*.json
