@@ -15,10 +15,9 @@ interface AdminTaskPanelProps {
 const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [tasks, setTasks] = useState<Task[]>([]); // Start with empty tasks
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [activeView, setActiveView] = useState<Day | 'priority'>('monday');
   const [categoryFilter, setCategoryFilter] = useState<Category | 'all'>('all');
-  // const [statusFilter, setStatusFilter] = useState<Status | 'all'>('all'); // Removed unused variable
   const [searchTerm, setSearchTerm] = useState('');
   const [openDropdown, setOpenDropdown] = useState<number | null>(null);
 
@@ -27,24 +26,18 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
     const dayMap: Day[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
     setActiveView(dayMap[dayIndex]);
     
-    // Fetch tasks from the API
     const fetchTasks = async () => {
-      console.log('AdminTaskPanel: Starting to fetch tasks...');
       try {
         const tasksData = await apiService.getTasks();
-        console.log('AdminTaskPanel: Tasks fetched successfully:', tasksData);
-        console.log('AdminTaskPanel: Number of tasks:', tasksData.length);
         setTasks(tasksData);
       } catch (error) {
-        console.error('AdminTaskPanel: Failed to fetch tasks:', error);
-        // Fallback to empty tasks array if API fails
+        console.error('Failed to fetch tasks:', error);
       }
     };
     
     fetchTasks();
   }, []);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = () => {
       setOpenDropdown(null);
@@ -59,12 +52,6 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
   }, [openDropdown]);
 
   const filteredTasks = useMemo(() => {
-    console.log('AdminTaskPanel: Filtering tasks...');
-    console.log('AdminTaskPanel: Total tasks:', tasks.length);
-    console.log('AdminTaskPanel: Active view:', activeView);
-    console.log('AdminTaskPanel: Category filter:', categoryFilter);
-    console.log('AdminTaskPanel: Search term:', searchTerm);
-    
     const filtered = tasks.filter(task => {
       const categoryMatch = categoryFilter === 'all' || task.category === categoryFilter;
       const searchMatch = task.task.toLowerCase().includes(searchTerm.toLowerCase());
@@ -75,82 +62,52 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
       return task.day === activeView;
     });
     
-    console.log('AdminTaskPanel: Filtered tasks:', filtered.length);
-    console.log('AdminTaskPanel: Sample filtered task:', filtered[0]);
-    
     return filtered;
   }, [tasks, activeView, categoryFilter, searchTerm]);
 
-    const handleAddTask = async (newTasks: Omit<Task, 'id' | 'status'>[]) => {
+  const handleAddTask = async (newTasks: Omit<Task, 'id' | 'status'>[]) => {
     try {
-      // Create tasks via API one by one
       const createdTasks: Task[] = [];
       
       for (const task of newTasks) {
         try {
           const createdTask = await apiService.createTask(task);
           createdTasks.push(createdTask);
-          console.log('Created task:', createdTask);
         } catch (error) {
           console.error('Error creating single task:', error);
         }
       }
       
-      // Add the newly created tasks to the state
       if (createdTasks.length > 0) {
         setTasks(prevTasks => [...prevTasks, ...createdTasks]);
-        console.log('Tasks created successfully:', createdTasks);
-      } else {
-        throw new Error('No tasks were created successfully');
       }
     } catch (error) {
-      console.error('Failed to create tasks:', error);
-      
-      // Always create tasks locally to ensure UI keeps working
-      console.log('Creating tasks locally as fallback');
-      const newTasksWithIds = newTasks.map((task, index) => ({
-        ...task,
-        id: Date.now() + index,
-        // initials: Admin initials after assignment
-        status: 'Unknown' as Status,
-      }));
-      setTasks(prevTasks => [...prevTasks, ...newTasksWithIds]);
-    } finally {
-      setIsAddModalOpen(false);
+      console.error('Failed to add tasks:', error);
     }
   };
 
   const handleStatusChange = async (taskId: number, newStatus: Status) => {
     try {
-      // Update status via API
       const updatedTask = await apiService.updateTaskStatus(taskId, newStatus);
-      
-      // Update local state
-      setTasks(prevTasks => prevTasks.map(task => 
-        task.id === taskId ? updatedTask : task
+      setTasks(prevTasks => prevTasks.map(t => 
+        t.id === taskId ? { ...t, status: updatedTask.status } : t
       ));
+      
+      if (selectedTask && selectedTask.id === taskId) {
+        setSelectedTask({ ...selectedTask, status: updatedTask.status });
+      }
     } catch (error) {
       console.error('Failed to update task status:', error);
-      
-      // Fallback: Update status locally if API fails
-      setTasks(prevTasks => prevTasks.map(task => 
-        task.id === taskId ? { ...task, status: newStatus } : task
-      ));
     }
   };
 
   const handleTaskApprove = async (taskId: number) => {
     try {
-      console.log('Approving task:', taskId);
       const updatedTask = await apiService.approveTask(taskId);
-      console.log('Task approved successfully:', updatedTask);
-      
-      // Update tasks in the UI
       setTasks(prevTasks => prevTasks.map(t => 
         t.id === taskId ? { ...t, status: updatedTask.status } : t
       ));
       
-      // Update selected task if it's the one being approved
       if (selectedTask && selectedTask.id === taskId) {
         setSelectedTask({ ...selectedTask, status: updatedTask.status });
       }
@@ -161,16 +118,11 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
 
   const handleTaskDecline = async (taskId: number, reason: string) => {
     try {
-      console.log('Declining task:', taskId, 'with reason:', reason);
       const updatedTask = await apiService.declineTask(taskId, reason);
-      console.log('Task declined successfully:', updatedTask);
-      
-      // Update tasks in the UI
       setTasks(prevTasks => prevTasks.map(t => 
         t.id === taskId ? { ...t, status: updatedTask.status } : t
       ));
       
-      // Update selected task if it's the one being declined
       if (selectedTask && selectedTask.id === taskId) {
         setSelectedTask({ ...selectedTask, status: updatedTask.status });
       }
@@ -186,18 +138,13 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
     
     try {
       await apiService.deleteTask(taskId);
-      console.log('Task deleted successfully:', taskId);
-      
-      // Remove task from UI
       setTasks(prevTasks => prevTasks.filter(t => t.id !== taskId));
       
-      // Close modal if this task was selected
       if (selectedTask && selectedTask.id === taskId) {
         setSelectedTask(null);
       }
     } catch (error) {
       console.error('Failed to delete task:', error);
-      // Show error to user
       alert('Failed to delete task. Please try again.');
     }
   };
@@ -214,50 +161,32 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
 
   return (
     <>
-      {/* Custom styles for responsive design */}
+      {/* Mobile-responsive styles */}
       <style>{`
-        .sleek-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
-        .sleek-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .sleek-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
-        .sleek-scrollbar::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
-        .sleek-scrollbar { scrollbar-width: thin; scrollbar-color: #d1d5db transparent; }
-        
-        /* Mobile-first table responsive design */
         @media (max-width: 768px) {
-          .mobile-table {
-            border: 0;
+          .mobile-table-card {
+            display: block !important;
           }
-          .mobile-table thead {
+          .mobile-scroll-tabs {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+          }
+          .mobile-scroll-tabs::-webkit-scrollbar {
             display: none;
           }
-          .mobile-table tr {
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            display: block;
-            margin-bottom: 12px;
-            padding: 16px;
-            background: white;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-          }
-          .mobile-table td {
-            border: none;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid #f3f4f6;
-          }
-          .mobile-table td:last-child {
-            border-bottom: none;
-          }
-          .mobile-table td::before {
-            content: attr(data-label);
-            font-weight: 600;
-            color: #6b7280;
-            font-size: 0.875rem;
-            text-transform: uppercase;
-            letter-spacing: 0.025em;
-          }
+        }
+        
+        .touch-target {
+          min-height: 44px;
+          min-width: 44px;
+        }
+        
+        .card-shadow {
+          box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        }
+        
+        .card-shadow:hover {
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
       `}</style>
       
@@ -275,36 +204,40 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
       />
       
       {/* Mobile-first responsive layout */}
-      <div className="bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen font-sans">
-        <div className="px-3 py-4 sm:px-4 sm:py-6 lg:px-8 max-w-7xl mx-auto">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="px-3 xs:px-4 sm:px-6 lg:px-8 py-4 xs:py-5 sm:py-6 max-w-7xl mx-auto">
           
-          {/* Header - Fully responsive */}
-          <div className="flex flex-col space-y-3 sm:space-y-4 lg:flex-row lg:items-center lg:justify-between lg:space-y-0 mb-4 sm:mb-6">
-            <div className="text-center sm:text-left">
-              <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 tracking-tight">
+          {/* 1. Header Section (Mobile) - Stacked layout */}
+          <div className="mb-6 xs:mb-7 sm:mb-8">
+            {/* Title Section */}
+            <div className="text-center sm:text-left mb-4 xs:mb-5 sm:mb-6">
+              <h1 className="text-2xl xs:text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-2 xs:mb-3">
                 Admin Dashboard
               </h1>
-              <p className="mt-1 text-xs sm:text-sm text-gray-600">
+              <p className="text-sm xs:text-base sm:text-lg text-gray-600 font-medium">
                 Manage and oversee all restaurant tasks
               </p>
             </div>
-            <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2 lg:space-x-3">
-              <PWAInstallButton />
+            
+            {/* Full-width buttons: Actions take full width on mobile */}
+            <div className="space-y-3 xs:space-y-4 sm:space-y-0 sm:flex sm:gap-3 lg:gap-4">
+              <div className="w-full sm:w-auto">
+                <PWAInstallButton />
+              </div>
               <button 
                 onClick={() => setIsAddModalOpen(true)} 
-                className="w-full sm:w-auto bg-indigo-600 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-semibold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-2 text-sm sm:text-base"
+                className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-6 xs:px-8 py-4 xs:py-5 sm:py-3 rounded-xl font-bold text-base xs:text-lg sm:text-base focus:outline-none focus:ring-4 focus:ring-indigo-300 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-3 touch-target"
               >
-                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
-                <span className="hidden xs:inline">Add New Task</span>
-                <span className="xs:hidden">Add Task</span>
+                Add New Task
               </button>
               <button 
                 onClick={onLogout} 
-                className="w-full sm:w-auto bg-red-500 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-semibold hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-2 text-sm sm:text-base"
+                className="w-full sm:w-auto bg-red-500 hover:bg-red-600 text-white px-6 xs:px-8 py-4 xs:py-5 sm:py-3 rounded-xl font-bold text-base xs:text-lg sm:text-base focus:outline-none focus:ring-4 focus:ring-red-300 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-3 touch-target"
               >
-                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
                 Logout
@@ -312,16 +245,16 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
             </div>
           </div>
 
-          {/* Main Panel - Responsive card design */}
-          <div className="bg-white rounded-lg sm:rounded-xl lg:rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+          {/* Main Panel */}
+          <div className="bg-white rounded-xl xs:rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
             
-            {/* Search and Filters - Mobile optimized */}
-            <div className="p-4 sm:p-6 border-b border-gray-100 bg-gray-50">
-              <div className="flex flex-col space-y-4">
+            {/* 2. Filters Section (Mobile) - Column layout */}
+            <div className="p-4 xs:p-5 sm:p-6 bg-gray-50/70 border-b border-gray-200">
+              <div className="space-y-4 xs:space-y-5">
                 
-                {/* Search Bar */}
+                {/* Full-width inputs: Search input spans full width */}
                 <div className="relative">
-                  <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="absolute left-4 xs:left-5 top-1/2 transform -translate-y-1/2 w-5 h-5 xs:w-6 xs:h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                   <input 
@@ -329,67 +262,66 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
                     placeholder="Search tasks..." 
                     value={searchTerm} 
                     onChange={(e) => setSearchTerm(e.target.value)} 
-                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all bg-white shadow-sm text-base" 
+                    className="w-full pl-12 xs:pl-14 pr-4 xs:pr-5 py-4 xs:py-5 sm:py-4 border-2 border-gray-200 rounded-xl xs:rounded-2xl focus:outline-none focus:ring-4 focus:ring-indigo-300 focus:border-indigo-500 transition-all bg-white shadow-sm text-base xs:text-lg font-medium touch-target" 
                   />
                 </div>
 
-                {/* Day Tabs - Enhanced mobile scrolling */}
-                <div className="border-b border-gray-200 px-2 sm:px-4">
-                  <div className="flex gap-1 sm:gap-2 overflow-x-auto pb-2 sleek-scrollbar">
+                {/* 3. Navigation Tabs (Mobile) - Horizontal scroll */}
+                <div>
+                  <h3 className="text-sm xs:text-base font-bold text-gray-700 mb-3 xs:mb-4">Filter by Day</h3>
+                  <div className="flex gap-2 xs:gap-3 overflow-x-auto pb-2 mobile-scroll-tabs">
                     <button 
                       onClick={() => setActiveView('priority')} 
-                      className={`flex-shrink-0 px-3 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-medium rounded-lg transition-all duration-200 min-w-max ${
+                      className={`flex-shrink-0 px-4 xs:px-5 py-3 xs:py-4 text-sm xs:text-base font-bold rounded-xl transition-all duration-200 flex items-center gap-2 xs:gap-3 touch-target ${
                         activeView === 'priority' 
-                          ? 'bg-red-500 text-white shadow-md' 
-                          : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                          ? 'bg-red-500 text-white shadow-lg' 
+                          : 'bg-white text-gray-600 hover:bg-gray-100 border-2 border-gray-200'
                       }`}
                     >
-                      <span className="hidden xs:inline">🔥 Priority</span>
-                      <span className="xs:hidden">🔥</span>
+                      <span className="text-lg xs:text-xl">🔥</span>
+                      <span>Priority</span>
                     </button>
                     {DAYS.map(day => (
                       <button 
                         key={day} 
                         onClick={() => setActiveView(day)} 
-                        className={`flex-shrink-0 px-3 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-medium rounded-lg capitalize transition-all duration-200 min-w-max ${
+                        className={`flex-shrink-0 px-4 xs:px-5 py-3 xs:py-4 text-sm xs:text-base font-bold rounded-xl capitalize transition-all duration-200 touch-target ${
                           activeView === day 
-                            ? 'bg-indigo-500 text-white shadow-md' 
-                            : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                            ? 'bg-indigo-500 text-white shadow-lg' 
+                            : 'bg-white text-gray-600 hover:bg-gray-100 border-2 border-gray-200'
                         }`}
                       >
-                        <span className="hidden sm:inline">{day}</span>
-                        <span className="sm:hidden">{day.slice(0, 3)}</span>
+                        {day}
                       </button>
                     ))}
                   </div>
                 </div>
 
-                {/* Category Filters - Enhanced mobile layout */}
-                <div className="px-2 sm:px-4 pb-3 sm:pb-4">
-                  <div className="flex flex-wrap gap-1 sm:gap-2">
+                {/* Touch-friendly selects: Category filters */}
+                <div>
+                  <h3 className="text-sm xs:text-base font-bold text-gray-700 mb-3 xs:mb-4">Filter by Category</h3>
+                  <div className="flex flex-wrap gap-2 xs:gap-3">
                     <button 
                       onClick={() => setCategoryFilter('all')} 
-                      className={`px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium rounded-lg transition-all duration-200 min-w-max ${
+                      className={`px-4 xs:px-5 py-3 xs:py-4 text-sm xs:text-base font-bold rounded-xl transition-all duration-200 touch-target ${
                         categoryFilter === 'all' 
-                          ? 'bg-gray-800 text-white shadow-md' 
-                          : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                          ? 'bg-gray-800 text-white shadow-lg' 
+                          : 'bg-white text-gray-600 hover:bg-gray-100 border-2 border-gray-200'
                       }`}
                     >
-                      <span className="hidden xs:inline">All Categories</span>
-                      <span className="xs:hidden">All</span>
+                      All Categories
                     </button>
                     {CATEGORIES.map(cat => (
                       <button 
                         key={cat} 
                         onClick={() => setCategoryFilter(cat)} 
-                        className={`px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium rounded-lg transition-all duration-200 min-w-max ${
+                        className={`px-4 xs:px-5 py-3 xs:py-4 text-sm xs:text-base font-bold rounded-xl transition-all duration-200 touch-target ${
                           categoryFilter === cat 
-                            ? 'bg-green-500 text-white shadow-md' 
-                            : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                            ? 'bg-green-500 text-white shadow-lg' 
+                            : 'bg-white text-gray-600 hover:bg-gray-100 border-2 border-gray-200'
                         }`}
                       >
-                        <span className="hidden sm:inline">{cat}</span>
-                        <span className="sm:hidden">{cat.length > 8 ? cat.slice(0, 6) + '...' : cat}</span>
+                        {cat}
                       </button>
                     ))}
                   </div>
@@ -397,234 +329,237 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
               </div>
             </div>
 
-            {/* Tasks Display - Responsive table/cards */}
-            <div className="p-4 sm:p-6">
-              {/* Desktop Table */}
-              <div className="hidden md:block overflow-x-auto">
-                <table className="w-full text-sm text-left text-gray-700">
-                  <thead className="bg-gray-50 text-xs text-gray-500 uppercase tracking-wider rounded-lg">
-                    <tr>
-                      <th scope="col" className="px-6 py-4 font-semibold rounded-l-lg">Task</th>
-                      <th scope="col" className="px-6 py-4 font-semibold">Assigned To</th>
-                      <th scope="col" className="px-6 py-4 font-semibold">Status</th>
-                      <th scope="col" className="px-6 py-4 font-semibold text-center rounded-r-lg">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
+            {/* 4. Task Display - Mobile cards / Desktop table */}
+            <div className="p-4 xs:p-5 sm:p-6">
+              
+              {/* Mobile Card Layout */}
+              <div className="block lg:hidden">
+                {filteredTasks.length === 0 ? (
+                  <div className="text-center py-12 xs:py-16">
+                    <div className="text-6xl xs:text-7xl mb-4 xs:mb-6">📋</div>
+                    <p className="text-gray-500 text-lg xs:text-xl font-bold mb-2">No tasks found</p>
+                    <p className="text-gray-400 text-base xs:text-lg">Try adjusting your filters</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4 xs:space-y-5">
                     {filteredTasks.map(task => (
-                      <tr 
-                        key={task.id} 
-                        onClick={() => setSelectedTask(task)} 
-                        className={`cursor-pointer transition-all duration-200 hover:bg-gray-50 ${
-                          task.status === 'Done' ? 'opacity-60' : ''
+                      <div 
+                        key={task.id}
+                        onClick={() => setSelectedTask(task)}
+                        className={`bg-white border-2 border-gray-200 rounded-xl xs:rounded-2xl p-4 xs:p-5 card-shadow transition-all duration-200 cursor-pointer ${
+                          task.status === 'Done' ? 'opacity-60 bg-gray-50' : 'hover:border-indigo-300'
                         }`}
                       >
-                        <td className={`px-6 py-4 font-medium ${
-                          task.status === 'Done' 
-                            ? 'text-gray-500 line-through' 
-                            : 'text-gray-900'
-                        }`}>
-                          <div className="flex items-center gap-3">
-                            <div className={`w-2 h-2 rounded-full ${
-                              task.taskType === 'Priority' ? 'bg-red-400' : 'bg-blue-400'
-                            }`}></div>
-                            {task.task}
+                        {/* Task Header */}
+                        <div className="flex items-start justify-between mb-3 xs:mb-4">
+                          <div className="flex-1 min-w-0 pr-3">
+                            <div className="flex items-center gap-2 xs:gap-3 mb-2">
+                              <div className={`w-3 h-3 xs:w-4 xs:h-4 rounded-full ${
+                                task.taskType === 'Priority' ? 'bg-red-400' : 'bg-blue-400'
+                              }`}></div>
+                              <span className="text-xs xs:text-sm font-bold text-gray-500 uppercase tracking-wider">
+                                {task.category}
+                              </span>
+                            </div>
+                            <h3 className={`text-base xs:text-lg font-bold leading-tight ${
+                              task.status === 'Done' 
+                                ? 'text-gray-500 line-through' 
+                                : 'text-gray-900'
+                            }`}>
+                              {task.task}
+                            </h3>
                           </div>
-                        </td>
-                        <td className={`px-6 py-4 ${
-                          task.status === 'Done' ? 'text-gray-400' : 'text-gray-600'
-                        }`}>
-                          <div className="flex items-center gap-2">
+                          <StatusBadge status={task.status} />
+                        </div>
+
+                        {/* Task Info */}
+                        <div className="flex items-center justify-between pt-3 xs:pt-4 border-t-2 border-gray-100">
+                          <div className="flex items-center gap-3 xs:gap-4">
                             {task.initials ? (
-                              <div className="w-8 h-8 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-sm font-semibold">
+                              <div className="w-8 h-8 xs:w-10 xs:h-10 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-sm xs:text-base font-bold">
                                 {task.initials}
                               </div>
                             ) : (
-                              <div className="w-8 h-8 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center text-sm">
+                              <div className="w-8 h-8 xs:w-10 xs:h-10 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center text-sm xs:text-base font-bold">
                                 ?
                               </div>
                             )}
-                            <span>{task.initials || 'Unassigned'}</span>
+                            <div>
+                              <p className="text-sm xs:text-base font-bold text-gray-700">
+                                {task.initials || 'Unassigned'}
+                              </p>
+                              <p className="text-xs xs:text-sm text-gray-500 font-medium capitalize">
+                                {task.day}
+                              </p>
+                            </div>
                           </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <StatusBadge status={task.status} />
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <div className="relative">
-                            <button 
-                              className={`p-2 rounded-full transition-all ${
-                                task.status === 'Done'
-                                  ? 'text-gray-300 cursor-not-allowed'
-                                  : 'hover:bg-gray-100 text-gray-500 hover:text-gray-800'
-                              }`}
-                              onClick={(e) => {
-                                if (task.status !== 'Done') {
+                          
+                          {task.status !== 'Done' && (
+                            <div className="relative">
+                              <button 
+                                className="p-3 xs:p-4 rounded-full hover:bg-gray-100 text-gray-500 hover:text-gray-800 transition-all touch-target"
+                                onClick={(e) => {
+                                  e.stopPropagation();
                                   toggleDropdown(task.id, e);
-                                }
-                              }}
-                              disabled={task.status === 'Done'}
-                            >
-                              <ActionsIcon className="w-5 h-5" />
-                            </button>
-                            
-                            {openDropdown === task.id && task.status !== 'Done' && (
-                              <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-xl z-10 min-w-[140px] overflow-hidden">
-                                <button
-                                  onClick={() => handleEditTask(task)}
-                                  className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors"
-                                >
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                  </svg>
-                                  Edit Task
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    setOpenDropdown(null);
-                                    handleDeleteTask(task.id);
-                                  }}
-                                  className="w-full px-4 py-3 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors"
-                                >
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                  </svg>
-                                  Delete
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Mobile Cards - Enhanced for small screens */}
-              <div className="md:hidden space-y-3 sm:space-y-4">
-                {filteredTasks.map(task => (
-                  <div 
-                    key={task.id}
-                    onClick={() => setSelectedTask(task)}
-                    className={`bg-white border border-gray-200 rounded-lg sm:rounded-xl p-3 sm:p-4 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer ${
-                      task.status === 'Done' ? 'opacity-60' : ''
-                    }`}
-                  >
-                    {/* Task Header */}
-                    <div className="flex items-start justify-between mb-2 sm:mb-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${
-                            task.taskType === 'Priority' ? 'bg-red-400' : 'bg-blue-400'
-                          }`}></div>
-                          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide truncate">
-                            {task.category}
-                          </span>
+                                }}
+                              >
+                                <ActionsIcon className="w-5 h-5 xs:w-6 xs:h-6" />
+                              </button>
+                              
+                              {openDropdown === task.id && (
+                                <div className="absolute right-0 top-full mt-2 bg-white border-2 border-gray-200 rounded-2xl shadow-2xl z-20 min-w-[180px] overflow-hidden">
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleEditTask(task);
+                                    }}
+                                    className="w-full px-5 py-4 text-left text-base font-bold text-gray-700 hover:bg-gray-50 flex items-center gap-4 transition-colors touch-target"
+                                  >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                    Edit Task
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setOpenDropdown(null);
+                                      handleDeleteTask(task.id);
+                                    }}
+                                    className="w-full px-5 py-4 text-left text-base font-bold text-red-600 hover:bg-red-50 flex items-center gap-4 transition-colors touch-target"
+                                  >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                    Delete
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
-                        <h3 className={`font-semibold text-sm sm:text-base text-gray-900 line-clamp-2 ${
-                          task.status === 'Done' ? 'line-through text-gray-500' : ''
-                        }`}>
-                          {task.task}
-                        </h3>
                       </div>
-                      <div className="flex items-center gap-1 sm:gap-2 ml-2">
-                        <StatusBadge status={task.status} />
-                        {task.status !== 'Done' && (
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleDropdown(task.id, e);
-                            }}
-                            className="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
-                          >
-                            <ActionsIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Task Details */}
-                    <div className="flex items-center justify-between text-xs sm:text-sm text-gray-600">
-                      <div className="flex items-center gap-2">
-                        {task.initials ? (
-                          <div className="w-5 h-5 sm:w-6 sm:h-6 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-xs font-semibold">
-                            {task.initials}
-                          </div>
-                        ) : (
-                          <div className="w-6 h-6 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center text-xs">
-                            ?
-                          </div>
-                        )}
-                        <span>{task.initials || 'Unassigned'}</span>
-                      </div>
-                      <span className="text-xs text-gray-400 capitalize">
-                        {task.day === activeView ? 'Today' : task.day}
-                      </span>
-                    </div>
-
-                    {/* Mobile Action Dropdown */}
-                    {openDropdown === task.id && task.status !== 'Done' && (
-                      <div className="mt-3 pt-3 border-t border-gray-100 flex gap-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEditTask(task);
-                          }}
-                          className="flex-1 bg-blue-50 text-blue-600 py-2 px-3 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors flex items-center justify-center gap-2"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                          </svg>
-                          Edit
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setOpenDropdown(null);
-                            handleDeleteTask(task.id);
-                          }}
-                          className="flex-1 bg-red-50 text-red-600 py-2 px-3 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors flex items-center justify-center gap-2"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                          Delete
-                        </button>
-                      </div>
-                    )}
+                    ))}
                   </div>
-                ))}
+                )}
               </div>
 
-              {/* Empty State */}
-              {filteredTasks.length === 0 && (
-                <div className="text-center py-16">
-                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                    </svg>
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-600 mb-2">No Tasks Found</h3>
-                  <p className="text-gray-500 max-w-md mx-auto">
-                    {searchTerm || categoryFilter !== 'all' 
-                      ? 'Try adjusting your search or filter criteria to see more tasks.'
-                      : 'Get started by creating your first task for the team.'
-                    }
-                  </p>
-                  {!searchTerm && categoryFilter === 'all' && (
-                    <button 
-                      onClick={() => setIsAddModalOpen(true)}
-                      className="mt-4 bg-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-indigo-700 transition-all inline-flex items-center gap-2"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                      </svg>
-                      Create First Task
-                    </button>
+              {/* Desktop Table - Horizontal scroll */}
+              <div className="hidden lg:block">
+                <div className="overflow-x-auto bg-white rounded-xl shadow-sm border-2 border-gray-200">
+                  <table className="w-full text-sm text-left text-gray-700">
+                    <thead className="bg-gray-50 text-xs text-gray-500 uppercase tracking-wider">
+                      <tr>
+                        <th scope="col" className="px-6 py-4 font-semibold">Task</th>
+                        <th scope="col" className="px-6 py-4 font-semibold">Assigned To</th>
+                        <th scope="col" className="px-6 py-4 font-semibold">Status</th>
+                        <th scope="col" className="px-6 py-4 font-semibold text-center">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {filteredTasks.map(task => (
+                        <tr 
+                          key={task.id} 
+                          onClick={() => setSelectedTask(task)} 
+                          className={`cursor-pointer transition-all duration-200 hover:bg-gray-50 ${
+                            task.status === 'Done' ? 'opacity-60' : ''
+                          }`}
+                        >
+                          <td className={`px-6 py-4 font-medium ${
+                            task.status === 'Done' 
+                              ? 'text-gray-500 line-through' 
+                              : 'text-gray-900'
+                          }`}>
+                            <div className="flex items-center gap-3">
+                              <div className={`w-2 h-2 rounded-full ${
+                                task.taskType === 'Priority' ? 'bg-red-400' : 'bg-blue-400'
+                              }`}></div>
+                              {task.task}
+                            </div>
+                          </td>
+                          <td className={`px-6 py-4 ${
+                            task.status === 'Done' ? 'text-gray-400' : 'text-gray-600'
+                          }`}>
+                            <div className="flex items-center gap-2">
+                              {task.initials ? (
+                                <div className="w-8 h-8 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-sm font-semibold">
+                                  {task.initials}
+                                </div>
+                              ) : (
+                                <div className="w-8 h-8 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center text-sm">
+                                  ?
+                                </div>
+                              )}
+                              <span>{task.initials || 'Unassigned'}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <StatusBadge status={task.status} />
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <div className="relative">
+                              <button 
+                                className={`p-2 rounded-full transition-all ${
+                                  task.status === 'Done'
+                                    ? 'text-gray-300 cursor-not-allowed'
+                                    : 'hover:bg-gray-100 text-gray-500 hover:text-gray-800'
+                                }`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (task.status !== 'Done') {
+                                    toggleDropdown(task.id, e);
+                                  }
+                                }}
+                                disabled={task.status === 'Done'}
+                              >
+                                <ActionsIcon className="w-5 h-5" />
+                              </button>
+                              
+                              {openDropdown === task.id && task.status !== 'Done' && (
+                                <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-xl z-10 min-w-[140px] overflow-hidden">
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleEditTask(task);
+                                    }}
+                                    className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors"
+                                  >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                    Edit Task
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setOpenDropdown(null);
+                                      handleDeleteTask(task.id);
+                                    }}
+                                    className="w-full px-4 py-3 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-3 transition-colors"
+                                  >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                    Delete
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+
+                  {filteredTasks.length === 0 && (
+                    <div className="text-center py-12">
+                      <div className="text-gray-400 text-6xl mb-4">📋</div>
+                      <p className="text-gray-500 text-xl font-medium">No tasks found</p>
+                      <p className="text-gray-400 text-base mt-2">Try adjusting your filters or add a new task</p>
+                    </div>
                   )}
                 </div>
-              )}
+              </div>
             </div>
           </div>
         </div>
