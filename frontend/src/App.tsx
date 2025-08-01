@@ -19,7 +19,7 @@ import AutoUpdateManager from './components/common/AutoUpdateManager';
 // Create an inner component that uses the auth context
 const AppContent: React.FC = () => {
   const [notification, setNotification] = useState<null | { message: string; type: 'success' | 'error' }>(null);
-  const { setUserRole, logout, logoutToPin } = useAuth();
+  const { setUserRole, logoutToPin } = useAuth();
   const navigate = useNavigate();
 
   // Debug API configuration on app load (only in development)
