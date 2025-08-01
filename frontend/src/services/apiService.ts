@@ -151,10 +151,10 @@ export const login = async (restaurant_code: string, password: string): Promise<
     }
     
     // Store the token using enhanced storage for production reliability
-    if (data && data.access_token) {
+    if (data && data.token) {
       try {
         // Use enhanced storage that works reliably in production
-        await storeAuthTokenReliably(data.access_token);
+        await storeAuthTokenReliably(data.token);
         if (config.DEBUG) {
           console.log('🔥 LOGIN: Token saved using enhanced production storage');
         }
