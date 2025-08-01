@@ -124,7 +124,7 @@ class Task(TaskBase):
     decline_reason: Optional[str]
     created_at: datetime
     updated_at: Optional[datetime]
-    completed_at: Optional[datetime]
+    completed_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True

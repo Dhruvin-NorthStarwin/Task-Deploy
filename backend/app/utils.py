@@ -76,3 +76,53 @@ def convert_enum_for_api(obj: Dict[str, Any]) -> Dict[str, Any]:
         return obj.value
     else:
         return obj
+
+def enhance_task_with_media_preview(task_dict: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Enhance task dictionary with media preview information for admin use
+    
+    Args:
+        task_dict: Task dictionary from database
+        
+    Returns:
+        Enhanced task dictionary with media preview URLs
+    """
+    from app.services.cloudinary_service import CloudinaryService
+    
+    enhanced_task = task_dict.copy()
+    
+    # Add media preview information
+    media_preview = {
+        "has_media": False,
+        "image_preview": None,
+        "video_preview": None,
+        "image_info": None,
+        "video_info": None
+    }
+    
+    # Process image URL
+    if task_dict.get('image_url'):
+        media_preview["has_media"] = True
+        image_info = CloudinaryService.get_media_info(task_dict['image_url'])
+        media_preview["image_info"] = image_info
+        media_preview["image_preview"] = {
+            "thumbnail": image_info.get('thumbnail_url'),
+            "preview": image_info.get('preview_url'),
+            "original": task_dict['image_url'],
+            "type": image_info.get('type', 'image')
+        }
+    
+    # Process video URL  
+    if task_dict.get('video_url'):
+        media_preview["has_media"] = True
+        video_info = CloudinaryService.get_media_info(task_dict['video_url'])
+        media_preview["video_info"] = video_info
+        media_preview["video_preview"] = {
+            "thumbnail": video_info.get('thumbnail_url'),
+            "streaming": task_dict['video_url'],
+            "original": task_dict['video_url'],
+            "type": video_info.get('type', 'video')
+        }
+    
+    enhanced_task["media_preview"] = media_preview
+    return enhanced_task

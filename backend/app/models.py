@@ -91,13 +91,13 @@ class Task(Base):
     task_type = Column(SQLEnum(TaskType, values_callable=lambda obj: [e.value for e in obj]), nullable=False, default=TaskType.DAILY)
     image_required = Column(Boolean, default=False)
     video_required = Column(Boolean, default=False)
-    image_url = Column(String(500), nullable=True)
-    video_url = Column(String(500), nullable=True)
+    image_url = Column(String(1000), nullable=True)
+    video_url = Column(String(1000), nullable=True)
     decline_reason = Column(Text, nullable=True)
     initials = Column(String(10), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-    completed_at = Column(DateTime(timezone=True), nullable=True)
+    # completed_at = Column(DateTime(timezone=True), nullable=True)  # Commented out until migration is created
     
     # Relationships
     restaurant = relationship("Restaurant", back_populates="tasks")

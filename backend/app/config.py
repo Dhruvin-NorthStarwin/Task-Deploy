@@ -48,7 +48,7 @@ class Settings(BaseSettings):
     CLOUDINARY_CLOUD_NAME: str = Field(default="dxmdswaly", env="CLOUDINARY_CLOUD_NAME")
     CLOUDINARY_API_KEY: str = Field(default="415182249976459", env="CLOUDINARY_API_KEY")
     CLOUDINARY_API_SECRET: str = Field(default="1Suf70Le9D-y25qsdJUQwQ2BtyQ", env="CLOUDINARY_API_SECRET")
-    USE_CLOUD_STORAGE: bool = Field(default=False, env="USE_CLOUD_STORAGE")  # Temporarily disabled for production stability
+    USE_CLOUD_STORAGE: bool = Field(default=True, env="USE_CLOUD_STORAGE")  # Enabled for Cloudinary support
     
     @field_validator('MAX_FILE_SIZE', mode='before')
     @classmethod

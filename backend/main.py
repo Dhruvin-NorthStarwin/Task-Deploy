@@ -6,7 +6,7 @@ from fastapi.exceptions import RequestValidationError
 from sqlalchemy import create_engine
 from app.config import settings
 from app.database import engine, Base
-from app.routers import auth, tasks, users, uploads, health, admin_storage, nfc
+from app.routers import auth, tasks, users, uploads, health, admin_storage, admin_media, nfc
 from app.middleware.error_handler import global_exception_handler, validation_exception_handler
 from app.middleware.cors_middleware import CustomCORSMiddleware
 from app.middleware.preflight_middleware import PreflightMiddleware
@@ -185,6 +185,7 @@ app.include_router(users.router, prefix="/api")
 app.include_router(uploads.router, prefix="/api")
 app.include_router(health.router, prefix="/api")
 app.include_router(admin_storage.router, prefix="/api")
+app.include_router(admin_media.router, prefix="/api")
 app.include_router(nfc.router, prefix="/api")
 
 # Root endpoint

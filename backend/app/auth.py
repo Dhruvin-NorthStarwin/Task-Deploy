@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from fastapi import HTTPException, status, Depends
+from fastapi import HTTPException, status, Depends, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from app.config import settings
@@ -129,13 +129,32 @@ def validate_user_pin(db: Session, restaurant_id: int, pin: str) -> Optional[mod
     return user
 
 def get_current_restaurant_or_none(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    request: Request,
     db: Session = Depends(get_db)
 ) -> Optional[models.Restaurant]:
     """Get current restaurant from JWT token, or None if invalid/missing"""
     try:
-        # Get the current restaurant using proper authentication
-        return get_current_restaurant(credentials, db)
-    except HTTPException:
+        # Try to get authorization header
+        auth_header = request.headers.get("authorization")
+        if not auth_header or not auth_header.startswith("Bearer "):
+            return None
+        
+        token = auth_header.split(" ")[1]
+        payload = verify_token(token)
+        
+        if payload is None:
+            return None
+        
+        restaurant_id: str = payload.get("sub")
+        if restaurant_id is None:
+            return None
+        
+        restaurant = db.query(models.Restaurant).filter(
+            models.Restaurant.id == int(restaurant_id)
+        ).first()
+        
+        return restaurant
+        
+    except Exception:
         # Return None for any authentication errors (allows endpoints to handle gracefully)
         return None

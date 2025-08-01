@@ -1,8 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from app.database import get_db
 from app import crud, schemas, auth, models
+from app.services.cloudinary_service import CloudinaryService
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
@@ -147,8 +151,9 @@ async def update_task(
 async def submit_task(
     task_id: int,
     submission_data: schemas.TaskSubmit,
-    current_restaurant: models.Restaurant = Depends(auth.get_current_restaurant_or_none),
-    db: Session = Depends(get_db)
+    request: Request,
+    db: Session = Depends(get_db),
+    current_restaurant: models.Restaurant = Depends(auth.get_current_restaurant_or_none)
 ):
     """Submit a task with image/video proof"""
     # For development: Use restaurant_id=1 if not authenticated
@@ -156,28 +161,82 @@ async def submit_task(
     if current_restaurant:
         restaurant_id = current_restaurant.id
     
-    # Update task status to SUBMITTED and add media URLs
-    task_update = schemas.TaskUpdate(
-        status=schemas.TaskStatus.SUBMITTED,
-        image_url=submission_data.image_url,
-        video_url=submission_data.video_url,
-        initials=submission_data.initials
-    )
+    # Process image upload if base64 data is provided
+    image_url = submission_data.image_url
+    video_url = submission_data.video_url
     
-    updated_task = crud.update_task(db, task_id, restaurant_id, task_update)
-    if not updated_task:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Task not found"
+    try:
+        # Handle image upload to Cloudinary if base64 data is provided
+        if image_url and CloudinaryService.is_base64_image(image_url):
+            logger.info(f"Base64 image detected for task {task_id}, uploading to Cloudinary...")
+            cloudinary_url = CloudinaryService.upload_base64_image(
+                image_url, 
+                folder=f"tasks/restaurant_{restaurant_id}",
+                public_id=f"task_{task_id}_{submission_data.initials or 'user'}"
+            )
+            
+            if cloudinary_url:
+                image_url = cloudinary_url
+                logger.info(f"Successfully uploaded image to Cloudinary: {cloudinary_url}")
+            else:
+                logger.error(f"Failed to upload image to Cloudinary for task {task_id}")
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Failed to upload image. Please try again."
+                )
+        
+        # Handle video upload to Cloudinary if base64 data is provided
+        if video_url and CloudinaryService.is_base64_image(video_url):  # Note: using same check for now
+            logger.info(f"Base64 video detected for task {task_id}, uploading to Cloudinary...")
+            cloudinary_url = CloudinaryService.upload_video_base64(
+                video_url,
+                folder=f"tasks/restaurant_{restaurant_id}",
+                public_id=f"task_{task_id}_video_{submission_data.initials or 'user'}"
+            )
+            
+            if cloudinary_url:
+                video_url = cloudinary_url
+                logger.info(f"Successfully uploaded video to Cloudinary: {cloudinary_url}")
+            else:
+                logger.error(f"Failed to upload video to Cloudinary for task {task_id}")
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Failed to upload video. Please try again."
+                )
+        
+        # Update task status to SUBMITTED and add media URLs
+        task_update = schemas.TaskUpdate(
+            status=schemas.TaskStatus.SUBMITTED,
+            image_url=image_url,
+            video_url=video_url,
+            initials=submission_data.initials
         )
-    
-    return updated_task
+        
+        updated_task = crud.update_task(db, task_id, restaurant_id, task_update)
+        if not updated_task:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Task not found"
+            )
+        
+        return updated_task
+        
+    except HTTPException:
+        # Re-raise HTTP exceptions
+        raise
+    except Exception as e:
+        logger.error(f"Error submitting task {task_id}: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error submitting task: {str(e)}"
+        )
 
 @router.patch("/{task_id}/approve", response_model=schemas.Task)
 async def approve_task(
     task_id: int,
-    current_restaurant: models.Restaurant = Depends(auth.get_current_restaurant_or_none),
-    db: Session = Depends(get_db)
+    request: Request,
+    db: Session = Depends(get_db),
+    current_restaurant: models.Restaurant = Depends(auth.get_current_restaurant_or_none)
 ):
     """Approve a submitted task (Admin only)"""
     # For development: Use restaurant_id=1 if not authenticated
@@ -199,8 +258,9 @@ async def approve_task(
 async def decline_task(
     task_id: int,
     decline_data: schemas.TaskDecline,
-    current_restaurant: models.Restaurant = Depends(auth.get_current_restaurant_or_none),
-    db: Session = Depends(get_db)
+    request: Request,
+    db: Session = Depends(get_db),
+    current_restaurant: models.Restaurant = Depends(auth.get_current_restaurant_or_none)
 ):
     """Decline a submitted task with reason (Admin only)"""
     # For development: Use restaurant_id=1 if not authenticated
@@ -226,8 +286,9 @@ async def decline_task(
 @router.delete("/{task_id}")
 async def delete_task(
     task_id: int,
-    current_restaurant: models.Restaurant = Depends(auth.get_current_restaurant_or_none),
-    db: Session = Depends(get_db)
+    request: Request,
+    db: Session = Depends(get_db),
+    current_restaurant: models.Restaurant = Depends(auth.get_current_restaurant_or_none)
 ):
     """Delete a task"""
     # For development: Use restaurant_id=1 if not authenticated
