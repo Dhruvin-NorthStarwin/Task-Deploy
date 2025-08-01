@@ -16,7 +16,10 @@ const PWAInstallButton: React.FC = () => {
     const checkIfInstalled = () => {
       const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
       const isInWebAppiOS = (window.navigator as any).standalone === true;
-      setIsInstalled(isStandalone || isInWebAppiOS);
+      const installed = isStandalone || isInWebAppiOS;
+      setIsInstalled(installed);
+      
+      console.log('PWA Install Status:', { isStandalone, isInWebAppiOS, installed });
     };
 
     // Check if iOS
@@ -30,6 +33,7 @@ const PWAInstallButton: React.FC = () => {
 
     // Listen for beforeinstallprompt event
     const handleBeforeInstallPrompt = (e: Event) => {
+      console.log('PWA: Install prompt available');
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
     };
@@ -78,13 +82,11 @@ const PWAInstallButton: React.FC = () => {
     }
   };
 
-  // Don't show button if already installed
-  if (isInstalled) {
-    return null;
-  }
-
-  // Don't show button if no install prompt available and not iOS
-  if (!deferredPrompt && !isIOS) {
+  // Show button in more scenarios for better UX
+  // Only hide if definitely installed and not in a situation where we should show it
+  const shouldShow = deferredPrompt || isIOS || !isInstalled;
+  
+  if (!shouldShow) {
     return null;
   }
 
@@ -92,11 +94,11 @@ const PWAInstallButton: React.FC = () => {
     <>
       <button
         onClick={handleInstallClick}
-        className="flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 shadow-md hover:shadow-lg text-sm font-medium"
+        className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg transition-all duration-200 shadow-md hover:shadow-lg text-sm font-medium border border-blue-500 hover:border-blue-600"
         title="Install RestroManage App"
       >
-        <div className="w-5 h-5 bg-blue-800 rounded text-white flex items-center justify-center text-xs font-bold">
-          P
+        <div className="w-5 h-5 bg-white bg-opacity-20 rounded flex items-center justify-center text-xs font-bold">
+          📱
         </div>
         <span className="hidden sm:inline">Install App</span>
         <span className="sm:hidden">Install</span>
@@ -105,36 +107,45 @@ const PWAInstallButton: React.FC = () => {
       {/* iOS Installation Instructions Modal */}
       {showIOSInstructions && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-md w-full p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 bg-blue-600 rounded text-white flex items-center justify-center text-lg font-bold">
-                P
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl text-white flex items-center justify-center text-lg font-bold shadow-lg">
+                📱
               </div>
-              <h3 className="text-lg font-semibold text-gray-900">Install RestroManage</h3>
+              <h3 className="text-xl font-bold text-gray-900">Install RestroManage</h3>
             </div>
             
-            <p className="text-gray-600 mb-4">
-              To install this app on your iOS device:
+            <p className="text-gray-600 mb-6 leading-relaxed">
+              To install this app on your iOS device and use it like a native app:
             </p>
             
-            <ol className="text-sm text-gray-700 space-y-3 mb-6">
-              <li className="flex items-start gap-2">
-                <span className="w-5 h-5 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-semibold mt-0.5">1</span>
-                <span>Tap the <strong>Share</strong> button in Safari</span>
+            <ol className="text-sm text-gray-700 space-y-4 mb-8">
+              <li className="flex items-start gap-3">
+                <span className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-bold mt-0.5 flex-shrink-0">1</span>
+                <div>
+                  <span className="font-semibold">Tap the Share button</span>
+                  <div className="text-xs text-gray-500 mt-1">Look for the square with an arrow pointing up in Safari's toolbar</div>
+                </div>
               </li>
-              <li className="flex items-start gap-2">
-                <span className="w-5 h-5 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-semibold mt-0.5">2</span>
-                <span>Scroll down and tap <strong>"Add to Home Screen"</strong></span>
+              <li className="flex items-start gap-3">
+                <span className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-bold mt-0.5 flex-shrink-0">2</span>
+                <div>
+                  <span className="font-semibold">Find "Add to Home Screen"</span>
+                  <div className="text-xs text-gray-500 mt-1">Scroll down in the options menu</div>
+                </div>
               </li>
-              <li className="flex items-start gap-2">
-                <span className="w-5 h-5 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-semibold mt-0.5">3</span>
-                <span>Tap <strong>"Add"</strong> to install the app</span>
+              <li className="flex items-start gap-3">
+                <span className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-bold mt-0.5 flex-shrink-0">3</span>
+                <div>
+                  <span className="font-semibold">Tap "Add" to install</span>
+                  <div className="text-xs text-gray-500 mt-1">The app will appear on your home screen</div>
+                </div>
               </li>
             </ol>
             
             <button
               onClick={() => setShowIOSInstructions(false)}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition-all duration-200"
+              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl"
             >
               Got it!
             </button>
