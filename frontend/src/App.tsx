@@ -17,7 +17,7 @@ import config from './config/environment';
 // Create an inner component that uses the auth context
 const AppContent: React.FC = () => {
   const [notification, setNotification] = useState<null | { message: string; type: 'success' | 'error' }>(null);
-  const { setUserRole, logout } = useAuth();
+  const { setUserRole, logout, logoutToPin } = useAuth();
   const navigate = useNavigate();
 
   // Debug API configuration on app load (only in development)
@@ -109,12 +109,12 @@ const AppContent: React.FC = () => {
           } />
           <Route path="/admin" element={
             <ProtectedRoute requireAuth={true} requiredRole="admin" requirePin={true}>
-              <AdminTaskPanel onLogout={logout} />
+              <AdminTaskPanel onLogout={logoutToPin} />
             </ProtectedRoute>
           } />
           <Route path="/staff" element={
             <ProtectedRoute requireAuth={true} requiredRole="staff" requirePin={true}>
-              <StaffTaskPanel onLogout={logout} />
+              <StaffTaskPanel onLogout={logoutToPin} />
             </ProtectedRoute>
           } />
           {/* Catch-all route for debugging */}

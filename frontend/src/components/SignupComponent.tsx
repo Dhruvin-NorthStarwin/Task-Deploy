@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import config from '../config/environment';
 import { register as registerApi } from '../services/apiService';
+import PWAInstallButton from './common/PWAInstallButton';
 
 interface Location {
   addressLine1: string;
@@ -237,6 +238,12 @@ const SignupComponent: React.FC<{ onShowLogin: () => void, onRegistrationSuccess
             <button type="submit" className="w-full text-white bg-sky-600 hover:bg-sky-700 focus:ring-4 focus:ring-sky-300 font-bold rounded-lg text-base px-5 py-3 text-center">
               Register Restaurant
             </button>
+            
+            {/* PWA Install Button */}
+            <div className="flex justify-center mt-6">
+              <PWAInstallButton />
+            </div>
+            
             <div className="text-center mt-8">
               <p className="text-sm text-gray-600">
                 Already have an account?{' '}

@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import PWAInstallButton from './common/PWAInstallButton';
+import { useAuth } from '../context/AuthContext';
 
 interface PinProps {
   onLogin: (role: 'staff' | 'admin') => void;
@@ -27,10 +29,16 @@ const StaffPin: React.FC<PinProps> = ({ onLogin }) => {
     const [enteredPin, setEnteredPin] = useState('');
     const [message, setMessage] = useState<{ text: string; type: string }>({ text: '', type: '' });
     const [animation, setAnimation] = useState('');
+    const { logout } = useAuth();
 
     // Staff/admin PINs
     const staffPin = '0000';
     const adminPin = '5678';
+
+    // Complete logout function (back to restaurant login)
+    const handleCompleteLogout = () => {
+        logout();
+    };
 
     // Reset PIN and message
     const resetPin = useCallback((clearMessage = true) => {
@@ -106,7 +114,22 @@ const StaffPin: React.FC<PinProps> = ({ onLogin }) => {
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 px-4 py-8">
             <div className="w-full max-w-sm mx-auto">
-                {/* Header Section */}
+                {/* Header Section with Logout and Install buttons */}
+                <div className="flex justify-between items-start mb-4">
+                    <button
+                        onClick={handleCompleteLogout}
+                        className="flex items-center gap-2 px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all duration-200 shadow-md hover:shadow-lg text-sm font-medium"
+                        title="Complete Logout"
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                        <span className="hidden sm:inline">Logout</span>
+                    </button>
+                    <PWAInstallButton />
+                </div>
+
+                {/* Main Header Section */}
                 <div className="text-center mb-8">
                     <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full mb-4">
                         <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

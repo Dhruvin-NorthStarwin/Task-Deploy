@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import config from '../config/environment';
 import IOSStorageDebug from './common/IOSStorageDebug';
+import PWAInstallButton from './common/PWAInstallButton';
 
 interface Notification {
   message: string;
@@ -189,6 +190,11 @@ const LoginComponent: React.FC<{
                 <span className="text-sm xs:text-base sm:text-lg font-bold">LOGIN</span>
               )}
             </button>
+
+            {/* PWA Install Button - Mobile Optimized */}
+            <div className="text-center pt-1">
+              <PWAInstallButton />
+            </div>
 
             {/* Signup Link - Mobile Optimized */}
             <div className="text-center pt-1 xs:pt-2">

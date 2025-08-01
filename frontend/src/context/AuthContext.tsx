@@ -20,6 +20,7 @@ interface AuthContextType {
   login: (restaurantCode: string, password: string) => Promise<boolean>; // Correct parameter names
   setUserRole: (role: 'staff' | 'admin') => void;
   logout: () => void;
+  logoutToPin: () => void; // New partial logout function
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -163,7 +164,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const logout = async () => {
-    // Clear all auth-related data from state and storage
+    // Complete logout - Clear all auth-related data from state and storage
     setUser(null);
     setUserRoleState(null);
     setIsPinVerified(false);
@@ -174,10 +175,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     await iosStorage.removeItem('pin_verified');
     await iosStorage.removeItem('login_timestamp'); // Also clear this legacy item
     
-    console.log('🧹 Cleared all auth data from iOS-compatible storage');
+    console.log('🧹 Complete logout - Cleared all auth data from iOS-compatible storage');
     
-    // Optionally, redirect to login page
-    window.location.href = '/login';
+    // Redirect to login page
+    window.location.href = '/';
+  };
+
+  const logoutToPin = async () => {
+    // Partial logout - Keep user authentication but clear PIN verification
+    setUserRoleState(null);
+    setIsPinVerified(false);
+    
+    // Clear PIN-related storage but keep authentication
+    await iosStorage.removeItem('user_role');
+    await iosStorage.removeItem('pin_verified');
+    
+    console.log('🔄 Partial logout - Cleared PIN data, keeping authentication');
+    
+    // Redirect to PIN entry page
+    window.location.href = '/pin';
   };
 
   const setUserRole = async (role: 'staff' | 'admin') => {
@@ -203,6 +219,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     userRole,
     login,
     logout,
+    logoutToPin,
     setUserRole,
   };
 
