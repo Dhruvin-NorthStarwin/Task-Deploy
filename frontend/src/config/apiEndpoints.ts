@@ -56,7 +56,14 @@ export const API_ENDPOINTS = {
   // Static file serving (uploads) - mounted at root level
   STATIC: {
     UPLOADS: `${config.API_BASE_URL.replace('/api', '')}/uploads`, // Static files served from /uploads
-  }
+  },
+  
+  // NFC endpoints (from nfc.py)
+  NFC: {
+    CLEAN: (assetId: string) => `${config.API_BASE_URL}/nfc/clean/${assetId}`,     // POST - Complete cleaning task via NFC
+    LOGS: (assetId: string) => `${config.API_BASE_URL}/nfc/clean/${assetId}/logs`, // GET - Get cleaning logs for asset
+    ASSETS: (restaurantId: string) => `${config.API_BASE_URL}/nfc/assets/${restaurantId}`, // GET - Get NFC assets for restaurant
+  },
 };
 
 // Debug function to log all endpoints
@@ -69,6 +76,7 @@ export const debugEndpoints = () => {
   console.log('📁 Upload endpoints:', API_ENDPOINTS.UPLOADS);
   console.log('🏥 Health endpoints:', API_ENDPOINTS.HEALTH);
   console.log('📊 Static endpoints:', API_ENDPOINTS.STATIC);
+  console.log('📱 NFC endpoints:', API_ENDPOINTS.NFC);
 };
 
 export default API_ENDPOINTS;

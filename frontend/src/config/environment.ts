@@ -1,7 +1,7 @@
 // Hardcoded production URLs for Railway deployment
 const PRODUCTION_FRONTEND_URL = 'https://task-module.up.railway.app';
 const PRODUCTION_BACKEND_URL = 'https://radiant-amazement-production-d68f.up.railway.app/api';
-const LOCALHOST_BACKEND_URL = 'http://localhost:8000/api';
+const LOCALHOST_BACKEND_URL = '/api'; // Use relative path for Vite proxy in development
 
 // Get the API URL with proper fallback logic
 const getApiUrl = (isDebug: boolean) => {
@@ -26,12 +26,12 @@ const getApiUrl = (isDebug: boolean) => {
     return PRODUCTION_BACKEND_URL;
   }
   
-  // HARDCODED: If we're in development, use localhost
+  // HARDCODED: If we're in development, use relative path for Vite proxy
   if (isDev && !isProductionDomain) {
     if (isDebug) {
-      console.log('🛠️ HARDCODED: Development mode, using localhost backend');
+      console.log('🛠️ HARDCODED: Development mode, using Vite proxy');
       console.log('🔗 Frontend:', window.location.origin);
-      console.log('🔗 Backend:', LOCALHOST_BACKEND_URL);
+      console.log('🔗 Backend:', LOCALHOST_BACKEND_URL + ' (proxied to http://127.0.0.1:8000)');
     }
     return LOCALHOST_BACKEND_URL;
   }

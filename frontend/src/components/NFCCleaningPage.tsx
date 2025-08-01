@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { API_ENDPOINTS } from '../config/apiEndpoints';
 import './NFCCleaningPage.css';
 
 interface CleaningStats {
@@ -54,11 +55,12 @@ const NFCCleaningPage: React.FC = () => {
       setStaffName(currentStaffName);
 
       const token = localStorage.getItem('authToken');
-      const response = await fetch(`/api/nfc/clean/${assetId}`, {
+      const response = await fetch(API_ENDPOINTS.NFC.CLEAN(assetId), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          // Note: NFC endpoint is public, no auth required
+          ...(token && { 'Authorization': `Bearer ${token}` })
         },
         body: JSON.stringify({
           staff_name: currentStaffName,
