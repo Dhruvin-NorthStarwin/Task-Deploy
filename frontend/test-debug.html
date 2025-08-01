@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Module Debug Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ccc; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        input[type="file"] { margin: 10px 0; }
+        pre { background: #f8f9fa; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Task Module Debug Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Frontend Loading Test</h2>
+        <div id="frontend-status" class="status info">Testing frontend loading...</div>
+        <p>If you can see this page, the basic HTML is loading correctly.</p>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Backend Connectivity Test</h2>
+        <button onclick="testBackendConnection()">Test Backend Connection</button>
+        <div id="backend-status" class="status info">Click button to test backend...</div>
+        <pre id="backend-response"></pre>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Image Upload Test</h2>
+        <input type="file" id="imageFile" accept="image/*">
+        <button onclick="testImageUpload()">Test Image Upload</button>
+        <div id="image-status" class="status info">Select an image and click test...</div>
+        <pre id="image-response"></pre>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Video Upload Test</h2>
+        <input type="file" id="videoFile" accept="video/*">
+        <button onclick="testVideoUpload()">Test Video Upload</button>
+        <div id="video-status" class="status info">Select a video and click test...</div>
+        <pre id="video-response"></pre>
+    </div>
+    
+    <div class="test-section">
+        <h2>5. Authentication Test</h2>
+        <button onclick="testAuth()">Test Authentication</button>
+        <div id="auth-status" class="status info">Click button to test auth...</div>
+        <pre id="auth-response"></pre>
+    </div>
+
+    <script>
+        // Set frontend status to success
+        document.getElementById('frontend-status').className = 'status success';
+        document.getElementById('frontend-status').textContent = 'Frontend is loading correctly!';
+
+        const API_BASE_URL = 'http://localhost:8000/api';
+
+        async function testBackendConnection() {
+            const statusDiv = document.getElementById('backend-status');
+            const responseDiv = document.getElementById('backend-response');
+            
+            try {
+                statusDiv.className = 'status info';
+                statusDiv.textContent = 'Testing backend connection...';
+                
+                const response = await fetch(`${API_BASE_URL}/health`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    statusDiv.className = 'status success';
+                    statusDiv.textContent = 'Backend connection successful!';
+                    responseDiv.textContent = JSON.stringify(data, null, 2);
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = `Backend connection failed: ${error.message}`;
+                responseDiv.textContent = error.stack || error.toString();
+            }
+        }
+
+        async function testImageUpload() {
+            const statusDiv = document.getElementById('image-status');
+            const responseDiv = document.getElementById('image-response');
+            const fileInput = document.getElementById('imageFile');
+            
+            try {
+                if (!fileInput.files[0]) {
+                    throw new Error('Please select an image file first');
+                }
+                
+                statusDiv.className = 'status info';
+                statusDiv.textContent = 'Testing image upload...';
+                
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+                formData.append('task_id', '1'); // Test task ID
+                
+                const response = await fetch(`${API_BASE_URL}/upload/image`, {
+                    method: 'POST',
+                    body: formData,
+                });
+                
+                const data = await response.text();
+                
+                if (response.ok) {
+                    statusDiv.className = 'status success';
+                    statusDiv.textContent = 'Image upload successful!';
+                    responseDiv.textContent = data;
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${data}`);
+                }
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = `Image upload failed: ${error.message}`;
+                responseDiv.textContent = error.stack || error.toString();
+            }
+        }
+
+        async function testVideoUpload() {
+            const statusDiv = document.getElementById('video-status');
+            const responseDiv = document.getElementById('video-response');
+            const fileInput = document.getElementById('videoFile');
+            
+            try {
+                if (!fileInput.files[0]) {
+                    throw new Error('Please select a video file first');
+                }
+                
+                statusDiv.className = 'status info';
+                statusDiv.textContent = 'Testing video upload...';
+                
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+                formData.append('task_id', '1'); // Test task ID
+                
+                const response = await fetch(`${API_BASE_URL}/upload/video`, {
+                    method: 'POST',
+                    body: formData,
+                });
+                
+                const data = await response.text();
+                
+                if (response.ok) {
+                    statusDiv.className = 'status success';
+                    statusDiv.textContent = 'Video upload successful!';
+                    responseDiv.textContent = data;
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${data}`);
+                }
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = `Video upload failed: ${error.message}`;
+                responseDiv.textContent = error.stack || error.toString();
+            }
+        }
+
+        async function testAuth() {
+            const statusDiv = document.getElementById('auth-status');
+            const responseDiv = document.getElementById('auth-response');
+            
+            try {
+                statusDiv.className = 'status info';
+                statusDiv.textContent = 'Testing authentication...';
+                
+                const response = await fetch(`${API_BASE_URL}/auth/check`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.text();
+                responseDiv.textContent = data;
+                
+                if (response.ok) {
+                    statusDiv.className = 'status success';
+                    statusDiv.textContent = 'Auth check completed (may need login)';
+                } else {
+                    statusDiv.className = 'status info';
+                    statusDiv.textContent = `Auth response: ${response.status} (normal if not logged in)`;
+                }
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = `Auth test failed: ${error.message}`;
+                responseDiv.textContent = error.stack || error.toString();
+            }
+        }
+
+        // Auto-test backend connection on load
+        window.addEventListener('load', () => {
+            setTimeout(testBackendConnection, 1000);
+        });
+    </script>
+</body>
+</html>

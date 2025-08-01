@@ -119,6 +119,8 @@ class Settings(BaseSettings):
         env_prefix = ""
         # Handle Railway environment variables
         env_file_encoding = 'utf-8'
+        # Allow extra fields to prevent validation errors
+        extra = 'ignore'
 
 settings = Settings()
 

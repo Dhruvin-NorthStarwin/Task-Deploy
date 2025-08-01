@@ -393,19 +393,30 @@ export const submitTask = async (taskId: number, imageUrl?: string, videoUrl?: s
     console.log('🔥 SUBMIT: Submitting task', taskId, 'with media:', { imageUrl, videoUrl, initials });
   }
   
+  // Prepare the submission data
+  const submissionData: any = {
+    initials: initials,
+  };
+  
+  // Only include media URLs if they are provided
+  if (imageUrl) {
+    submissionData.image_url = imageUrl;
+  }
+  if (videoUrl) {
+    submissionData.video_url = videoUrl;
+  }
+  
   const response = await fetchWithRetryAndAuth(`${API_BASE_URL}/tasks/${taskId}/submit`, {
     method: 'PATCH',
     headers: await getHeaders(true, 'PATCH', `${API_BASE_URL}/tasks/${taskId}/submit`), // Include CSRF token
-    body: JSON.stringify({
-      image_url: imageUrl,
-      video_url: videoUrl,
-      initials: initials,
-    }),
+    body: JSON.stringify(submissionData),
   });
   
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.detail || `Failed to submit task: ${response.status}`);
+    const errorMessage = errorData.detail || `Failed to submit task: ${response.status}`;
+    console.error('🔥 SUBMIT ERROR:', errorMessage, errorData);
+    throw new Error(errorMessage);
   }
   
   const data = await response.json();
@@ -537,11 +548,18 @@ export const uploadFile = async (taskId: number, file: File, type: 'image' | 'vi
     console.warn('⚠️ No auth token found for file upload');
   }
   
+  // Don't set Content-Type for FormData - let browser set it with boundary
   const response = await fetchWithRetryAndAuth(`${API_BASE_URL}/upload/${type}`, {
     method: 'POST',
     headers: headers,
     body: formData,
   });
+  
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => 'Unknown error');
+    console.error('File upload failed:', response.status, errorText);
+    throw new Error(`File upload failed: ${response.status} - ${errorText}`);
+  }
   
   return handleResponse(response);
 };
