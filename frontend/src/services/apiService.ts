@@ -3,6 +3,7 @@ import type { Task, User } from '../types';
 import config from '../config/environment';
 import { fetchWithRetryAndAuth, storeAuthTokenReliably } from '../utils/productionFetch';
 import { getAuthToken, getUserData } from '../utils/iosStorage';
+import { getCSRFToken, shouldIncludeCSRFToken } from '../utils/csrfProtection';
 
 const API_BASE_URL = config.API_BASE_URL;
 
@@ -15,8 +16,8 @@ const handleResponse = async (response: Response) => {
   return response.json();
 };
 
-// Helper to get headers with auth token
-const getHeaders = async (includeAuth = true) => {
+// Helper to get headers with auth token and CSRF protection
+const getHeaders = async (includeAuth = true, method = 'GET', url = '') => {
   const headers = new Headers();
   headers.append('Content-Type', 'application/json');
   
@@ -27,6 +28,16 @@ const getHeaders = async (includeAuth = true) => {
       headers.append('Authorization', `Bearer ${token}`);
     } else {
       console.warn('⚠️ No auth token found. Request will be unauthenticated.');
+    }
+  }
+  
+  // Add CSRF token for state-changing requests
+  if (shouldIncludeCSRFToken(method, url)) {
+    const csrfToken = getCSRFToken();
+    if (csrfToken) {
+      headers.append('X-CSRF-Token', csrfToken);
+    } else {
+      console.warn('⚠️ No CSRF token found for state-changing request.');
     }
   }
   
@@ -339,7 +350,7 @@ export const createTask = async (task: Omit<Task, 'id' | 'status'>): Promise<Tas
   
   const response = await fetchWithRetryAndAuth(`${API_BASE_URL}/tasks/`, {
     method: 'POST',
-    headers: await getHeaders(true), // Ensure auth token is included
+    headers: await getHeaders(true, 'POST', `${API_BASE_URL}/tasks/`), // Include CSRF token
     body: JSON.stringify(backendTask),
   });
 
@@ -370,7 +381,7 @@ export const updateTaskStatus = async (taskId: number, status: string): Promise<
   
   const response = await fetchWithRetryAndAuth(endpoint, {
     method: 'PATCH',
-    headers: await getHeaders(),
+    headers: await getHeaders(true, 'PATCH', endpoint), // Include CSRF token
     body: JSON.stringify({}), // Most status endpoints don't need additional data
   });
   
@@ -384,7 +395,7 @@ export const submitTask = async (taskId: number, imageUrl?: string, videoUrl?: s
   
   const response = await fetchWithRetryAndAuth(`${API_BASE_URL}/tasks/${taskId}/submit`, {
     method: 'PATCH',
-    headers: await getHeaders(),
+    headers: await getHeaders(true, 'PATCH', `${API_BASE_URL}/tasks/${taskId}/submit`), // Include CSRF token
     body: JSON.stringify({
       image_url: imageUrl,
       video_url: videoUrl,
@@ -458,7 +469,7 @@ export const deleteTask = async (taskId: number): Promise<void> => {
   
   const response = await fetchWithRetryAndAuth(`${API_BASE_URL}/tasks/${taskId}`, {
     method: 'DELETE',
-    headers: await getHeaders(),
+    headers: await getHeaders(true, 'DELETE', `${API_BASE_URL}/tasks/${taskId}`), // Include CSRF token
   });
   
   if (!response.ok) {
@@ -493,7 +504,7 @@ export const updateTaskInitials = async (taskId: number, initials: string): Prom
   
   const response = await fetchWithRetryAndAuth(`${API_BASE_URL}/tasks/${taskId}`, {
     method: 'PUT',
-    headers: await getHeaders(),
+    headers: await getHeaders(true, 'PUT', `${API_BASE_URL}/tasks/${taskId}`), // Include CSRF token
     body: JSON.stringify({
       initials: initials,
     }),

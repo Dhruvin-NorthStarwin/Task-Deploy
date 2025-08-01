@@ -5,6 +5,7 @@ import StatusBadge from '../common/StatusBadge';
 import StaffTaskDetailModal from './StaffTaskDetailModal';
 import PWAInstallButton from '../common/PWAInstallButton';
 import apiService from '../../services/apiService';
+import DOMPurify from 'dompurify';
 
 interface StaffTaskPanelProps {
   onLogout: () => void;
@@ -17,6 +18,14 @@ const StaffTaskPanel: React.FC<StaffTaskPanelProps> = ({ onLogout }) => {
   const [categoryFilter, setCategoryFilter] = useState<Category | 'all'>('all');
   const [statusFilter, setStatusFilter] = useState<Status | 'all'>('all');
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Utility function to safely render task content and prevent XSS
+  const sanitizeTaskContent = (content: string) => {
+    return DOMPurify.sanitize(content, { 
+      ALLOWED_TAGS: [], // Only allow plain text, no HTML tags
+      ALLOWED_ATTR: [] 
+    });
+  };
 
   // Fetch tasks from the API
   const fetchTasks = async () => {
@@ -161,52 +170,6 @@ const StaffTaskPanel: React.FC<StaffTaskPanelProps> = ({ onLogout }) => {
 
   return (
     <>
-      {/* Custom styles for responsive design */}
-      <style>{`
-        .sleek-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; } 
-        .sleek-scrollbar::-webkit-scrollbar-track { background: transparent; } 
-        .sleek-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; } 
-        .sleek-scrollbar::-webkit-scrollbar-thumb:hover { background: #9ca3af; } 
-        .sleek-scrollbar { scrollbar-width: thin; scrollbar-color: #d1d5db transparent; }
-        
-        /* Mobile-first table responsive design */
-        @media (max-width: 768px) {
-          .mobile-table {
-            border: 0;
-          }
-          .mobile-table thead {
-            display: none;
-          }
-          .mobile-table tr {
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            display: block;
-            margin-bottom: 12px;
-            padding: 16px;
-            background: white;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-          }
-          .mobile-table td {
-            border: none;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid #f3f4f6;
-          }
-          .mobile-table td:last-child {
-            border-bottom: none;
-          }
-          .mobile-table td::before {
-            content: attr(data-label);
-            font-weight: 600;
-            color: #6b7280;
-            font-size: 0.875rem;
-            text-transform: uppercase;
-            letter-spacing: 0.025em;
-          }
-        }
-      `}</style>
       
       <StaffTaskDetailModal 
         task={selectedTask} 
@@ -433,7 +396,7 @@ const StaffTaskPanel: React.FC<StaffTaskPanelProps> = ({ onLogout }) => {
                             <div className={`w-2 h-2 rounded-full ${
                               task.taskType === 'Priority' ? 'bg-red-400' : 'bg-blue-400'
                             }`}></div>
-                            {task.task}
+                            {sanitizeTaskContent(task.task)}
                           </div>
                         </td>
                         <td className={`px-6 py-4 ${
@@ -486,7 +449,7 @@ const StaffTaskPanel: React.FC<StaffTaskPanelProps> = ({ onLogout }) => {
                         <h3 className={`font-semibold text-xs xxs:text-sm xs:text-base text-gray-900 leading-tight ${
                           task.status === 'Done' ? 'line-through text-gray-500' : ''
                         }`}>
-                          {task.task}
+                          {sanitizeTaskContent(task.task)}
                         </h3>
                       </div>
                       <div className="flex-shrink-0">

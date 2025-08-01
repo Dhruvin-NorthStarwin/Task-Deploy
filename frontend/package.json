@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite --mode development",
     "build": "vite build --mode production && npm run copy-pwa-files",
-    "build:production": "tsc -b && vite build --mode production && npm run copy-pwa-files", 
+    "build:production": "tsc -b && vite build --mode production && npm run copy-pwa-files",
     "build:full": "tsc -b && vite build --mode production && npm run copy-pwa-files",
     "copy-pwa-files": "node -e \"const fs=require('fs'); fs.copyFileSync('public/sw.js', 'dist/sw.js'); fs.copyFileSync('public/manifest.json', 'dist/manifest.json');\"",
     "start": "serve -s dist -l $PORT",
@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "cors": "^2.8.5",
+    "dompurify": "^3.2.6",
     "express": "^5.1.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

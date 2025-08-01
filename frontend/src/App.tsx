@@ -12,6 +12,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { debugApiConfig } from './utils/debug';
 import config from './config/environment';
+import { initializeCSRFToken } from './utils/csrfProtection';
 
 // Create an inner component that uses the auth context
 const AppContent: React.FC = () => {
@@ -24,6 +25,9 @@ const AppContent: React.FC = () => {
     if (config.DEBUG) {
       debugApiConfig();
     }
+    
+    // Initialize CSRF protection
+    initializeCSRFToken();
   }, []);
 
   const showNotification = (notif: { message: string; type: 'success' | 'error' }) => {
