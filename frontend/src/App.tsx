@@ -13,7 +13,6 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { debugApiConfig } from './utils/debug';
 import { initializeCSRFToken } from './utils/csrfProtection';
 import config from './config/environment';
-import { initializeCSRFToken } from './utils/csrfProtection';
 
 // Create an inner component that uses the auth context
 const AppContent: React.FC = () => {
