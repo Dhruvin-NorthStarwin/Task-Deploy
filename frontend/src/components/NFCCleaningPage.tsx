@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { API_ENDPOINTS } from '../config/apiEndpoints';
 import './NFCCleaningPage.css';
 
 interface CleaningStats {
@@ -61,7 +60,9 @@ const NFCCleaningPage: React.FC = () => {
       setStaffName(currentStaffName);
 
       const token = localStorage.getItem('authToken');
-      const response = await fetch(API_ENDPOINTS.NFC.CLEAN(restaurantCode, assetId), {
+      const apiUrl = `/api/nfc/clean/${restaurantCode}/${assetId}`;
+      
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
