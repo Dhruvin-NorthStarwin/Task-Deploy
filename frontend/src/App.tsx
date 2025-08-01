@@ -13,6 +13,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { debugApiConfig } from './utils/debug';
 import { initializeCSRFToken } from './utils/csrfProtection';
 import config from './config/environment';
+import AutoUpdateManager from './components/common/AutoUpdateManager';
 
 // Create an inner component that uses the auth context
 const AppContent: React.FC = () => {
@@ -85,6 +86,7 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="bg-stone-100">
+      <AutoUpdateManager />
       <div className="min-h-screen bg-stone-200 flex items-center justify-center p-4">
         <NotificationComponent notification={notification} />
         <Routes>
