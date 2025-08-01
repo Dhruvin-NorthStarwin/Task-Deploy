@@ -3,6 +3,7 @@ import type { Task } from '../../types';
 import { CloseIcon, CameraIcon } from '../common/Icons';
 import CameraModal from './CameraModal';
 import VideoModal from './VideoModal';
+import VideoPreview from '../common/VideoPreview';
 import apiService from '../../services/apiService';
 
 interface StaffTaskDetailModalProps {
@@ -262,10 +263,14 @@ const StaffTaskDetailModal: React.FC<StaffTaskDetailModalProps> = ({
                         onClick={() => setShowVideoPreview(true)}
                         title="Click to view full size"
                       >
-                        <video 
-                          src={task.videoUrl} 
-                          className="w-full h-full object-cover" 
-                          muted
+                        <VideoPreview
+                          videoUrl={task.videoUrl}
+                          width="100%"
+                          height="100%"
+                          controls={false}
+                          autoplay={false}
+                          className="rounded-lg"
+                          onError={(error) => console.error('Video preview error:', error)}
                         />
                         <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 group-hover:bg-opacity-40 transition-all">
                           <div className="bg-white bg-opacity-90 rounded-full p-2">
@@ -421,15 +426,21 @@ const StaffTaskDetailModal: React.FC<StaffTaskDetailModalProps> = ({
           <div className="relative max-w-[95vw] max-h-[95vh]">
             <button 
               onClick={() => setShowVideoPreview(false)}
-              className="absolute -top-10 right-0 text-white hover:text-gray-300 text-xl font-bold"
+              className="absolute -top-10 right-0 text-white hover:text-gray-300 text-xl font-bold z-10"
             >
               ✕
             </button>
-            <video 
-              src={task.videoUrl} 
-              controls
-              autoPlay
-              className="max-w-full max-h-full object-contain rounded-lg"
+            <VideoPreview
+              videoUrl={task.videoUrl}
+              width="95vw"
+              height="95vh"
+              controls={true}
+              autoplay={true}
+              className="rounded-lg"
+              onError={(error) => {
+                console.error('Video preview error:', error);
+                setShowVideoPreview(false);
+              }}
             />
           </div>
         </div>

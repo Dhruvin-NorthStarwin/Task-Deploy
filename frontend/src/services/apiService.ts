@@ -563,6 +563,37 @@ export const uploadFile = async (taskId: number, file: File, type: 'image' | 'vi
   return handleResponse(response);
 };
 
+// Get video URL for a task
+export const getTaskVideoUrl = async (taskId: number): Promise<string | null> => {
+  try {
+    if (config.DEBUG) {
+      console.log('🎥 Fetching video URL for task:', taskId);
+    }
+    
+    const response = await fetchWithRetryAndAuth(`${API_BASE_URL}/tasks/${taskId}`, {
+      method: 'GET',
+      headers: await getHeaders(true, 'GET'),
+    });
+    
+    if (!response.ok) {
+      console.error('Failed to fetch task details:', response.status);
+      return null;
+    }
+    
+    const task = await response.json();
+    const videoUrl = task.video_url;
+    
+    if (config.DEBUG) {
+      console.log('🎥 Video URL for task', taskId, ':', videoUrl);
+    }
+    
+    return videoUrl || null;
+  } catch (error) {
+    console.error('Error fetching task video URL:', error);
+    return null;
+  }
+};
+
 // Default export for easy imports
 const apiService = {
   login,
@@ -578,6 +609,7 @@ const apiService = {
   assignTask,
   updateTaskInitials,
   uploadFile,
+  getTaskVideoUrl,
 };
 
 export default apiService;
