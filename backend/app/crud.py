@@ -271,9 +271,19 @@ def get_active_cleaning_task_by_asset(db: Session, asset_id: str, restaurant_id:
     return db.query(models.Task).filter(
         and_(
             models.Task.restaurant_id == restaurant_id,
-            models.Task.location.ilike(f"%{asset_id}%"),  # Asset ID should be in location field
+            models.Task.task.ilike(f"%{asset_id}%"),  # Asset ID should be in task description
             models.Task.category == models.TaskCategory.CLEANING,
-            models.Task.completed == False
+            models.Task.status.in_([models.TaskStatus.UNKNOWN, models.TaskStatus.SUBMITTED])  # Not completed
+        )
+    ).first()
+
+def get_active_cleaning_task_by_asset_public(db: Session, asset_id: str) -> Optional[models.Task]:
+    """Get the active cleaning task for a specific asset (public version for NFC)"""
+    return db.query(models.Task).filter(
+        and_(
+            models.Task.task.ilike(f"%{asset_id}%"),  # Asset ID should be in task description
+            models.Task.category == models.TaskCategory.CLEANING,
+            models.Task.status.in_([models.TaskStatus.UNKNOWN, models.TaskStatus.SUBMITTED])  # Not completed
         )
     ).first()
 

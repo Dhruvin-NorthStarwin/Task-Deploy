@@ -14,16 +14,15 @@ logger = logging.getLogger(__name__)
 async def complete_cleaning_task(
     asset_id: str,
     staff_info: schemas.NFCCleaningRequest,
-    current_restaurant: models.Restaurant = Depends(auth.get_current_restaurant),
     db: Session = Depends(get_db)
 ):
     """
-    Complete a cleaning task via NFC tap
+    Complete a cleaning task via NFC tap (public endpoint for NFC)
     """
     try:
-        # Find active cleaning task for this asset
-        cleaning_task = crud.get_active_cleaning_task_by_asset(
-            db, asset_id, current_restaurant.id
+        # Find active cleaning task for this asset (any restaurant)
+        cleaning_task = crud.get_active_cleaning_task_by_asset_public(
+            db, asset_id
         )
         
         if not cleaning_task:
@@ -34,20 +33,19 @@ async def complete_cleaning_task(
         
         # Mark task as completed
         task_update = schemas.TaskUpdate(
-            completed=True,
-            completed_at=datetime.now(),
-            notes=f"Completed via NFC at {asset_id}"
+            status="Done",
+            completed_at=datetime.now()
         )
         
         updated_task = crud.update_task(
-            db, cleaning_task.id, current_restaurant.id, task_update
+            db, cleaning_task.id, cleaning_task.restaurant_id, task_update
         )
         
         # Create cleaning log entry
         cleaning_log_data = {
             "asset_id": asset_id,
             "task_id": cleaning_task.id,
-            "restaurant_id": current_restaurant.id,
+            "restaurant_id": cleaning_task.restaurant_id,
             "staff_name": staff_info.staff_name or "Unknown Staff",
             "completed_at": datetime.now(),
             "method": "NFC"
@@ -58,12 +56,12 @@ async def complete_cleaning_task(
         # Get cleaning statistics for today
         today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
         today_count = crud.get_cleaning_count_by_asset_and_date(
-            db, asset_id, current_restaurant.id, today_start
+            db, asset_id, cleaning_task.restaurant_id, today_start
         )
         
         # Get last 10 cleaning entries for this asset
         recent_cleanings = crud.get_recent_cleaning_logs(
-            db, asset_id, current_restaurant.id, limit=10
+            db, asset_id, cleaning_task.restaurant_id, limit=10
         )
         
         return {
