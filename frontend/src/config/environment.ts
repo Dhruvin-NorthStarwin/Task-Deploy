@@ -4,7 +4,7 @@ const PRODUCTION_BACKEND_URL = 'https://radiant-amazement-production-d68f.up.rai
 const LOCALHOST_BACKEND_URL = 'http://localhost:8000/api';
 
 // Get the API URL with proper fallback logic
-const getApiUrl = () => {
+const getApiUrl = (isDebug: boolean) => {
   const envUrl = import.meta.env.VITE_API_BASE_URL;
   const isDev = import.meta.env.MODE === 'development';
   const isProduction = import.meta.env.PROD;
@@ -18,8 +18,8 @@ const getApiUrl = () => {
   
   // HARDCODED: If we're on production domain, always use production backend
   if (isProductionDomain || isProduction) {
-    if (config.DEBUG) {
-      console.log('� HARDCODED: Production domain detected, using Railway backend');
+    if (isDebug) {
+      console.log('🚀 HARDCODED: Production domain detected, using Railway backend');
       console.log('🔗 Frontend:', window.location.origin);
       console.log('🔗 Backend:', PRODUCTION_BACKEND_URL);
     }
@@ -28,7 +28,7 @@ const getApiUrl = () => {
   
   // HARDCODED: If we're in development, use localhost
   if (isDev && !isProductionDomain) {
-    if (config.DEBUG) {
+    if (isDebug) {
       console.log('🛠️ HARDCODED: Development mode, using localhost backend');
       console.log('🔗 Frontend:', window.location.origin);
       console.log('🔗 Backend:', LOCALHOST_BACKEND_URL);
@@ -56,20 +56,24 @@ const getApiUrl = () => {
       finalUrl = finalUrl.endsWith('/') ? finalUrl + 'api' : finalUrl + '/api';
     }
     
-    if (config.DEBUG) {
-      console.log('� Using env variable URL:', finalUrl);
+    if (isDebug) {
+      console.log('🔧 Using env variable URL:', finalUrl);
     }
     return finalUrl;
   }
 
   // Final fallback
   return isDev ? LOCALHOST_BACKEND_URL : PRODUCTION_BACKEND_URL;
-};// Environment configuration for different deployment stages
+};
+
+// Environment configuration for different deployment stages
+const isDebugMode = import.meta.env.VITE_DEBUG === 'true';
+
 export const config = {
-  API_BASE_URL: getApiUrl(),
+  API_BASE_URL: getApiUrl(isDebugMode),
   UPLOAD_MAX_SIZE: parseInt(import.meta.env.VITE_UPLOAD_MAX_SIZE || '10485760'), // 10MB
   ENVIRONMENT: import.meta.env.MODE || 'development',
-  DEBUG: import.meta.env.VITE_DEBUG === 'true',
+  DEBUG: isDebugMode,
   REQUEST_TIMEOUT: parseInt(import.meta.env.VITE_REQUEST_TIMEOUT || '20000'), // Increased to 20 seconds for iOS
 };
 
