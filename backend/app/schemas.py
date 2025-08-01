@@ -101,6 +101,7 @@ class TaskUpdate(BaseModel):
     video_url: Optional[str] = None
     decline_reason: Optional[str] = None
     initials: Optional[str] = None
+    completed_at: Optional[datetime] = None
 
     class Config:
         # Use enum values instead of names

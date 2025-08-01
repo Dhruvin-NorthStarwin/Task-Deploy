@@ -6,14 +6,14 @@ from pydantic import field_validator, Field
 class Settings(BaseSettings):
     # Database - Railway PostgreSQL database
     DATABASE_URL: str = Field(
-        default="postgresql://postgres:hXtqctJOiUofFjeCdncyRVqjrdSNuGNB@postgres.railway.internal:5432/railway", 
+        default="postgresql://postgres:hXtqctJOiUofFjeCdncyRVqjrdSNuGNB@trolley.proxy.rlwy.net:38780/railway", 
         env="DATABASE_URL"
     )
     
     # Security - Railway will provide these via environment variables
-    SECRET_KEY: str = Field(default="your-secret-key-change-in-production", env="SECRET_KEY")
+    SECRET_KEY: str = Field(default="AwSDCoVsJgSEwA3ncBhX24jQgO9gMCdwwLztlVWjXa84G3R2Ui71glJA22cL096y", env="SECRET_KEY")
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=30, env="ACCESS_TOKEN_EXPIRE_MINUTES")
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=60, env="ACCESS_TOKEN_EXPIRE_MINUTES")
     
     @field_validator('ACCESS_TOKEN_EXPIRE_MINUTES', mode='before')
     @classmethod
@@ -22,12 +22,12 @@ class Settings(BaseSettings):
             try:
                 return int(v)
             except ValueError:
-                return 30  # Default fallback
-        return v or 30
+                return 60  # Default fallback
+        return v or 60
     
-    # CORS
+    # CORS - Hardcoded production URLs for Railway deployment
     ALLOWED_ORIGINS: Union[str, List[str]] = Field(
-        default="https://task-module.up.railway.app,https://radiant-amazement-production-d68f.up.railway.app,http://localhost:3000,http://localhost:5173",
+        default="https://task-module.up.railway.app,*",
         env="ALLOWED_ORIGINS"
     )
     
@@ -45,10 +45,10 @@ class Settings(BaseSettings):
     ALLOWED_VIDEO_TYPES: List[str] = ["video/mp4", "video/webm", "video/avi", "video/mov"]
     
     # Cloudinary Configuration
-    CLOUDINARY_CLOUD_NAME: str = Field(default="", env="CLOUDINARY_CLOUD_NAME")
-    CLOUDINARY_API_KEY: str = Field(default="", env="CLOUDINARY_API_KEY")
-    CLOUDINARY_API_SECRET: str = Field(default="", env="CLOUDINARY_API_SECRET")
-    USE_CLOUD_STORAGE: bool = Field(default=False, env="USE_CLOUD_STORAGE")
+    CLOUDINARY_CLOUD_NAME: str = Field(default="dxmdswaly", env="CLOUDINARY_CLOUD_NAME")
+    CLOUDINARY_API_KEY: str = Field(default="415182249976459", env="CLOUDINARY_API_KEY")
+    CLOUDINARY_API_SECRET: str = Field(default="1Suf70Le9D-y25qsdJUQwQ2BtyQ", env="CLOUDINARY_API_SECRET")
+    USE_CLOUD_STORAGE: bool = Field(default=True, env="USE_CLOUD_STORAGE")
     
     @field_validator('MAX_FILE_SIZE', mode='before')
     @classmethod
@@ -61,7 +61,7 @@ class Settings(BaseSettings):
         return v or 10485760
     
     # Environment
-    ENVIRONMENT: str = Field(default="development", env="ENVIRONMENT")  # Railway will set this to "production"
+    ENVIRONMENT: str = Field(default="production", env="ENVIRONMENT")  # Railway will set this to "production"
     DEBUG: bool = Field(default=False, env="DEBUG")
     
     @field_validator('DEBUG', mode='before')

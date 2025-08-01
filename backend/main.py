@@ -47,13 +47,18 @@ elif isinstance(origins, str):
     origins = [origins]
 
 # Ensure production URLs are included
+# Hardcoded production origins for Railway deployment
 production_origins = [
+    # Production Railway URLs - HARDCODED for reliability
     "https://task-module.up.railway.app",
     "https://radiant-amazement-production-d68f.up.railway.app",
+    # Local development URLs
     "http://localhost:3000",
     "http://localhost:5173",
+    "http://localhost:5174",
     "http://127.0.0.1:3000",
-    "http://127.0.0.1:5173"
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:5174"
 ]
 
 for prod_origin in production_origins:

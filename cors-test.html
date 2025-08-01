@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CORS Test - Railway Production URLs</title>
+</head>
+<body>
+    <h1>Testing CORS between Railway Production URLs</h1>
+    <button onclick="testTaskSubmit()">Test Task Submit (PATCH /api/tasks/7/submit)</button>
+    <button onclick="testTasksList()">Test Tasks List (GET /api/tasks/)</button>
+    <div id="results"></div>
+
+    <script>
+        // HARDCODED Railway production URLs
+        const FRONTEND_URL = 'https://task-module.up.railway.app';
+        const BACKEND_URL = 'https://radiant-amazement-production-d68f.up.railway.app/api';
+
+        function log(message) {
+            document.getElementById('results').innerHTML += '<p>' + message + '</p>';
+            console.log(message);
+        }
+
+        async function testTasksList() {
+            log('🔄 Testing GET /api/tasks/ from production frontend to production backend...');
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/tasks/`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    mode: 'cors'
+                });
+                
+                log(`✅ Tasks list request successful! Status: ${response.status}`);
+                const data = await response.json();
+                log(`📄 Response: ${JSON.stringify(data).substring(0, 100)}...`);
+                
+            } catch (error) {
+                log(`❌ Tasks list request failed: ${error.message}`);
+            }
+        }
+
+        async function testTaskSubmit() {
+            log('🔄 Testing PATCH /api/tasks/7/submit from production frontend to production backend...');
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/tasks/7/submit`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        image_url: 'test_image.jpg',
+                        video_url: 'test_video.mp4',
+                        initials: 'TEST'
+                    }),
+                    mode: 'cors'
+                });
+                
+                log(`✅ Task submit request successful! Status: ${response.status}`);
+                const data = await response.json();
+                log(`📄 Response: ${JSON.stringify(data).substring(0, 100)}...`);
+                
+            } catch (error) {
+                log(`❌ Task submit request failed: ${error.message}`);
+            }
+        }
+
+        // Log current origin for debugging
+        log(`🌐 Current origin: ${window.location.origin}`);
+        log(`🎯 Target backend: ${BACKEND_URL}`);
+    </script>
+</body>
+</html>

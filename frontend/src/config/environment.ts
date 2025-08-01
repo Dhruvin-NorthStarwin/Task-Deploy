@@ -1,46 +1,55 @@
+// Hardcoded production URLs for Railway deployment
+const PRODUCTION_FRONTEND_URL = 'https://task-module.up.railway.app';
+const PRODUCTION_BACKEND_URL = 'https://radiant-amazement-production-d68f.up.railway.app/api';
+const LOCALHOST_BACKEND_URL = 'http://localhost:8000/api';
+
 // Get the API URL with proper fallback logic
 const getApiUrl = () => {
   const envUrl = import.meta.env.VITE_API_BASE_URL;
   const isDev = import.meta.env.MODE === 'development';
+  const isProduction = import.meta.env.PROD;
+  
+  // Check if we're running on the production frontend domain
+  const isProductionDomain = window.location.origin === PRODUCTION_FRONTEND_URL;
   
   // Detect iOS for forced HTTPS
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   
-  // Force HTTPS for specific known Railway deployments
-  if (envUrl && envUrl.includes('radiant-amazement-production-d68f.up.railway.app')) {
-    let httpsUrl = envUrl.replace('http://', 'https://');
-    
-    // Ensure the URL ends with /api for backend endpoints
-    if (!httpsUrl.endsWith('/api') && !httpsUrl.endsWith('/api/')) {
-      httpsUrl = httpsUrl.endsWith('/') ? httpsUrl + 'api' : httpsUrl + '/api';
-    }
-    
+  // HARDCODED: If we're on production domain, always use production backend
+  if (isProductionDomain || isProduction) {
     if (config.DEBUG) {
-      console.log('🔒 Ensuring HTTPS and /api path for Railway backend:', httpsUrl);
+      console.log('� HARDCODED: Production domain detected, using Railway backend');
+      console.log('🔗 Frontend:', window.location.origin);
+      console.log('🔗 Backend:', PRODUCTION_BACKEND_URL);
     }
-    return httpsUrl;
+    return PRODUCTION_BACKEND_URL;
   }
   
-  // Force HTTPS for iOS devices in production
-  if (!isDev && isIOS && envUrl && envUrl.startsWith('http://')) {
-    const httpsUrl = envUrl.replace('http://', 'https://');
-    console.log('🍎 iOS: Forced HTTPS for iOS device:', httpsUrl);
-    return httpsUrl;
-  }
-  
-  // Always use Railway production URLs - no localhost
-  // For development AND production, use Railway backend
-  if (!envUrl) {
+  // HARDCODED: If we're in development, use localhost
+  if (isDev && !isProductionDomain) {
     if (config.DEBUG) {
-      console.log('🚀 Using Railway production backend URL (no localhost)');
+      console.log('🛠️ HARDCODED: Development mode, using localhost backend');
+      console.log('🔗 Frontend:', window.location.origin);
+      console.log('🔗 Backend:', LOCALHOST_BACKEND_URL);
     }
-    return 'https://radiant-amazement-production-d68f.up.railway.app/api';
+    return LOCALHOST_BACKEND_URL;
   }
   
-  // If we have an envUrl but we're in production, ensure it's HTTPS and has /api
-  if (!isDev && envUrl) {
-    let finalUrl = envUrl.startsWith('http://') ? envUrl.replace('http://', 'https://') : envUrl;
+  // Fallback to env variable if set
+  if (envUrl) {
+    let finalUrl = envUrl;
+    
+    // Force HTTPS for Railway deployments
+    if (envUrl.includes('radiant-amazement-production-d68f.up.railway.app')) {
+      finalUrl = envUrl.replace('http://', 'https://');
+    }
+    
+    // Force HTTPS for iOS devices
+    if (isIOS && finalUrl.startsWith('http://')) {
+      finalUrl = finalUrl.replace('http://', 'https://');
+      console.log('🍎 iOS: Forced HTTPS for iOS device:', finalUrl);
+    }
     
     // Ensure the URL ends with /api for backend endpoints
     if (!finalUrl.endsWith('/api') && !finalUrl.endsWith('/api/')) {
@@ -48,12 +57,13 @@ const getApiUrl = () => {
     }
     
     if (config.DEBUG) {
-      console.log('🔒 Final API URL for production:', finalUrl);
+      console.log('� Using env variable URL:', finalUrl);
     }
     return finalUrl;
   }
 
-  return envUrl;
+  // Final fallback
+  return isDev ? LOCALHOST_BACKEND_URL : PRODUCTION_BACKEND_URL;
 };// Environment configuration for different deployment stages
 export const config = {
   API_BASE_URL: getApiUrl(),

@@ -13,12 +13,16 @@ class CustomCORSMiddleware(BaseHTTPMiddleware):
         # Get allowed origins from settings
         self.allowed_origins = settings.ALLOWED_ORIGINS
         
-        # Ensure essential origins are included
+        # HARDCODED: Essential production origins for Railway deployment
         essential_origins = [
-            "https://task-module.up.railway.app",
-            "https://radiant-amazement-production-d68f.up.railway.app",
-            "http://localhost:3000",
-            "http://localhost:5173"
+            "https://task-module.up.railway.app",              # Production frontend
+            "https://radiant-amazement-production-d68f.up.railway.app",  # Production backend (for docs/health)
+            "http://localhost:3000",                           # Local dev (React)
+            "http://localhost:5173",                           # Local dev (Vite)
+            "http://localhost:5174",                           # Local dev (Vite alt port)
+            "http://127.0.0.1:3000",                          # Local dev (127.0.0.1)
+            "http://127.0.0.1:5173",                          # Local dev (127.0.0.1)
+            "http://127.0.0.1:5174"                           # Local dev (127.0.0.1)
         ]
         
         if isinstance(self.allowed_origins, list):
