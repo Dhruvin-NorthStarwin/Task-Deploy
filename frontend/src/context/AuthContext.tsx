@@ -43,7 +43,48 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isPinVerified, setIsPinVerified] = useState(false);
   const [userRole, setUserRoleState] = useState<'staff' | 'admin' | null>(null);
 
+  // Helper function to clear auth data
+  const clearAuthData = async () => {
+    setUser(null);
+    setUserRoleState(null);
+    setIsPinVerified(false);
+    try {
+      await iosStorage.clearAuth();
+      await iosStorage.removeItem('user_role');
+      await iosStorage.removeItem('pin_verified');
+      await iosStorage.removeItem('login_timestamp');
+      console.log('🧹 Auth data cleared successfully');
+    } catch (error) {
+      console.warn('⚠️ Error clearing auth data:', error);
+    }
+  };
+
+  // Global error handler for auth failures
+  const handleAuthError = async () => {
+    console.warn('🔐 Authentication error detected, clearing auth state');
+    await clearAuthData();
+    // Don't redirect immediately, let the UI handle the auth state change
+  };
+
+  // Expose auth error handler globally for use by API utilities
+  React.useEffect(() => {
+    (window as any).handleAuthError = handleAuthError;
+    return () => {
+      delete (window as any).handleAuthError;
+    };
+  }, []);
+
   useEffect(() => {
+    // Helper function to clear auth data
+    const clearAuthData = async () => {
+      setUser(null);
+      setUserRoleState(null);
+      setIsPinVerified(false);
+      await iosStorage.clearAuth();
+      await iosStorage.removeItem('user_role');
+      await iosStorage.removeItem('pin_verified');
+    };
+
     // Check for existing authentication on app load
     const checkExistingAuth = async () => {
       try {
@@ -63,8 +104,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         });
         
         if (token && userData) {
-          // The token itself is the source of truth, no need for time-based check here
-          // The backend will validate it on each request.
+          // Restore auth state without token validation (backend will validate on each request)
           setUser(userData);
           setUserRoleState(savedRole);
           setIsPinVerified(pinVerified);
@@ -78,7 +118,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         console.error('❌ AuthContext: Error checking existing auth:', error);
         // Clear storage on error to prevent corruption
         console.log('🧹 AuthContext: Clearing corrupted storage');
-        logout();
+        await clearAuthData();
       } finally {
         setIsLoading(false);
         console.log('✅ AuthContext: Loading complete');

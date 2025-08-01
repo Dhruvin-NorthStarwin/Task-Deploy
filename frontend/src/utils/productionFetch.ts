@@ -49,6 +49,9 @@ export const fetchWithRetryAndAuth = async (
         // Method 1: Try localStorage first (fastest)
         try {
           token = localStorage.getItem('auth_token');
+          if (token) {
+            console.log('📦 Retrieved auth_token from localStorage');
+          }
         } catch (e) {
           console.log('📦 localStorage not available, trying iOS storage...');
         }
@@ -57,15 +60,18 @@ export const fetchWithRetryAndAuth = async (
         if (!token) {
           try {
             token = await iosStorage.getAuthToken();
+            if (token) {
+              console.log('📦 Retrieved auth_token from iOS storage');
+            }
           } catch (e) {
-            console.log('📦 iOS storage failed, continuing without auth...');
+            console.log('📦 iOS storage failed, trying memory...');
           }
         }
         
         // Method 3: Check memory storage
         if (!token && (window as any).authToken) {
           token = (window as any).authToken;
-          console.log('📦 Using memory-stored token');
+          console.log('📦 Retrieved auth_token from memory');
         }
         
         if (token) {
@@ -73,6 +79,13 @@ export const fetchWithRetryAndAuth = async (
           console.log('🔐 Added auth token to request (attempt ' + (attempt + 1) + ')');
         } else {
           console.warn('⚠️ No auth token found for authenticated request (attempt ' + (attempt + 1) + ')');
+          
+          // If no token found and this is an auth-required request, 
+          // notify the auth context to clear state and redirect
+          if ((window as any).handleAuthError) {
+            console.log('🔄 Notifying AuthContext about missing token');
+            (window as any).handleAuthError();
+          }
         }
       }
       
@@ -97,13 +110,30 @@ export const fetchWithRetryAndAuth = async (
       if (response.status === 401 && includeAuth) {
         console.warn('🔐 401 Unauthorized - token may be invalid or expired');
         
-        // Clear potentially invalid tokens
-        try {
-          localStorage.removeItem('auth_token');
-          await iosStorage.removeItem('auth_token');
-          delete (window as any).authToken;
-        } catch (e) {
-          console.log('📦 Error clearing invalid tokens:', e);
+        // Clear potentially invalid tokens on first 401 error
+        if (attempt === 0) {
+          try {
+            localStorage.removeItem('auth_token');
+            await iosStorage.removeItem('auth_token');
+            delete (window as any).authToken;
+            console.log('🧹 Cleared potentially invalid tokens');
+            
+            // Notify AuthContext about the auth error
+            if ((window as any).handleAuthError) {
+              await (window as any).handleAuthError();
+            }
+          } catch (e) {
+            console.log('📦 Error clearing invalid tokens:', e);
+          }
+          
+          // Force page reload to trigger re-authentication if this persists after all retries
+          if (attempt === maxRetries) {
+            console.warn('🔄 Multiple 401 errors, redirecting to login...');
+            setTimeout(() => {
+              window.location.href = '/';
+            }, 1000);
+            return response; // Return to prevent further processing
+          }
         }
         
         // If this is not the last attempt, retry without auth to get a fresh error
