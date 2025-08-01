@@ -181,7 +181,7 @@ const StaffTaskPanel: React.FC<StaffTaskPanelProps> = ({ onLogout }) => {
       />
       
       {/* Ultra Mobile-first responsive layout */}
-      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 min-h-screen font-sans">
+      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 min-h-screen font-sans overflow-x-hidden">
         <div className="px-2 xxs:px-3 xs:px-4 sm:px-6 lg:px-8 py-3 xxs:py-4 xs:py-6 max-w-7xl mx-auto">
           
           {/* Header - Ultra Mobile Responsive */}
@@ -242,7 +242,7 @@ const StaffTaskPanel: React.FC<StaffTaskPanelProps> = ({ onLogout }) => {
 
                 {/* Day Tabs - Ultra Mobile Horizontal Scroll */}
                 <div className="w-full">
-                  <div className="flex gap-1 xxs:gap-1.5 xs:gap-2 overflow-x-auto pb-1.5 xxs:pb-2 sleek-scrollbar -mx-0.5 xxs:-mx-1 px-0.5 xxs:px-1">
+                  <div className="flex gap-1 xxs:gap-1.5 xs:gap-2 overflow-x-auto pb-1.5 xxs:pb-2 sleek-scrollbar">
                     <button 
                       onClick={() => setActiveView('priority')} 
                       className={`flex-shrink-0 px-2 xxs:px-2.5 xs:px-3 sm:px-4 py-1 xxs:py-1.5 xs:py-2 text-xs sm:text-sm font-medium rounded xxs:rounded-md xs:rounded-lg transition-all duration-200 whitespace-nowrap ${
@@ -273,7 +273,7 @@ const StaffTaskPanel: React.FC<StaffTaskPanelProps> = ({ onLogout }) => {
 
                 {/* Category Filters - Ultra Mobile Horizontal Scroll */}
                 <div className="w-full">
-                  <div className="flex gap-1 xxs:gap-1.5 xs:gap-2 overflow-x-auto sleek-scrollbar -mx-0.5 xxs:-mx-1 px-0.5 xxs:px-1">
+                  <div className="flex gap-1 xxs:gap-1.5 xs:gap-2 overflow-x-auto sleek-scrollbar">
                     <button 
                       onClick={() => setCategoryFilter('all')} 
                       className={`flex-shrink-0 px-2 xxs:px-2.5 xs:px-3 sm:px-4 py-1 xxs:py-1.5 xs:py-2 text-xs sm:text-sm font-medium rounded xxs:rounded-md xs:rounded-lg transition-all duration-200 whitespace-nowrap ${
@@ -304,7 +304,7 @@ const StaffTaskPanel: React.FC<StaffTaskPanelProps> = ({ onLogout }) => {
 
                 {/* Status Filters - Ultra Mobile Horizontal Scroll */}
                 <div className="w-full">
-                  <div className="flex gap-1 xxs:gap-1.5 xs:gap-2 overflow-x-auto sleek-scrollbar -mx-0.5 xxs:-mx-1 px-0.5 xxs:px-1">
+                  <div className="flex gap-1 xxs:gap-1.5 xs:gap-2 overflow-x-auto sleek-scrollbar">
                     <span className="flex-shrink-0 text-xs xxs:text-xs xs:text-sm font-medium text-gray-600 self-center mr-0.5 xxs:mr-1 whitespace-nowrap">
                       <span className="hidden xxs:inline">Status:</span>
                       <span className="xxs:hidden">St:</span>

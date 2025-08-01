@@ -95,7 +95,7 @@ def create_default_restaurant():
         print(f"✅ Created restaurant: {restaurant.name}")
         print(f"🔑 Restaurant Code: {restaurant.restaurant_code}")
         print(f"📧 Email: {restaurant.contact_email}")
-        print(f"🔐 Password: Railway2025!SecurePass")
+        print(f"🔐 Password: [HIDDEN FOR SECURITY]")
         
         # Create admin and staff users
         print("👥 Creating default users...")
@@ -134,7 +134,7 @@ def create_default_restaurant():
         print("=" * 50)
         print(f"🏪 Restaurant: {restaurant.name}")
         print(f"🔑 Login Code: {restaurant.restaurant_code}")
-        print(f"🔐 Password: Railway2025!SecurePass")
+        print(f"🔐 Password: [HIDDEN FOR SECURITY]")
         print(f"👨‍💼 Admin PIN: {admin_pin}")
         print(f"👨‍🍳 Staff PIN: {staff_pin}")
         print("=" * 50)

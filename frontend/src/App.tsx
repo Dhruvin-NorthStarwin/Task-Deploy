@@ -11,6 +11,7 @@ import StaffTaskPanel from './components/staff/StaffTaskPanel';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { debugApiConfig } from './utils/debug';
+import { initializeCSRFToken } from './utils/csrfProtection';
 import config from './config/environment';
 import { initializeCSRFToken } from './utils/csrfProtection';
 
