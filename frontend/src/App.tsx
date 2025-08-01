@@ -8,6 +8,7 @@ import { SignupComponent } from './components/SignupComponent';
 import StaffPin from './components/StaffPin';
 import AdminTaskPanel from './components/admin/AdminTaskPanel';
 import StaffTaskPanel from './components/staff/StaffTaskPanel';
+import NFCCleaningPage from './components/NFCCleaningPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { debugApiConfig } from './utils/debug';
@@ -119,6 +120,8 @@ const AppContent: React.FC = () => {
               <StaffTaskPanel onLogout={logoutToPin} />
             </ProtectedRoute>
           } />
+          {/* NFC Cleaning Route - Public access for quick cleaning completion */}
+          <Route path="/nfc/clean/:assetId" element={<NFCCleaningPage />} />
           {/* Catch-all route for debugging */}
           <Route path="*" element={
             <div className="min-h-screen flex items-center justify-center bg-red-50">

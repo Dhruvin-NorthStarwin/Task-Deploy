@@ -1,0 +1,175 @@
+/* NFC Cleaning Page Animations */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes tick {
+  0% {
+    stroke-dasharray: 0, 100;
+  }
+  100% {
+    stroke-dasharray: 100, 0;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.6s ease-out;
+  animation-fill-mode: both;
+}
+
+.animate-bounce-in {
+  animation: bounceIn 0.8s ease-out;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.3s ease-out;
+}
+
+.animate-tick {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.animate-tick svg {
+  stroke-dasharray: 50;
+  stroke-dashoffset: 50;
+  animation: tick 1s ease-out 0.5s forwards;
+}
+
+/* Loading spinner */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Success background pulse */
+@keyframes backgroundPulse {
+  0%, 100% {
+    background-color: rgb(34, 197, 94);
+  }
+  50% {
+    background-color: rgb(22, 163, 74);
+  }
+}
+
+.animate-bg-pulse {
+  animation: backgroundPulse 2s ease-in-out infinite;
+}
+
+/* Slide in from left for activity items */
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.5s ease-out;
+  animation-fill-mode: both;
+}
+
+/* Hover effects */
+.hover-scale:hover {
+  transform: scale(1.02);
+  transition: transform 0.2s ease;
+}
+
+/* Mobile optimizations */
+@media (max-width: 640px) {
+  .animate-bounce-in {
+    animation-duration: 0.6s;
+  }
+  
+  .animate-slide-up {
+    animation-duration: 0.4s;
+  }
+}
+
+/* Reduced motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-slide-up,
+  .animate-bounce-in,
+  .animate-scale-in,
+  .animate-tick,
+  .animate-spin,
+  .animate-bg-pulse,
+  .animate-slide-in-left {
+    animation: none;
+  }
+  
+  .hover-scale:hover {
+    transform: none;
+  }
+}
