@@ -84,8 +84,83 @@ app.add_middleware(
 # Then add our custom middleware as a backup
 app.add_middleware(CustomCORSMiddleware)
 
+# Exception handlers with CORS support
+async def global_exception_handler_with_cors(request: Request, exc: Exception):
+    """Global exception handler for unhandled errors with CORS support"""
+    if settings.ENVIRONMENT == "development":
+        import traceback
+        error_detail = {
+            "error": str(exc),
+            "traceback": traceback.format_exc()
+        }
+    else:
+        error_detail = {"error": "Internal server error"}
+    
+    # Get origin from request
+    origin = request.headers.get("origin", "")
+    
+    # Create response with CORS headers
+    response = JSONResponse(
+        status_code=500,
+        content=error_detail
+    )
+    
+    # Add CORS headers to error response
+    if origin:
+        # Check if origin is allowed
+        allowed_origins = settings.ALLOWED_ORIGINS
+        if (origin in allowed_origins or 
+            origin.startswith("http://localhost") or
+            origin.startswith("http://127.0.0.1") or
+            origin.endswith(".railway.app") or
+            allowed_origins == ["*"]):
+            response.headers["Access-Control-Allow-Origin"] = origin
+        else:
+            response.headers["Access-Control-Allow-Origin"] = "*"
+    else:
+        response.headers["Access-Control-Allow-Origin"] = "*"
+    
+    response.headers["Access-Control-Allow-Credentials"] = "true"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With, Cache-Control, Pragma, Accept, Upgrade-Insecure-Requests"
+    
+    return response
+
+async def http_exception_handler_with_cors(request: Request, exc: HTTPException):
+    """HTTP exception handler with CORS support"""
+    # Get origin from request
+    origin = request.headers.get("origin", "")
+    
+    # Create response with CORS headers
+    response = JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail}
+    )
+    
+    # Add CORS headers to error response
+    if origin:
+        # Check if origin is allowed
+        allowed_origins = settings.ALLOWED_ORIGINS
+        if (origin in allowed_origins or 
+            origin.startswith("http://localhost") or
+            origin.startswith("http://127.0.0.1") or
+            origin.endswith(".railway.app") or
+            allowed_origins == ["*"]):
+            response.headers["Access-Control-Allow-Origin"] = origin
+        else:
+            response.headers["Access-Control-Allow-Origin"] = "*"
+    else:
+        response.headers["Access-Control-Allow-Origin"] = "*"
+    
+    response.headers["Access-Control-Allow-Credentials"] = "true"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With, Cache-Control, Pragma, Accept, Upgrade-Insecure-Requests"
+    
+    return response
+
 # Add global exception handlers
-app.add_exception_handler(Exception, global_exception_handler)
+app.add_exception_handler(Exception, global_exception_handler_with_cors)
+app.add_exception_handler(HTTPException, http_exception_handler_with_cors)
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
 
 # Create upload directory if it doesn't exist
@@ -115,43 +190,16 @@ app.include_router(nfc.router, prefix="/api")
 # Root endpoint
 @app.get("/")
 async def root():
-    return {
-        "message": "RestroManage Task Module API is running",
-        "documentation": "/docs",
-        "health_check": "/api/health",
-        "cors_debug": "/api/cors-debug",
-        "environment": settings.ENVIRONMENT,
-        "cors_origins": settings.ALLOWED_ORIGINS
-    }
-
-@app.get("/")
-async def root():
     """Root endpoint"""
     return {
         "message": "RestroManage Task Module API",
         "version": "1.0.0",
         "environment": settings.ENVIRONMENT,
         "docs": "/docs",
-        "health": "/api/health"
+        "health": "/api/health",
+        "cors_debug": "/api/cors-debug",
+        "cors_origins": settings.ALLOWED_ORIGINS
     }
-
-# Global exception handler
-@app.exception_handler(Exception)
-async def global_exception_handler(request: Request, exc: Exception):
-    """Global exception handler for unhandled errors"""
-    if settings.ENVIRONMENT == "development":
-        import traceback
-        error_detail = {
-            "error": str(exc),
-            "traceback": traceback.format_exc()
-        }
-    else:
-        error_detail = {"error": "Internal server error"}
-    
-    return JSONResponse(
-        status_code=500,
-        content=error_detail
-    )
 
 if __name__ == "__main__":
     uvicorn.run(

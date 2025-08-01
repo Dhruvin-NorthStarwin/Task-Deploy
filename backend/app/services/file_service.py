@@ -181,32 +181,45 @@ class FileUploadService:
             }
             
         except Exception as e:
-            print(f"Failed to upload to Cloudinary: {e}")
+            print(f"❌ Failed to upload to Cloudinary: {e}")
+            print(f"📋 Error details: {type(e).__name__}: {str(e)}")
+            import traceback
+            print(f"📋 Traceback: {traceback.format_exc()}")
             # Fallback to local storage
+            print("🔄 Falling back to local storage...")
             return await self._save_to_local(content, filename, task_id, content_type, file_type, original_filename)
 
     async def _save_to_local(self, content: bytes, filename: str, task_id: str,
                            content_type: str, file_type: str, original_filename: str) -> dict:
         """Save file to local storage"""
-        # Create task-specific directory
-        task_dir = os.path.join(self.upload_dir, "task_completions", str(task_id))
-        os.makedirs(task_dir, exist_ok=True)
-        
-        file_path = os.path.join(task_dir, filename)
-        
-        # Save file
-        async with aiofiles.open(file_path, 'wb') as buffer:
-            await buffer.write(content)
-        
-        return {
-            "filename": filename,
-            "original_filename": original_filename,
-            "file_path": file_path,
-            "file_size": len(content),
-            "mime_type": content_type,
-            "file_type": file_type,
-            "storage_type": "local"
-        }
+        try:
+            # Create task-specific directory
+            task_dir = os.path.join(self.upload_dir, "task_completions", str(task_id))
+            os.makedirs(task_dir, exist_ok=True)
+            
+            file_path = os.path.join(task_dir, filename)
+            
+            # Save file
+            async with aiofiles.open(file_path, 'wb') as buffer:
+                await buffer.write(content)
+            
+            print(f"✅ Successfully saved file locally: {file_path}")
+            
+            return {
+                "filename": filename,
+                "original_filename": original_filename,
+                "file_path": file_path,
+                "file_size": len(content),
+                "mime_type": content_type,
+                "file_type": file_type,
+                "storage_type": "local"
+            }
+        except Exception as e:
+            print(f"❌ Failed to save file locally: {e}")
+            print(f"📋 Error details: {type(e).__name__}: {str(e)}")
+            import traceback
+            print(f"📋 Traceback: {traceback.format_exc()}")
+            raise Exception(f"Failed to save file: {str(e)}")
 
     async def _optimize_image_content(self, content: bytes) -> bytes:
         """Optimize image content while maintaining quality"""

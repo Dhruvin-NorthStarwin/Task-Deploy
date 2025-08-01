@@ -9,6 +9,41 @@ from app.services.file_service import file_service
 
 router = APIRouter(prefix="/upload", tags=["uploads"])
 
+@router.get("/health")
+async def upload_health():
+    """Check upload service health"""
+    try:
+        from app.services.file_service import file_service
+        
+        # Test Cloudinary connection if enabled
+        cloudinary_status = "disabled"
+        if file_service.use_cloud_storage:
+            try:
+                import cloudinary.api
+                cloudinary.api.ping()
+                cloudinary_status = "connected"
+            except Exception as e:
+                cloudinary_status = f"error: {str(e)}"
+        
+        # Test local storage
+        import os
+        local_status = "accessible" if os.path.exists(file_service.upload_dir) else "not accessible"
+        
+        return {
+            "status": "healthy",
+            "cloudinary": cloudinary_status,
+            "local_storage": local_status,
+            "upload_directory": file_service.upload_dir,
+            "max_file_size": file_service.max_file_size,
+            "allowed_image_types": file_service.allowed_image_types,
+            "allowed_video_types": file_service.allowed_video_types
+        }
+    except Exception as e:
+        return {
+            "status": "unhealthy",
+            "error": str(e)
+        }
+
 @router.post("/image", response_model=schemas.UploadResponse)
 async def upload_image(
     file: UploadFile = File(...),
@@ -17,37 +52,53 @@ async def upload_image(
     db: Session = Depends(get_db)
 ):
     """Upload an image file for a task"""
-    # Verify task belongs to restaurant
-    task = crud.get_task_by_id(db, int(task_id), current_restaurant.id)
-    if not task:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Task not found"
+    try:
+        # Verify task belongs to restaurant
+        task = crud.get_task_by_id(db, int(task_id), current_restaurant.id)
+        if not task:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Task not found"
+            )
+        
+        # Save file
+        file_data = await file_service.save_image(file, task_id)
+        
+        # Create media record
+        media_data = {
+            "task_id": int(task_id),
+            **file_data
+        }
+        db_media = crud.create_media_file(db, media_data)
+        
+        # Update task with image URL
+        if file_data.get("storage_type") == "cloudinary":
+            file_url = file_data.get("file_url")
+        else:
+            # Use production URL if in production environment
+            from app.config import settings
+            base_url = "https://radiant-amazement-production-d68f.up.railway.app" if settings.ENVIRONMENT == "production" else "http://localhost:8000"
+            file_url = file_service.get_file_url(file_data["file_path"], base_url, "local")
+        crud.update_task(db, int(task_id), current_restaurant.id, 
+                        schemas.TaskUpdate(image_url=file_url))
+        
+        return schemas.UploadResponse(
+            url=file_url,
+            filename=file_data["filename"],
+            file_size=file_data["file_size"]
         )
-    
-    # Save file
-    file_data = await file_service.save_image(file, task_id)
-    
-    # Create media record
-    media_data = {
-        "task_id": int(task_id),
-        **file_data
-    }
-    db_media = crud.create_media_file(db, media_data)
-    
-    # Update task with image URL
-    if file_data.get("storage_type") == "cloudinary":
-        file_url = file_data.get("file_url")
-    else:
-        file_url = file_service.get_file_url(file_data["file_path"], "http://localhost:8000", "local")
-    crud.update_task(db, int(task_id), current_restaurant.id, 
-                    schemas.TaskUpdate(image_url=file_url))
-    
-    return schemas.UploadResponse(
-        url=file_url,
-        filename=file_data["filename"],
-        file_size=file_data["file_size"]
-    )
+        
+    except HTTPException:
+        # Re-raise HTTP exceptions as-is
+        raise
+    except Exception as e:
+        print(f"❌ Image upload error: {str(e)}")
+        import traceback
+        print(f"📋 Traceback: {traceback.format_exc()}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Image upload failed: {str(e)}"
+        )
 
 @router.post("/video", response_model=schemas.UploadResponse)
 async def upload_video(
@@ -57,37 +108,53 @@ async def upload_video(
     db: Session = Depends(get_db)
 ):
     """Upload a video file for a task"""
-    # Verify task belongs to restaurant
-    task = crud.get_task_by_id(db, int(task_id), current_restaurant.id)
-    if not task:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Task not found"
+    try:
+        # Verify task belongs to restaurant
+        task = crud.get_task_by_id(db, int(task_id), current_restaurant.id)
+        if not task:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Task not found"
+            )
+        
+        # Save file
+        file_data = await file_service.save_video(file, task_id)
+        
+        # Create media record
+        media_data = {
+            "task_id": int(task_id),
+            **file_data
+        }
+        db_media = crud.create_media_file(db, media_data)
+        
+        # Update task with video URL
+        if file_data.get("storage_type") == "cloudinary":
+            file_url = file_data.get("file_url")
+        else:
+            # Use production URL if in production environment
+            from app.config import settings
+            base_url = "https://radiant-amazement-production-d68f.up.railway.app" if settings.ENVIRONMENT == "production" else "http://localhost:8000"
+            file_url = file_service.get_file_url(file_data["file_path"], base_url, "local")
+        crud.update_task(db, int(task_id), current_restaurant.id, 
+                        schemas.TaskUpdate(video_url=file_url))
+        
+        return schemas.UploadResponse(
+            url=file_url,
+            filename=file_data["filename"],
+            file_size=file_data["file_size"]
         )
-    
-    # Save file
-    file_data = await file_service.save_video(file, task_id)
-    
-    # Create media record
-    media_data = {
-        "task_id": int(task_id),
-        **file_data
-    }
-    db_media = crud.create_media_file(db, media_data)
-    
-    # Update task with video URL
-    if file_data.get("storage_type") == "cloudinary":
-        file_url = file_data.get("file_url")
-    else:
-        file_url = file_service.get_file_url(file_data["file_path"], "http://localhost:8000", "local")
-    crud.update_task(db, int(task_id), current_restaurant.id, 
-                    schemas.TaskUpdate(video_url=file_url))
-    
-    return schemas.UploadResponse(
-        url=file_url,
-        filename=file_data["filename"],
-        file_size=file_data["file_size"]
-    )
+        
+    except HTTPException:
+        # Re-raise HTTP exceptions as-is
+        raise
+    except Exception as e:
+        print(f"❌ Video upload error: {str(e)}")
+        import traceback
+        print(f"📋 Traceback: {traceback.format_exc()}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Video upload failed: {str(e)}"
+        )
 
 @router.get("/serve/{task_id}/{filename}")
 async def serve_file(
