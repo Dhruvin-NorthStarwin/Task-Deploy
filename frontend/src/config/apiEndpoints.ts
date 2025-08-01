@@ -60,7 +60,7 @@ export const API_ENDPOINTS = {
   
   // NFC endpoints (from nfc.py)
   NFC: {
-    CLEAN: (assetId: string) => `${config.API_BASE_URL}/nfc/clean/${assetId}`,     // POST - Complete cleaning task via NFC
+    CLEAN: (restaurantCode: string, assetId: string) => `${config.API_BASE_URL}/nfc/clean/${restaurantCode}/${assetId}`,     // POST - Complete cleaning task via NFC
     LOGS: (assetId: string) => `${config.API_BASE_URL}/nfc/clean/${assetId}/logs`, // GET - Get cleaning logs for asset
     ASSETS: (restaurantId: string) => `${config.API_BASE_URL}/nfc/assets/${restaurantId}`, // GET - Get NFC assets for restaurant
   },

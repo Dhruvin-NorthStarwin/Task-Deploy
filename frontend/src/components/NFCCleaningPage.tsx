@@ -14,21 +14,23 @@ interface CleaningEntry {
   staff_name: string;
   completed_at: string;
   method: string;
-  time: string;
+  notes?: string;
 }
 
 interface NFCResponse {
   success: boolean;
   message: string;
   asset_id: string;
-  task_id: number;
+  restaurant_id: number;
+  restaurant_name: string;
+  log_id: number;
   completed_at: string;
   cleaning_stats: CleaningStats;
   recent_cleanings: CleaningEntry[];
 }
 
 const NFCCleaningPage: React.FC = () => {
-  const { assetId } = useParams<{ assetId: string }>();
+  const { restaurantCode, assetId } = useParams<{ restaurantCode: string; assetId: string }>();
   const navigate = useNavigate();
   
   const [loading, setLoading] = useState(true);
@@ -40,10 +42,14 @@ const NFCCleaningPage: React.FC = () => {
 
   useEffect(() => {
     completeCleaningTask();
-  }, [assetId]);
+  }, [restaurantCode, assetId]);
 
   const completeCleaningTask = async () => {
-    if (!assetId) return;
+    if (!restaurantCode || !assetId) {
+      setError('Invalid NFC URL: Missing restaurant code or asset ID');
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);
@@ -55,7 +61,7 @@ const NFCCleaningPage: React.FC = () => {
       setStaffName(currentStaffName);
 
       const token = localStorage.getItem('authToken');
-      const response = await fetch(API_ENDPOINTS.NFC.CLEAN(assetId), {
+      const response = await fetch(API_ENDPOINTS.NFC.CLEAN(restaurantCode, assetId), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -206,6 +212,9 @@ const NFCCleaningPage: React.FC = () => {
                   <p className="text-sm text-gray-600">
                     Completed by {staffName} at {formatTime(completionData.completed_at)}
                   </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Restaurant: {completionData.restaurant_name} (ID: {completionData.restaurant_id})
+                  </p>
                 </div>
 
                 {/* Stats Grid */}
@@ -316,18 +325,23 @@ const NFCCleaningPage: React.FC = () => {
             <div className="p-6 overflow-y-auto max-h-96">
               <div className="space-y-3">
                 {completionData?.recent_cleanings.map((entry) => (
-                  <div key={entry.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div>
+                  <div key={entry.id} className="p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
                       <div className="font-medium text-gray-800">
                         {entry.staff_name}
                       </div>
-                      <div className="text-sm text-gray-600">
-                        {formatDate(entry.completed_at)} • {entry.method}
+                      <div className="text-sm font-medium text-gray-700">
+                        {formatTime(entry.completed_at)}
                       </div>
                     </div>
-                    <div className="text-sm font-medium text-gray-700">
-                      {formatTime(entry.completed_at)}
+                    <div className="text-sm text-gray-600">
+                      {formatDate(entry.completed_at)} • {entry.method}
                     </div>
+                    {entry.notes && (
+                      <div className="text-xs text-gray-500 mt-2 italic">
+                        "{entry.notes}"
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

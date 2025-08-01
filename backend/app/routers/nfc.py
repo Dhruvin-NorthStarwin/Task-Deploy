@@ -10,84 +10,103 @@ from app import crud, schemas, models, auth
 router = APIRouter(prefix="/nfc", tags=["nfc"])
 logger = logging.getLogger(__name__)
 
-@router.post("/clean/{asset_id}")
+@router.post("/clean/{restaurant_code}/{asset_id}")
 async def complete_cleaning_task(
+    restaurant_code: str,
     asset_id: str,
     staff_info: schemas.NFCCleaningRequest,
     db: Session = Depends(get_db)
 ):
     """
-    Complete a cleaning task via NFC tap (public endpoint for NFC)
+    Complete a cleaning task via NFC tap (self-sufficient endpoint)
+    Creates cleaning log entry directly without requiring existing tasks
     """
     try:
-        # Find active cleaning task for this asset (any restaurant)
-        cleaning_task = crud.get_active_cleaning_task_by_asset_public(
-            db, asset_id
-        )
+        # Find restaurant by ID or name (restaurant_code can be either)
+        restaurant = None
+        try:
+            # Try as restaurant ID first
+            restaurant_id = int(restaurant_code)
+            restaurant = crud.get_restaurant(db, restaurant_id)
+        except ValueError:
+            # If not a number, try to find by name
+            restaurant = crud.get_restaurant_by_name(db, restaurant_code)
         
-        if not cleaning_task:
+        if not restaurant:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"No active cleaning task found for {asset_id}"
+                detail=f"Restaurant '{restaurant_code}' not found"
             )
         
-        # Mark task as completed
-        task_update = schemas.TaskUpdate(
-            status="Done",
-            completed_at=datetime.now()
-        )
+        # Validate staff name
+        if not staff_info.staff_name or len(staff_info.staff_name.strip()) < 2:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Staff name is required and must be at least 2 characters"
+            )
         
-        updated_task = crud.update_task(
-            db, cleaning_task.id, cleaning_task.restaurant_id, task_update
-        )
+        # Validate asset ID
+        if not asset_id or len(asset_id.strip()) < 2:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Asset ID is required and must be at least 2 characters"
+            )
         
-        # Create cleaning log entry
+        current_time = datetime.now()
+        
+        # Create cleaning log entry directly (self-sufficient)
         cleaning_log_data = {
-            "asset_id": asset_id,
-            "task_id": cleaning_task.id,
-            "restaurant_id": cleaning_task.restaurant_id,
-            "staff_name": staff_info.staff_name or "Unknown Staff",
-            "completed_at": datetime.now(),
-            "method": "NFC"
+            "asset_id": asset_id.strip(),
+            "task_id": None,  # No task ID needed for self-sufficient NFC
+            "restaurant_id": restaurant.id,
+            "staff_name": staff_info.staff_name.strip(),
+            "completed_at": current_time,
+            "method": "NFC",
+            "notes": staff_info.notes
         }
         
         cleaning_log = crud.create_cleaning_log(db, cleaning_log_data)
         
         # Get cleaning statistics for today
-        today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        today_start = current_time.replace(hour=0, minute=0, second=0, microsecond=0)
         today_count = crud.get_cleaning_count_by_asset_and_date(
-            db, asset_id, cleaning_task.restaurant_id, today_start
+            db, asset_id, restaurant.id, today_start
         )
         
         # Get last 10 cleaning entries for this asset
         recent_cleanings = crud.get_recent_cleaning_logs(
-            db, asset_id, cleaning_task.restaurant_id, limit=10
+            db, asset_id, restaurant.id, limit=10
         )
         
         return {
             "success": True,
             "message": f"{asset_id.replace('-', ' ').title()} marked as cleaned!",
             "asset_id": asset_id,
-            "task_id": updated_task.id,
-            "completed_at": updated_task.completed_at.isoformat(),
+            "restaurant_id": restaurant.id,
+            "restaurant_name": restaurant.name,
+            "log_id": cleaning_log.id,
+            "completed_at": current_time.isoformat(),
             "cleaning_stats": {
                 "today_count": today_count,
                 "total_entries": len(recent_cleanings),
-                "last_cleaned": updated_task.completed_at.isoformat()
+                "last_cleaned": current_time.isoformat()
             },
             "recent_cleanings": [
                 {
                     "id": log.id,
                     "staff_name": log.staff_name,
                     "completed_at": log.completed_at.isoformat(),
-                    "method": log.method
+                    "method": log.method,
+                    "notes": log.notes
                 }
                 for log in recent_cleanings
             ]
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Error completing cleaning task for {asset_id}: {str(e)}")
+        logger.error(f"Error completing cleaning task for {restaurant_code}/{asset_id}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to complete cleaning task: {str(e)}"

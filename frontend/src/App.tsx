@@ -118,7 +118,7 @@ const AppContent: React.FC = () => {
             </ProtectedRoute>
           } />
           {/* NFC Cleaning Route - Public access for quick cleaning completion */}
-          <Route path="/nfc/clean/:assetId" element={<NFCCleaningPage />} />
+          <Route path="/nfc/clean/:restaurantCode/:assetId" element={<NFCCleaningPage />} />
           {/* Catch-all route for debugging */}
           <Route path="*" element={
             <div className="min-h-screen flex items-center justify-center bg-red-50">

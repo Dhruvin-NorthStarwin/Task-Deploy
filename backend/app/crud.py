@@ -52,6 +52,15 @@ def get_restaurant_by_id(db: Session, restaurant_id: int) -> Optional[models.Res
         models.Restaurant.id == restaurant_id
     ).first()
 
+def get_restaurant_by_name(db: Session, name: str) -> Optional[models.Restaurant]:
+    return db.query(models.Restaurant).filter(
+        models.Restaurant.name.ilike(f"%{name}%")
+    ).first()
+
+def get_restaurant(db: Session, restaurant_id: int) -> Optional[models.Restaurant]:
+    """Get restaurant by ID - alias for get_restaurant_by_id"""
+    return get_restaurant_by_id(db, restaurant_id)
+
 # User CRUD
 def create_user(db: Session, user: schemas.UserCreate, restaurant_id: int) -> models.User:
     db_user = models.User(
