@@ -363,6 +363,7 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
                       <th scope="col" className="px-6 py-4 font-semibold rounded-l-lg">Task</th>
                       <th scope="col" className="px-6 py-4 font-semibold">Assigned To</th>
                       <th scope="col" className="px-6 py-4 font-semibold">Status</th>
+                      <th scope="col" className="px-6 py-4 font-semibold text-center">Media</th>
                       <th scope="col" className="px-6 py-4 font-semibold text-center rounded-r-lg">Actions</th>
                     </tr>
                   </thead>
@@ -405,6 +406,57 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
                         </td>
                         <td className="px-6 py-4">
                           <StatusBadge status={task.status} />
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            {task.imageUrl ? (
+                              <a
+                                href={task.imageUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                Image
+                              </a>
+                            ) : task.imageRequired ? (
+                              <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-400 bg-gray-100 rounded-md">
+                                <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                Pending
+                              </span>
+                            ) : null}
+                            
+                            {task.videoUrl ? (
+                              <a
+                                href={task.videoUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center px-2 py-1 text-xs font-medium text-green-600 bg-green-50 rounded-md hover:bg-green-100 transition-colors"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                </svg>
+                                Video
+                              </a>
+                            ) : task.videoRequired ? (
+                              <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-400 bg-gray-100 rounded-md">
+                                <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                </svg>
+                                Pending
+                              </span>
+                            ) : null}
+                            
+                            {!task.imageUrl && !task.videoUrl && !task.imageRequired && !task.videoRequired && (
+                              <span className="text-xs text-gray-400">No media</span>
+                            )}
+                          </div>
                         </td>
                         <td className="px-6 py-4 text-center">
                           <div className="relative">
@@ -527,6 +579,58 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
                         </span>
                       </span>
                     </div>
+
+                    {/* Media Links - Mobile */}
+                    {(task.imageUrl || task.videoUrl || task.imageRequired || task.videoRequired) && (
+                      <div className="mt-1.5 xxs:mt-2 xs:mt-3 pt-1.5 xxs:pt-2 xs:pt-3 border-t border-gray-100">
+                        <div className="flex items-center gap-1 xxs:gap-1.5 xs:gap-2 flex-wrap">
+                          <span className="text-xs text-gray-500 font-medium">Media:</span>
+                          {task.imageUrl ? (
+                            <a
+                              href={task.imageUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center px-1.5 xxs:px-2 py-0.5 xxs:py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded hover:bg-blue-100 transition-colors"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <svg className="w-2.5 h-2.5 xxs:w-3 xxs:h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
+                              Image
+                            </a>
+                          ) : task.imageRequired ? (
+                            <span className="inline-flex items-center px-1.5 xxs:px-2 py-0.5 xxs:py-1 text-xs font-medium text-gray-400 bg-gray-100 rounded">
+                              <svg className="w-2.5 h-2.5 xxs:w-3 xxs:h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
+                              Image Pending
+                            </span>
+                          ) : null}
+                          
+                          {task.videoUrl ? (
+                            <a
+                              href={task.videoUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center px-1.5 xxs:px-2 py-0.5 xxs:py-1 text-xs font-medium text-green-600 bg-green-50 rounded hover:bg-green-100 transition-colors"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <svg className="w-2.5 h-2.5 xxs:w-3 xxs:h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                              </svg>
+                              Video
+                            </a>
+                          ) : task.videoRequired ? (
+                            <span className="inline-flex items-center px-1.5 xxs:px-2 py-0.5 xxs:py-1 text-xs font-medium text-gray-400 bg-gray-100 rounded">
+                              <svg className="w-2.5 h-2.5 xxs:w-3 xxs:h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                              </svg>
+                              Video Pending
+                            </span>
+                          ) : null}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Mobile Action Dropdown - Ultra Compact */}
                     {openDropdown === task.id && task.status !== 'Done' && (
