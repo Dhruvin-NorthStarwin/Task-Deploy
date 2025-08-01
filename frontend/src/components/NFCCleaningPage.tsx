@@ -60,7 +60,21 @@ const NFCCleaningPage: React.FC = () => {
       setStaffName(currentStaffName);
 
       const token = localStorage.getItem('authToken');
-      const apiUrl = `/api/nfc/clean/${restaurantCode}/${assetId}`;
+      
+      // Ensure we always use the full backend URL in production
+      let apiUrl;
+      if (window.location.origin === 'https://task-module.up.railway.app' || 
+          window.location.hostname.includes('railway.app')) {
+        // Production: use full backend URL
+        apiUrl = `https://radiant-amazement-production-d68f.up.railway.app/api/nfc/clean/${restaurantCode}/${assetId}`;
+      } else {
+        // Development: use relative URL (Vite proxy)
+        apiUrl = `/api/nfc/clean/${restaurantCode}/${assetId}`;
+      }
+      
+      // Debug logging for production troubleshooting
+      console.log('🔍 NFC API URL:', apiUrl);
+      console.log('🔍 Window origin:', window.location.origin);
       
       const response = await fetch(apiUrl, {
         method: 'POST',
