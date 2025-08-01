@@ -1,5 +1,5 @@
 // Debug utilities to help troubleshoot API configuration
-import { config } from '../config/environment';
+import config from '../config/environment';
 import { debugEndpoints } from '../config/apiEndpoints';
 
 export const debugApiConfig = () => {

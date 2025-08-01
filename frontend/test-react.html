@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React Test</title>
+</head>
+<body>
+    <div id="root">
+        <div style="padding: 20px; font-family: Arial;">
+            <h1>React Module Test</h1>
+            <p>If you see this, HTML is loading correctly.</p>
+            <div id="react-status">Loading React...</div>
+        </div>
+    </div>
+    
+    <script type="module">
+        try {
+            console.log('Testing React imports...');
+            
+            // Test if basic imports work
+            import React from 'react';
+            import { createRoot } from 'react-dom/client';
+            
+            console.log('React imported successfully:', React);
+            
+            // Create a simple component
+            const TestApp = () => {
+                return React.createElement('div', {
+                    style: { color: 'green', fontWeight: 'bold' }
+                }, 'React is working! ✅');
+            };
+            
+            // Try to render
+            const container = document.getElementById('react-status');
+            const root = createRoot(container);
+            root.render(React.createElement(TestApp));
+            
+            console.log('React rendering successful!');
+            
+        } catch (error) {
+            console.error('React import/render error:', error);
+            document.getElementById('react-status').innerHTML = 
+                '<span style="color: red;">React Error: ' + error.message + '</span>';
+        }
+    </script>
+</body>
+</html>
