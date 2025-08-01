@@ -29,6 +29,7 @@ const StaffTaskDetailModal: React.FC<StaffTaskDetailModalProps> = ({
   const [showVideoPreview, setShowVideoPreview] = useState(false);
   const [initials, setInitials] = useState(task?.initials || '');
   const [isSavingInitials, setIsSavingInitials] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     setShow(!!task);
@@ -76,9 +77,21 @@ const StaffTaskDetailModal: React.FC<StaffTaskDetailModalProps> = ({
     setInitials(e.target.value);
   };
 
-  const handleSubmitWithInitials = () => {
-    // Pass initials to parent for task submission
-    onTaskSubmit(task.id, initials);
+  const handleSubmitWithInitials = async () => {
+    if (isSubmitting) return; // Prevent double submission
+    
+    console.log('🔄 MODAL SUBMIT: Starting task submission...', task?.id);
+    setIsSubmitting(true);
+    
+    try {
+      // Pass initials to parent for task submission
+      await onTaskSubmit(task.id, initials);
+      console.log('✅ MODAL SUBMIT: Task submission completed');
+    } catch (error) {
+      console.error('❌ MODAL SUBMIT: Task submission failed:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleVideoCapture = (videoUrl: string) => {
@@ -299,23 +312,50 @@ const StaffTaskDetailModal: React.FC<StaffTaskDetailModalProps> = ({
                 {(!task.imageRequired && !task.videoRequired) ? (
                   <button 
                     onClick={handleSubmitWithInitials} 
-                    className="w-full px-4 py-2.5 text-sm font-semibold rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors shadow-lg"
+                    disabled={isSubmitting}
+                    className="w-full px-4 py-2.5 text-sm font-semibold rounded-lg bg-green-600 text-white hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors shadow-lg flex items-center justify-center"
                   >
-                    Complete Task
+                    {isSubmitting ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Submitting...
+                      </>
+                    ) : (
+                      'Complete Task'
+                    )}
                   </button>
                 ) : (
                   <>
-                    {(!task.imageUrl && !task.videoUrl) && (
-                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-2 text-center">
-                        <p className="text-xs text-yellow-700">Please capture required media before submitting</p>
+                    {(task.imageRequired && !task.imageUrl) || (task.videoRequired && !task.videoUrl) ? (
+                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-center">
+                        <p className="text-xs text-yellow-700 font-medium">
+                          {task.imageRequired && !task.imageUrl && 'Image required'} 
+                          {task.imageRequired && !task.imageUrl && task.videoRequired && !task.videoUrl && ' and '}
+                          {task.videoRequired && !task.videoUrl && 'Video required'}
+                        </p>
+                        <p className="text-xs text-yellow-600 mt-1">Please capture all required media before submitting</p>
                       </div>
-                    )}
+                    ) : null}
+                    
                     <button 
                       onClick={handleSubmitWithInitials} 
-                      className="w-full px-4 py-2.5 text-sm font-semibold rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed shadow-lg"
-                      disabled={!task.imageUrl && !task.videoUrl}
+                      disabled={isSubmitting || (task.imageRequired && !task.imageUrl) || (task.videoRequired && !task.videoUrl)}
+                      className="w-full px-4 py-2.5 text-sm font-semibold rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed shadow-lg flex items-center justify-center"
                     >
-                      Submit Task for Review
+                      {isSubmitting ? (
+                        <>
+                          <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Submitting...
+                        </>
+                      ) : (
+                        'Submit Task for Review'
+                      )}
                     </button>
                   </>
                 )}
@@ -325,10 +365,20 @@ const StaffTaskDetailModal: React.FC<StaffTaskDetailModalProps> = ({
             {task.status === 'Declined' && (
               <button 
                 onClick={() => onTaskSubmit(task.id, initials)} 
-                className="w-full px-4 py-2.5 text-sm font-semibold rounded-lg bg-orange-600 text-white hover:bg-orange-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed shadow-lg"
-                disabled={(!task.imageRequired || !task.imageUrl) && (!task.videoRequired || !task.videoUrl) && (!task.imageUrl && !task.videoUrl)}
+                disabled={isSubmitting || (task.imageRequired && !task.imageUrl) || (task.videoRequired && !task.videoUrl)}
+                className="w-full px-4 py-2.5 text-sm font-semibold rounded-lg bg-orange-600 text-white hover:bg-orange-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed shadow-lg flex items-center justify-center"
               >
-                Resubmit Task
+                {isSubmitting ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Resubmitting...
+                  </>
+                ) : (
+                  'Resubmit Task'
+                )}
               </button>
             )}
 

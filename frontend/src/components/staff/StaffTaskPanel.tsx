@@ -102,18 +102,44 @@ const StaffTaskPanel: React.FC<StaffTaskPanelProps> = ({ onLogout }) => {
 
   const handleTaskSubmit = async (taskId: number, initials?: string) => {
     try {
-      console.log('Submitting task:', taskId, 'with initials:', initials);
+      console.log('🚀 STAFF SUBMIT: Starting task submission...', taskId, 'with initials:', initials);
       
       // Find the task to get media URLs
       const task = tasks.find(t => t.id === taskId);
       if (!task) {
-        console.error('Task not found:', taskId);
+        console.error('❌ STAFF SUBMIT: Task not found:', taskId);
+        alert('Task not found. Please refresh the page and try again.');
         return;
       }
 
+      console.log('📋 STAFF SUBMIT: Task details:', {
+        id: task.id,
+        status: task.status,
+        imageRequired: task.imageRequired,
+        videoRequired: task.videoRequired,
+        imageUrl: task.imageUrl,
+        videoUrl: task.videoUrl,
+        initials: initials
+      });
+
+      // Check media requirements
+      if (task.imageRequired && !task.imageUrl) {
+        console.error('❌ STAFF SUBMIT: Image required but not provided');
+        alert('Please capture the required image before submitting.');
+        return;
+      }
+
+      if (task.videoRequired && !task.videoUrl) {
+        console.error('❌ STAFF SUBMIT: Video required but not provided');
+        alert('Please capture the required video before submitting.');
+        return;
+      }
+
+      console.log('✅ STAFF SUBMIT: Media requirements satisfied, calling API...');
+
       // Submit the task with media URLs and initials
       const updatedTask = await apiService.submitTask(taskId, task.imageUrl, task.videoUrl, initials);
-      console.log('Task submitted successfully:', updatedTask);
+      console.log('✅ STAFF SUBMIT: Task submitted successfully:', updatedTask);
       
       // Update tasks in the UI with the full updated task data
       setTasks(prevTasks => prevTasks.map(t => 
@@ -124,8 +150,33 @@ const StaffTaskPanel: React.FC<StaffTaskPanelProps> = ({ onLogout }) => {
       if (selectedTask && selectedTask.id === taskId) {
         setSelectedTask(updatedTask);
       }
-    } catch (error) {
-      console.error('Failed to submit task:', error);
+
+      // Show success message
+      alert('Task submitted successfully for review!');
+      
+    } catch (error: any) {
+      console.error('❌ STAFF SUBMIT: Failed to submit task:', error);
+      
+      // Show user-friendly error message
+      let errorMessage = 'Failed to submit task. Please try again.';
+      
+      if (error.message) {
+        if (error.message.includes('Network') || error.message.includes('fetch')) {
+          errorMessage = 'Network error. Please check your connection and try again.';
+        } else if (error.message.includes('401') || error.message.includes('unauthorized')) {
+          errorMessage = 'Session expired. Please log in again.';
+        } else if (error.message.includes('403') || error.message.includes('forbidden')) {
+          errorMessage = 'You do not have permission to submit this task.';
+        } else if (error.message.includes('404')) {
+          errorMessage = 'Task not found. Please refresh the page and try again.';
+        } else if (error.message.includes('422')) {
+          errorMessage = 'Invalid data. Please check all required fields.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      alert(errorMessage);
     }
   };
 
