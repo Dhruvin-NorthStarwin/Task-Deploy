@@ -36,7 +36,7 @@ async def upload_image(
     db_media = crud.create_media_file(db, media_data)
     
     # Update task with image URL
-    if file_data.get("storage_type") == "gcs":
+    if file_data.get("storage_type") == "cloudinary":
         file_url = file_data.get("file_url")
     else:
         file_url = file_service.get_file_url(file_data["file_path"], "http://localhost:8000", "local")
@@ -76,7 +76,7 @@ async def upload_video(
     db_media = crud.create_media_file(db, media_data)
     
     # Update task with video URL
-    if file_data.get("storage_type") == "gcs":
+    if file_data.get("storage_type") == "cloudinary":
         file_url = file_data.get("file_url")
     else:
         file_url = file_service.get_file_url(file_data["file_path"], "http://localhost:8000", "local")

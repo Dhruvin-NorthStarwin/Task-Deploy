@@ -6,7 +6,7 @@ from fastapi.exceptions import RequestValidationError
 from sqlalchemy import create_engine
 from app.config import settings
 from app.database import engine, Base
-from app.routers import auth, tasks, users, uploads, health, admin_storage
+from app.routers import auth, tasks, users, uploads, health, admin_storage, nfc
 from app.middleware.error_handler import global_exception_handler, validation_exception_handler
 from app.middleware.cors_middleware import CustomCORSMiddleware
 from app.middleware.preflight_middleware import PreflightMiddleware
@@ -49,7 +49,11 @@ elif isinstance(origins, str):
 # Ensure production URLs are included
 production_origins = [
     "https://task-module.up.railway.app",
-    "https://radiant-amazement-production-d68f.up.railway.app"
+    "https://radiant-amazement-production-d68f.up.railway.app",
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:5173"
 ]
 
 for prod_origin in production_origins:
@@ -101,6 +105,7 @@ app.include_router(users.router, prefix="/api")
 app.include_router(uploads.router, prefix="/api")
 app.include_router(health.router, prefix="/api")
 app.include_router(admin_storage.router, prefix="/api")
+app.include_router(nfc.router, prefix="/api")
 
 # Root endpoint
 @app.get("/")

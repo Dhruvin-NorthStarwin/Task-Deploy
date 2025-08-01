@@ -188,3 +188,35 @@ class TaskFilters(BaseModel):
     day: Optional[Day] = None
     initials: Optional[str] = None
     task_type: Optional[TaskType] = None
+
+# NFC schemas
+class NFCCleaningRequest(BaseModel):
+    staff_name: Optional[str] = None
+    notes: Optional[str] = None
+
+class CleaningLogEntry(BaseModel):
+    id: int
+    asset_id: str
+    staff_name: str
+    completed_at: datetime
+    method: str
+    
+    class Config:
+        from_attributes = True
+
+class NFCCleaningResponse(BaseModel):
+    success: bool
+    message: str
+    asset_id: str
+    task_id: int
+    completed_at: str
+    cleaning_stats: dict
+    recent_cleanings: List[dict]
+
+class NFCAssetInfo(BaseModel):
+    asset_id: str
+    asset_name: str
+    nfc_url: str
+    qr_url: str
+    total_tasks: int
+    last_cleaned: Optional[str] = None

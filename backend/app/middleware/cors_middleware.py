@@ -13,9 +13,20 @@ class CustomCORSMiddleware(BaseHTTPMiddleware):
         # Get allowed origins from settings
         self.allowed_origins = settings.ALLOWED_ORIGINS
         
-        # Special case to ensure Railway frontend works
-        if isinstance(self.allowed_origins, list) and "https://task-module.up.railway.app" not in self.allowed_origins:
-            self.allowed_origins.append("https://task-module.up.railway.app")
+        # Ensure essential origins are included
+        essential_origins = [
+            "https://task-module.up.railway.app",
+            "https://radiant-amazement-production-d68f.up.railway.app",
+            "http://localhost:3000",
+            "http://localhost:5173"
+        ]
+        
+        if isinstance(self.allowed_origins, list):
+            for origin in essential_origins:
+                if origin not in self.allowed_origins:
+                    self.allowed_origins.append(origin)
+        else:
+            self.allowed_origins = essential_origins
         
         # Wildcard handling
         self.use_wildcard = False
@@ -25,8 +36,19 @@ class CustomCORSMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         # Handle preflight OPTIONS requests immediately
         if request.method == "OPTIONS":
+            origin = request.headers.get("origin", "")
             response = Response()
-            response.headers["Access-Control-Allow-Origin"] = request.headers.get("origin", "*")
+            
+            # Set origin with validation
+            if (origin and (self.use_wildcard or 
+                           origin in self.allowed_origins or 
+                           origin.startswith("http://localhost") or
+                           origin.startswith("http://127.0.0.1") or
+                           origin.endswith(".railway.app"))):
+                response.headers["Access-Control-Allow-Origin"] = origin
+            else:
+                response.headers["Access-Control-Allow-Origin"] = "*"
+                
             response.headers["Access-Control-Allow-Credentials"] = "true"
             response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
             response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With, Cache-Control, Pragma, Accept, Upgrade-Insecure-Requests"
@@ -39,9 +61,21 @@ class CustomCORSMiddleware(BaseHTTPMiddleware):
         # Call the next middleware/route
         response = await call_next(request)
         
-        # Set CORS headers without modifying Content-Length
+        # Set CORS headers with proper origin validation
         if origin:
-            response.headers["Access-Control-Allow-Origin"] = origin
+            # Check if origin is allowed
+            if (self.use_wildcard or 
+                origin in self.allowed_origins or 
+                origin.startswith("http://localhost") or
+                origin.startswith("http://127.0.0.1") or
+                origin.endswith(".railway.app")):
+                response.headers["Access-Control-Allow-Origin"] = origin
+            else:
+                # Default to first allowed origin if not wildcard
+                if not self.use_wildcard and self.allowed_origins:
+                    response.headers["Access-Control-Allow-Origin"] = self.allowed_origins[0]
+                else:
+                    response.headers["Access-Control-Allow-Origin"] = "*"
         else:
             response.headers["Access-Control-Allow-Origin"] = "*"
             

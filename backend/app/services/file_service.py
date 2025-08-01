@@ -7,8 +7,9 @@ import tempfile
 from typing import List, Optional
 from fastapi import UploadFile, HTTPException, status
 from PIL import Image
-from google.cloud import storage
-from google.auth.exceptions import DefaultCredentialsError
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 import io
 from app.config import settings
 
@@ -19,58 +20,35 @@ class FileUploadService:
         self.allowed_image_types = settings.ALLOWED_IMAGE_TYPES
         self.allowed_video_types = settings.ALLOWED_VIDEO_TYPES
         
-        # Google Cloud Storage configuration
+        # Cloudinary configuration
         self.use_cloud_storage = settings.USE_CLOUD_STORAGE
-        self.gcs_bucket_name = settings.GCS_BUCKET_NAME
-        self.gcs_client = None
-        self.gcs_bucket = None
+        self.cloudinary_configured = False
         
-        if self.use_cloud_storage and self.gcs_bucket_name:
+        if self.use_cloud_storage:
             try:
-                # Handle Railway base64 encoded credentials
-                self._setup_gcs_credentials()
+                # Configure Cloudinary
+                cloudinary.config(
+                    cloud_name=settings.CLOUDINARY_CLOUD_NAME,
+                    api_key=settings.CLOUDINARY_API_KEY,
+                    api_secret=settings.CLOUDINARY_API_SECRET,
+                    secure=True
+                )
                 
-                self.gcs_client = storage.Client()
-                self.gcs_bucket = self.gcs_client.bucket(self.gcs_bucket_name)
-                print(f"✅ Google Cloud Storage initialized - Bucket: {self.gcs_bucket_name}")
-            except DefaultCredentialsError:
-                print("⚠️ Google Cloud credentials not found, falling back to local storage")
-                self.use_cloud_storage = False
+                # Test connection
+                cloudinary.api.ping()
+                self.cloudinary_configured = True
+                print(f"✅ Cloudinary initialized - Cloud: {settings.CLOUDINARY_CLOUD_NAME}")
+                
             except Exception as e:
-                print(f"⚠️ Failed to initialize Google Cloud Storage: {e}")
+                print(f"⚠️ Failed to initialize Cloudinary: {e}")
                 self.use_cloud_storage = False
+                self.cloudinary_configured = False
         
         # Create local upload directories as fallback
         if not self.use_cloud_storage:
             os.makedirs(os.path.join(self.upload_dir, "images"), exist_ok=True)
             os.makedirs(os.path.join(self.upload_dir, "videos"), exist_ok=True)
             os.makedirs(os.path.join(self.upload_dir, "task_completions"), exist_ok=True)
-
-    def _setup_gcs_credentials(self):
-        """Setup Google Cloud Storage credentials, handling Railway base64 encoding"""
-        # Check for base64 encoded credentials (Railway deployment)
-        base64_creds = os.getenv('GOOGLE_APPLICATION_CREDENTIALS_BASE64')
-        if base64_creds:
-            try:
-                # Decode base64 credentials
-                decoded_creds = base64.b64decode(base64_creds).decode('utf-8')
-                
-                # Create temporary file for credentials
-                temp_creds_file = tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False)
-                temp_creds_file.write(decoded_creds)
-                temp_creds_file.close()
-                
-                # Set environment variable
-                os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = temp_creds_file.name
-                print("✅ Decoded base64 GCS credentials for Railway")
-                
-            except Exception as e:
-                print(f"⚠️ Failed to decode base64 credentials: {e}")
-                raise
-        
-        # Otherwise use the regular credentials file path
-        elif settings.GOOGLE_APPLICATION_CREDENTIALS:
-            os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = settings.GOOGLE_APPLICATION_CREDENTIALS
 
     def _validate_file_size(self, file: UploadFile) -> None:
         """Validate file size"""
@@ -124,8 +102,8 @@ class FileUploadService:
         except Exception as e:
             print(f"Image optimization failed: {e}")
         
-        if self.use_cloud_storage:
-            return await self._save_to_gcs(content, filename, task_id, file.content_type, "image", file.filename)
+        if self.use_cloud_storage and self.cloudinary_configured:
+            return await self._save_to_cloudinary(content, filename, task_id, file.content_type, "image", file.filename)
         else:
             return await self._save_to_local(content, filename, task_id, file.content_type, "image", file.filename)
 
@@ -140,41 +118,70 @@ class FileUploadService:
         # Read file content
         content = await file.read()
         
-        if self.use_cloud_storage:
-            return await self._save_to_gcs(content, filename, task_id, file.content_type, "video", file.filename)
+        if self.use_cloud_storage and self.cloudinary_configured:
+            return await self._save_to_cloudinary(content, filename, task_id, file.content_type, "video", file.filename)
         else:
             return await self._save_to_local(content, filename, task_id, file.content_type, "video", file.filename)
 
-    async def _save_to_gcs(self, content: bytes, filename: str, task_id: str, 
-                          content_type: str, file_type: str, original_filename: str) -> dict:
-        """Save file to Google Cloud Storage"""
+    async def _save_to_cloudinary(self, content: bytes, filename: str, task_id: str, 
+                                content_type: str, file_type: str, original_filename: str) -> dict:
+        """Save file to Cloudinary"""
         try:
-            # Create blob path: task_completions/task_id/filename
-            blob_path = f"task_completions/{task_id}/{filename}"
-            blob = self.gcs_bucket.blob(blob_path)
+            # Create a folder structure: task_completions/task_id/
+            folder = f"task_completions/{task_id}"
             
-            # Set content type
-            blob.content_type = content_type
+            # Generate public_id without extension
+            public_id = f"{folder}/{filename.rsplit('.', 1)[0]}"
             
-            # Upload file in a separate thread to avoid blocking
+            # Upload to Cloudinary
             loop = asyncio.get_event_loop()
-            await loop.run_in_executor(None, blob.upload_from_string, content, content_type)
             
-            # Generate public URL
-            file_url = f"{settings.GCS_BASE_URL}/{self.gcs_bucket_name}/{blob_path}"
+            if file_type == "image":
+                # Upload image with optimization
+                result = await loop.run_in_executor(
+                    None,
+                    cloudinary.uploader.upload,
+                    content,
+                    {
+                        "public_id": public_id,
+                        "folder": folder,
+                        "resource_type": "image",
+                        "format": "webp",  # Convert to WebP for better compression
+                        "quality": "auto:good",
+                        "fetch_format": "auto",
+                        "crop": "limit",
+                        "width": 1920,
+                        "height": 1080
+                    }
+                )
+            else:
+                # Upload video
+                result = await loop.run_in_executor(
+                    None,
+                    cloudinary.uploader.upload,
+                    content,
+                    {
+                        "public_id": public_id,
+                        "folder": folder,
+                        "resource_type": "video",
+                        "quality": "auto:good"
+                    }
+                )
             
             return {
                 "filename": filename,
                 "original_filename": original_filename,
-                "file_path": blob_path,
-                "file_url": file_url,
-                "file_size": len(content),
+                "file_path": result["public_id"],
+                "file_url": result["secure_url"],
+                "file_size": result["bytes"],
                 "mime_type": content_type,
                 "file_type": file_type,
-                "storage_type": "gcs"
+                "storage_type": "cloudinary",
+                "cloudinary_id": result["public_id"]
             }
+            
         except Exception as e:
-            print(f"Failed to upload to GCS: {e}")
+            print(f"Failed to upload to Cloudinary: {e}")
             # Fallback to local storage
             return await self._save_to_local(content, filename, task_id, content_type, file_type, original_filename)
 
@@ -243,13 +250,14 @@ class FileUploadService:
             print(f"Error optimizing image: {e}")
 
     def delete_file(self, file_path: str, storage_type: str = "local") -> bool:
-        """Delete a file from local storage or GCS"""
+        """Delete a file from local storage or Cloudinary"""
         try:
-            if storage_type == "gcs" and self.use_cloud_storage:
-                blob = self.gcs_bucket.blob(file_path)
-                blob.delete()
+            if storage_type == "cloudinary" and self.use_cloud_storage and self.cloudinary_configured:
+                # file_path is the public_id for Cloudinary
+                cloudinary.uploader.destroy(file_path)
                 return True
             else:
+                # Local storage
                 if os.path.exists(file_path):
                     os.remove(file_path)
                     return True
@@ -260,17 +268,18 @@ class FileUploadService:
 
     def get_file_url(self, file_path: str, base_url: str, storage_type: str = "local") -> str:
         """Generate URL for accessing the file"""
-        if storage_type == "gcs":
-            return f"{settings.GCS_BASE_URL}/{self.gcs_bucket_name}/{file_path}"
+        if storage_type == "cloudinary":
+            # For Cloudinary, file_path is already the full URL
+            return file_path
         else:
             # Convert absolute path to relative path for URL
             relative_path = os.path.relpath(file_path, self.upload_dir)
             return f"{base_url}/uploads/{relative_path.replace(os.sep, '/')}"
 
     async def migrate_to_cloud_storage(self, task_id: Optional[str] = None) -> dict:
-        """Migrate existing local files to Google Cloud Storage"""
-        if not self.use_cloud_storage:
-            return {"error": "Cloud storage not configured"}
+        """Migrate existing local files to Cloudinary"""
+        if not self.use_cloud_storage or not self.cloudinary_configured:
+            return {"error": "Cloudinary not configured"}
         
         migrated_files = []
         failed_files = []
@@ -299,8 +308,8 @@ class FileUploadService:
         except Exception as e:
             return {"error": f"Migration failed: {e}"}
 
-    async def _migrate_directory(self, local_dir: str, gcs_prefix: str, migrated_files: list, failed_files: list):
-        """Migrate a directory to GCS"""
+    async def _migrate_directory(self, local_dir: str, cloudinary_folder: str, migrated_files: list, failed_files: list):
+        """Migrate a directory to Cloudinary"""
         for filename in os.listdir(local_dir):
             file_path = os.path.join(local_dir, filename)
             if os.path.isfile(file_path):
@@ -309,31 +318,50 @@ class FileUploadService:
                     async with aiofiles.open(file_path, 'rb') as f:
                         content = await f.read()
                     
-                    # Upload to GCS
-                    blob_path = f"{gcs_prefix}/{filename}"
-                    blob = self.gcs_bucket.blob(blob_path)
-                    
-                    # Detect content type
+                    # Determine file type and upload to Cloudinary
                     if filename.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.webp')):
-                        content_type = f"image/{filename.split('.')[-1].lower()}"
+                        resource_type = "image"
+                        public_id = f"{cloudinary_folder}/{filename.rsplit('.', 1)[0]}"
+                        
+                        loop = asyncio.get_event_loop()
+                        result = await loop.run_in_executor(
+                            None,
+                            cloudinary.uploader.upload,
+                            content,
+                            {
+                                "public_id": public_id,
+                                "resource_type": "image",
+                                "format": "webp",
+                                "quality": "auto:good"
+                            }
+                        )
+                        
                     elif filename.lower().endswith(('.mp4', '.webm', '.avi', '.mov')):
-                        content_type = f"video/{filename.split('.')[-1].lower()}"
+                        resource_type = "video"
+                        public_id = f"{cloudinary_folder}/{filename.rsplit('.', 1)[0]}"
+                        
+                        loop = asyncio.get_event_loop()
+                        result = await loop.run_in_executor(
+                            None,
+                            cloudinary.uploader.upload,
+                            content,
+                            {
+                                "public_id": public_id,
+                                "resource_type": "video",
+                                "quality": "auto:good"
+                            }
+                        )
                     else:
-                        content_type = "application/octet-stream"
-                    
-                    blob.content_type = content_type
-                    
-                    # Upload in executor to avoid blocking
-                    loop = asyncio.get_event_loop()
-                    await loop.run_in_executor(None, blob.upload_from_string, content, content_type)
+                        continue  # Skip unsupported files
                     
                     migrated_files.append({
                         "local_path": file_path,
-                        "gcs_path": blob_path,
-                        "size": len(content)
+                        "cloudinary_public_id": result["public_id"],
+                        "cloudinary_url": result["secure_url"],
+                        "size": result["bytes"]
                     })
                     
-                    print(f"✅ Migrated: {file_path} -> gs://{self.gcs_bucket_name}/{blob_path}")
+                    print(f"✅ Migrated: {file_path} -> {result['secure_url']}")
                     
                 except Exception as e:
                     failed_files.append({

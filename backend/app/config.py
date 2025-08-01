@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     
     # CORS
     ALLOWED_ORIGINS: Union[str, List[str]] = Field(
-        default="https://task-module.up.railway.app,https://radiant-amazement-production-d68f.up.railway.app",
+        default="https://task-module.up.railway.app,https://radiant-amazement-production-d68f.up.railway.app,http://localhost:3000,http://localhost:5173",
         env="ALLOWED_ORIGINS"
     )
     
@@ -44,12 +44,11 @@ class Settings(BaseSettings):
     ALLOWED_IMAGE_TYPES: List[str] = ["image/jpeg", "image/png", "image/gif", "image/webp"]
     ALLOWED_VIDEO_TYPES: List[str] = ["video/mp4", "video/webm", "video/avi", "video/mov"]
     
-    # Google Cloud Storage
-    GCS_BUCKET_NAME: str = Field(default="", env="GCS_BUCKET_NAME")
-    GOOGLE_APPLICATION_CREDENTIALS: str = Field(default="", env="GOOGLE_APPLICATION_CREDENTIALS")
-    GOOGLE_APPLICATION_CREDENTIALS_BASE64: str = Field(default="", env="GOOGLE_APPLICATION_CREDENTIALS_BASE64")
+    # Cloudinary Configuration
+    CLOUDINARY_CLOUD_NAME: str = Field(default="", env="CLOUDINARY_CLOUD_NAME")
+    CLOUDINARY_API_KEY: str = Field(default="", env="CLOUDINARY_API_KEY")
+    CLOUDINARY_API_SECRET: str = Field(default="", env="CLOUDINARY_API_SECRET")
     USE_CLOUD_STORAGE: bool = Field(default=False, env="USE_CLOUD_STORAGE")
-    GCS_BASE_URL: str = Field(default="https://storage.googleapis.com", env="GCS_BASE_URL")
     
     @field_validator('MAX_FILE_SIZE', mode='before')
     @classmethod

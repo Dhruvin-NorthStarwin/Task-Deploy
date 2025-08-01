@@ -119,3 +119,19 @@ class MediaFile(Base):
     
     # Relationships
     task = relationship("Task", back_populates="media_files")
+
+class CleaningLog(Base):
+    __tablename__ = "cleaning_logs"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    asset_id = Column(String(100), nullable=False, index=True)  # e.g., "table-5", "main-freezer"
+    task_id = Column(Integer, ForeignKey("tasks.id"), nullable=False)
+    restaurant_id = Column(Integer, ForeignKey("restaurants.id"), nullable=False)
+    staff_name = Column(String(255), nullable=False)
+    completed_at = Column(DateTime(timezone=True), server_default=func.now())
+    method = Column(String(50), nullable=False, default="NFC")  # NFC, QR, Manual
+    notes = Column(Text, nullable=True)
+    
+    # Relationships
+    task = relationship("Task")
+    restaurant = relationship("Restaurant")

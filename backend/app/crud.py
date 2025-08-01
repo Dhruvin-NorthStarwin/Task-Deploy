@@ -264,3 +264,68 @@ def delete_media_file(db: Session, media_id: int) -> bool:
     db.delete(db_media)
     db.commit()
     return True
+
+# NFC Cleaning CRUD functions
+def get_active_cleaning_task_by_asset(db: Session, asset_id: str, restaurant_id: int) -> Optional[models.Task]:
+    """Get the active cleaning task for a specific asset"""
+    return db.query(models.Task).filter(
+        and_(
+            models.Task.restaurant_id == restaurant_id,
+            models.Task.location.ilike(f"%{asset_id}%"),  # Asset ID should be in location field
+            models.Task.category == models.TaskCategory.CLEANING,
+            models.Task.completed == False
+        )
+    ).first()
+
+def create_cleaning_log(db: Session, log_data: dict) -> models.CleaningLog:
+    """Create a new cleaning log entry"""
+    db_log = models.CleaningLog(**log_data)
+    db.add(db_log)
+    db.commit()
+    db.refresh(db_log)
+    return db_log
+
+def get_cleaning_count_by_asset_and_date(db: Session, asset_id: str, restaurant_id: int, start_date: datetime) -> int:
+    """Get the count of cleanings for an asset since a specific date"""
+    return db.query(models.CleaningLog).filter(
+        and_(
+            models.CleaningLog.restaurant_id == restaurant_id,
+            models.CleaningLog.asset_id == asset_id,
+            models.CleaningLog.completed_at >= start_date
+        )
+    ).count()
+
+def get_recent_cleaning_logs(db: Session, asset_id: str, restaurant_id: int, limit: int = 10) -> List[models.CleaningLog]:
+    """Get recent cleaning logs for an asset"""
+    return db.query(models.CleaningLog).filter(
+        and_(
+            models.CleaningLog.restaurant_id == restaurant_id,
+            models.CleaningLog.asset_id == asset_id
+        )
+    ).order_by(models.CleaningLog.completed_at.desc()).limit(limit).all()
+
+def get_cleaning_logs_by_asset_and_date_range(db: Session, asset_id: str, restaurant_id: int, start_date: datetime) -> List[models.CleaningLog]:
+    """Get cleaning logs for an asset within a date range"""
+    return db.query(models.CleaningLog).filter(
+        and_(
+            models.CleaningLog.restaurant_id == restaurant_id,
+            models.CleaningLog.asset_id == asset_id,
+            models.CleaningLog.completed_at >= start_date
+        )
+    ).order_by(models.CleaningLog.completed_at.desc()).all()
+
+def get_nfc_assets_by_restaurant(db: Session, restaurant_id: int):
+    """Get all unique NFC assets (asset IDs) for a restaurant with stats"""
+    from sqlalchemy import func
+    
+    return db.query(
+        models.Task.location.label('asset_id'),
+        func.count(models.Task.id).label('task_count'),
+        func.max(models.Task.completed_at).label('last_cleaned')
+    ).filter(
+        and_(
+            models.Task.restaurant_id == restaurant_id,
+            models.Task.category == models.TaskCategory.CLEANING,
+            models.Task.location.isnot(None)
+        )
+    ).group_by(models.Task.location).all()
