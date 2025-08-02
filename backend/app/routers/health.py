@@ -48,6 +48,93 @@ async def readiness_check():
         "environment": settings.ENVIRONMENT
     }
 
+@router.post("/fix-media-table")
+async def fix_media_table(db: Session = Depends(get_db)):
+    """Fix MediaFile table by adding missing columns for PostgreSQL"""
+    try:
+        # SQL commands to add missing columns
+        sql_commands = [
+            # Add file_url column if it doesn't exist
+            """
+            DO $$ 
+            BEGIN 
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                              WHERE table_name = 'media_files' AND column_name = 'file_url') THEN
+                    ALTER TABLE media_files ADD COLUMN file_url VARCHAR(1000);
+                END IF;
+            END $$;
+            """,
+            
+            # Add storage_type column if it doesn't exist
+            """
+            DO $$ 
+            BEGIN 
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                              WHERE table_name = 'media_files' AND column_name = 'storage_type') THEN
+                    ALTER TABLE media_files ADD COLUMN storage_type VARCHAR(50);
+                END IF;
+            END $$;
+            """,
+            
+            # Add cloudinary_id column if it doesn't exist
+            """
+            DO $$ 
+            BEGIN 
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                              WHERE table_name = 'media_files' AND column_name = 'cloudinary_id') THEN
+                    ALTER TABLE media_files ADD COLUMN cloudinary_id VARCHAR(255);
+                END IF;
+            END $$;
+            """,
+            
+            # Update existing records with default values
+            """
+            UPDATE media_files 
+            SET 
+                file_url = COALESCE(file_url, file_path),
+                storage_type = COALESCE(storage_type, 'local')
+            WHERE file_url IS NULL OR storage_type IS NULL;
+            """,
+        ]
+        
+        results = []
+        for i, sql in enumerate(sql_commands, 1):
+            try:
+                db.execute(text(sql))
+                results.append(f"Command {i}: Success")
+            except Exception as e:
+                results.append(f"Command {i}: {str(e)}")
+        
+        db.commit()
+        
+        # Verify the changes
+        result = db.execute(text("""
+            SELECT column_name, data_type, is_nullable 
+            FROM information_schema.columns 
+            WHERE table_name = 'media_files' 
+            ORDER BY ordinal_position;
+        """))
+        
+        columns = [{"name": row.column_name, "type": row.data_type, "nullable": row.is_nullable} for row in result]
+        
+        return {
+            "status": "success",
+            "timestamp": datetime.utcnow().isoformat(),
+            "commands_executed": results,
+            "current_schema": columns
+        }
+        
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "status": "error",
+                "timestamp": datetime.utcnow().isoformat(),
+                "error": str(e)
+            }
+        )
+
 @router.get("/metrics")
 async def get_metrics():
     """Basic metrics endpoint for monitoring"""
