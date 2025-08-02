@@ -12,6 +12,7 @@ const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCapture })
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment'); // Default to back camera
 
   useEffect(() => {
     if (isOpen) {
@@ -20,11 +21,22 @@ const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCapture })
       closeCamera();
     }
     return () => closeCamera();
-  }, [isOpen]);
+  }, [isOpen, facingMode]);
 
   const openCamera = async () => {
     try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
+      // Close existing stream before opening new one
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+
+      const constraints = {
+        video: {
+          facingMode: facingMode
+        }
+      };
+
+      const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
       }
@@ -41,6 +53,10 @@ const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCapture })
       setStream(null);
       setCapturedImage(null);
     }
+  };
+
+  const flipCamera = () => {
+    setFacingMode(prevMode => prevMode === 'user' ? 'environment' : 'user');
   };
 
   const handleCapture = () => {
@@ -75,7 +91,7 @@ const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCapture })
           </button>
         </div>
         <div className="p-4">
-          <div className="aspect-video bg-gray-900 rounded-lg overflow-hidden">
+          <div className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden">
             <video 
               ref={videoRef} 
               autoPlay 
@@ -88,6 +104,19 @@ const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCapture })
                 alt="Captured task" 
                 className="w-full h-full object-cover" 
               />
+            )}
+            
+            {/* Camera Flip Button - Only show when not captured */}
+            {!capturedImage && (
+              <button 
+                onClick={flipCamera}
+                className="absolute top-4 right-4 p-2 bg-black/50 hover:bg-black/70 rounded-full transition-colors"
+                title={`Switch to ${facingMode === 'user' ? 'back' : 'front'} camera`}
+              >
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                </svg>
+              </button>
             )}
           </div>
           <canvas ref={canvasRef} className="hidden"></canvas>

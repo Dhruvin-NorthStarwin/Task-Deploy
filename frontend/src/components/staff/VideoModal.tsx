@@ -15,6 +15,7 @@ const VideoModal: React.FC<VideoModalProps> = ({ isOpen, onClose, onCapture }) =
   const [isRecording, setIsRecording] = useState(false);
   const [recordedVideo, setRecordedVideo] = useState<string | null>(null);
   const [recordingTime, setRecordingTime] = useState(0);
+  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment'); // Default to back camera
 
   useEffect(() => {
     if (isOpen) {
@@ -23,7 +24,7 @@ const VideoModal: React.FC<VideoModalProps> = ({ isOpen, onClose, onCapture }) =
       closeCamera();
     }
     return () => closeCamera();
-  }, [isOpen]);
+  }, [isOpen, facingMode]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -37,10 +38,19 @@ const VideoModal: React.FC<VideoModalProps> = ({ isOpen, onClose, onCapture }) =
 
   const openCamera = async () => {
     try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
-        video: true, 
+      // Close existing stream before opening new one
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+
+      const constraints = {
+        video: {
+          facingMode: facingMode
+        }, 
         audio: true 
-      });
+      };
+
+      const mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
       }
@@ -58,6 +68,12 @@ const VideoModal: React.FC<VideoModalProps> = ({ isOpen, onClose, onCapture }) =
       setRecordedVideo(null);
       setIsRecording(false);
       setRecordingTime(0);
+    }
+  };
+
+  const flipCamera = () => {
+    if (!isRecording) { // Only allow flip when not recording
+      setFacingMode(prevMode => prevMode === 'user' ? 'environment' : 'user');
     }
   };
 
@@ -140,6 +156,19 @@ const VideoModal: React.FC<VideoModalProps> = ({ isOpen, onClose, onCapture }) =
                 controls
                 className="w-full h-full object-cover"
               />
+            )}
+
+            {/* Camera Flip Button - Only show when not recording and no recorded video */}
+            {!recordedVideo && !isRecording && (
+              <button 
+                onClick={flipCamera}
+                className="absolute top-4 right-4 p-2 bg-black/50 hover:bg-black/70 rounded-full transition-colors"
+                title={`Switch to ${facingMode === 'user' ? 'back' : 'front'} camera`}
+              >
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                </svg>
+              </button>
             )}
 
             {/* Recording Indicator */}
