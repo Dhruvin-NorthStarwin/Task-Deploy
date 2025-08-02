@@ -361,7 +361,7 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
                   <thead className="bg-gray-50 text-xs text-gray-500 uppercase tracking-wider rounded-lg">
                     <tr>
                       <th scope="col" className="px-6 py-4 font-semibold rounded-l-lg">Task</th>
-                      <th scope="col" className="px-6 py-4 font-semibold">Assigned To</th>
+                      <th scope="col" className="px-6 py-4 font-semibold">Initials</th>
                       <th scope="col" className="px-6 py-4 font-semibold">Status</th>
                       <th scope="col" className="px-6 py-4 font-semibold text-center">Media</th>
                       <th scope="col" className="px-6 py-4 font-semibold text-center rounded-r-lg">Actions</th>

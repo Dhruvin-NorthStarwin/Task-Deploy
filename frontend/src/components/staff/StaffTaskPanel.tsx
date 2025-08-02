@@ -514,7 +514,7 @@ const StaffTaskPanel: React.FC<StaffTaskPanelProps> = ({ onLogout }) => {
                   <thead className="bg-gray-50 text-xs text-gray-500 uppercase tracking-wider rounded-lg">
                     <tr>
                       <th scope="col" className="px-6 py-4 font-semibold rounded-l-lg">Task</th>
-                      <th scope="col" className="px-6 py-4 font-semibold">Assigned To</th>
+                      <th scope="col" className="px-6 py-4 font-semibold">Initials</th>
                       <th scope="col" className="px-6 py-4 font-semibold rounded-r-lg">Status</th>
                     </tr>
                   </thead>
