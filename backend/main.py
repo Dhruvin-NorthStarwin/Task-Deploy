@@ -6,7 +6,7 @@ from fastapi.exceptions import RequestValidationError
 from sqlalchemy import create_engine
 from app.config import settings
 from app.database import engine, Base
-from app.routers import auth, tasks, users, uploads, health, admin_storage, admin_media, nfc
+from app.routers import auth, tasks, users, uploads, health, admin_storage
 from app.middleware.error_handler import global_exception_handler, validation_exception_handler
 from app.middleware.cors_middleware import CustomCORSMiddleware
 from app.middleware.preflight_middleware import PreflightMiddleware
@@ -24,7 +24,7 @@ logging.basicConfig(
 app = FastAPI(
     title="RestroManage Task Module API",
     description="API for restaurant task management system",
-    version="1.0.0",
+    version="1.0.1",  # Force Railway redeploy
     debug=settings.DEBUG
 )
 
@@ -185,8 +185,6 @@ app.include_router(users.router, prefix="/api")
 app.include_router(uploads.router, prefix="/api")
 app.include_router(health.router, prefix="/api")
 app.include_router(admin_storage.router, prefix="/api")
-app.include_router(admin_media.router, prefix="/api")
-app.include_router(nfc.router, prefix="/api")
 
 # Root endpoint
 @app.get("/")
@@ -194,7 +192,7 @@ async def root():
     """Root endpoint"""
     return {
         "message": "RestroManage Task Module API",
-        "version": "1.0.0",
+        "version": "1.0.1",
         "environment": settings.ENVIRONMENT,
         "docs": "/docs",
         "health": "/api/health",
