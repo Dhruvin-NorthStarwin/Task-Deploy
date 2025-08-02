@@ -184,9 +184,11 @@ async def submit_task(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail="Failed to upload image. Please try again."
                 )
+        else:
+            logger.info(f"Image URL already processed for task {task_id}: {image_url}")
         
         # Handle video upload to Cloudinary if base64 data is provided
-        if video_url and CloudinaryService.is_base64_image(video_url):  # Note: using same check for now
+        if video_url and CloudinaryService.is_base64_image(video_url):
             logger.info(f"Base64 video detected for task {task_id}, uploading to Cloudinary...")
             cloudinary_url = CloudinaryService.upload_video_base64(
                 video_url,
@@ -203,6 +205,8 @@ async def submit_task(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail="Failed to upload video. Please try again."
                 )
+        else:
+            logger.info(f"Video URL already processed for task {task_id}: {video_url}")
         
         # Update task status to SUBMITTED and add media URLs
         task_update = schemas.TaskUpdate(
