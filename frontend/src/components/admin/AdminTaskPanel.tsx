@@ -146,14 +146,14 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
       const updatedTask = await apiService.approveTask(taskId);
       console.log('Task approved successfully:', updatedTask);
       
-      // Update tasks in the UI
+      // Update tasks in the UI with the complete updated task
       setTasks(prevTasks => prevTasks.map(t => 
-        t.id === taskId ? { ...t, status: updatedTask.status } : t
+        t.id === taskId ? updatedTask : t
       ));
       
       // Update selected task if it's the one being approved
       if (selectedTask && selectedTask.id === taskId) {
-        setSelectedTask({ ...selectedTask, status: updatedTask.status });
+        setSelectedTask(updatedTask);
       }
     } catch (error) {
       console.error('Failed to approve task:', error);
@@ -166,14 +166,14 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
       const updatedTask = await apiService.declineTask(taskId, reason);
       console.log('Task declined successfully:', updatedTask);
       
-      // Update tasks in the UI
+      // Update tasks in the UI with the complete updated task
       setTasks(prevTasks => prevTasks.map(t => 
-        t.id === taskId ? { ...t, status: updatedTask.status } : t
+        t.id === taskId ? updatedTask : t
       ));
       
       // Update selected task if it's the one being declined
       if (selectedTask && selectedTask.id === taskId) {
-        setSelectedTask({ ...selectedTask, status: updatedTask.status });
+        setSelectedTask(updatedTask);
       }
     } catch (error) {
       console.error('Failed to decline task:', error);
