@@ -294,32 +294,35 @@ const StaffTaskPanel: React.FC<StaffTaskPanelProps> = ({ onLogout }) => {
                 <span className="xxs:hidden">Complete tasks</span>
               </p>
             </div>
-            <div className="flex flex-col space-y-1.5 xxs:space-y-2 xs:flex-row xs:space-y-0 xs:space-x-2 sm:space-x-3">
+            <div className="flex flex-col space-y-1.5 xxs:space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2 lg:space-x-3">
               <PWAInstallButton />
               <button 
                 onClick={fetchTasks}
                 disabled={isLoadingTasks}
-                className={`w-full xs:w-auto text-white px-3 xxs:px-4 xs:px-6 py-2 xxs:py-2.5 xs:py-3 rounded-lg xs:rounded-xl font-semibold focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-1.5 xxs:gap-2 text-xs xxs:text-sm xs:text-base ${
+                className={`w-full sm:w-auto text-white px-3 xxs:px-4 sm:px-6 py-2 xxs:py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-semibold focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-1.5 xxs:gap-2 text-xs xxs:text-sm sm:text-base ${
                   isLoadingTasks 
                     ? 'bg-blue-400 cursor-not-allowed' 
                     : 'bg-blue-600 hover:bg-blue-700'
                 }`}
               >
-                <svg className={`w-3 h-3 xxs:w-4 xxs:h-4 xs:w-5 xs:h-5 ${isLoadingTasks ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className={`w-3 h-3 xxs:w-4 xxs:h-4 sm:w-5 sm:h-5 ${isLoadingTasks ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
                 <span className="hidden xxs:inline xs:hidden">
                   {isLoadingTasks ? 'Loading...' : 'Refresh'}
                 </span>
-                <span className="xxs:hidden xs:inline">
+                <span className="xxs:hidden xs:inline sm:hidden">
+                  {isLoadingTasks ? 'Loading...' : 'Refresh'}
+                </span>
+                <span className="hidden sm:inline">
                   {isLoadingTasks ? 'Loading...' : 'Refresh Tasks'}
                 </span>
               </button>
               <button 
                 onClick={onLogout} 
-                className="w-full xs:w-auto bg-red-500 text-white px-3 xxs:px-4 xs:px-6 py-2 xxs:py-2.5 xs:py-3 rounded-lg xs:rounded-xl font-semibold hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-1.5 xxs:gap-2 text-xs xxs:text-sm xs:text-base"
+                className="w-full sm:w-auto bg-red-500 text-white px-3 xxs:px-4 sm:px-6 py-2 xxs:py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-semibold hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-1.5 xxs:gap-2 text-xs xxs:text-sm sm:text-base"
               >
-                <svg className="w-3 h-3 xxs:w-4 xxs:h-4 xs:w-5 xs:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3 h-3 xxs:w-4 xxs:h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
                 Logout
