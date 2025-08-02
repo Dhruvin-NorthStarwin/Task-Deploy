@@ -20,11 +20,88 @@ from app import models, schemas, crud
 from app.config import settings
 import secrets
 import string
+from sqlalchemy import text
 
 def generate_secure_restaurant_code() -> str:
     """Generate a secure 8-character restaurant code"""
     characters = string.ascii_uppercase + string.digits
     return ''.join(secrets.choice(characters) for _ in range(8))
+
+def fix_media_file_table():
+    """Fix MediaFile table by adding missing columns for PostgreSQL"""
+    print("🔧 Fixing MediaFile table for PostgreSQL compatibility...")
+    
+    try:
+        with engine.connect() as connection:
+            # SQL commands to add missing columns
+            sql_commands = [
+                # Add file_url column if it doesn't exist
+                """
+                DO $$ 
+                BEGIN 
+                    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                                  WHERE table_name = 'media_files' AND column_name = 'file_url') THEN
+                        ALTER TABLE media_files ADD COLUMN file_url VARCHAR(1000);
+                        RAISE NOTICE 'Added file_url column';
+                    ELSE
+                        RAISE NOTICE 'file_url column already exists';
+                    END IF;
+                END $$;
+                """,
+                
+                # Add storage_type column if it doesn't exist
+                """
+                DO $$ 
+                BEGIN 
+                    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                                  WHERE table_name = 'media_files' AND column_name = 'storage_type') THEN
+                        ALTER TABLE media_files ADD COLUMN storage_type VARCHAR(50);
+                        RAISE NOTICE 'Added storage_type column';
+                    ELSE
+                        RAISE NOTICE 'storage_type column already exists';
+                    END IF;
+                END $$;
+                """,
+                
+                # Add cloudinary_id column if it doesn't exist
+                """
+                DO $$ 
+                BEGIN 
+                    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                                  WHERE table_name = 'media_files' AND column_name = 'cloudinary_id') THEN
+                        ALTER TABLE media_files ADD COLUMN cloudinary_id VARCHAR(255);
+                        RAISE NOTICE 'Added cloudinary_id column';
+                    ELSE
+                        RAISE NOTICE 'cloudinary_id column already exists';
+                    END IF;
+                END $$;
+                """,
+                
+                # Update existing records with default values
+                """
+                UPDATE media_files 
+                SET 
+                    file_url = COALESCE(file_url, file_path),
+                    storage_type = COALESCE(storage_type, 'local')
+                WHERE file_url IS NULL OR storage_type IS NULL;
+                """,
+            ]
+            
+            with connection.begin():
+                for i, sql in enumerate(sql_commands, 1):
+                    try:
+                        connection.execute(text(sql))
+                        print(f"  ✅ Command {i} executed successfully")
+                    except Exception as e:
+                        print(f"  ⚠️ Command {i} warning: {e}")
+                        # Continue with other commands
+                        continue
+            
+            print("✅ MediaFile table PostgreSQL compatibility fix completed!")
+            
+    except Exception as e:
+        print(f"❌ MediaFile table fix failed: {e}")
+        # Don't fail the entire initialization for this
 
 def init_production_database():
     """Initialize the production database"""
@@ -37,6 +114,9 @@ def init_production_database():
         print("📋 Creating database tables...")
         Base.metadata.create_all(bind=engine)
         print("✅ Database tables created successfully!")
+        
+        # Fix MediaFile table for PostgreSQL compatibility
+        fix_media_file_table()
         
         # Print table information
         tables = Base.metadata.tables.keys()
