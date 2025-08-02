@@ -27,6 +27,10 @@ class CloudinaryService:
         if not data:
             return False
         
+        # If it's a URL (http/https), it's NOT base64
+        if data.startswith(('http://', 'https://')):
+            return False
+        
         # Check for data URL format
         if data.startswith('data:image/'):
             return True
@@ -34,6 +38,9 @@ class CloudinaryService:
         # Check for pure base64 (try to decode)
         try:
             if len(data) > 100:  # Reasonable minimum for image
+                # Additional check: base64 should not contain URL characters
+                if '://' in data or data.startswith('/'):
+                    return False
                 base64.b64decode(data)
                 return True
         except Exception:
