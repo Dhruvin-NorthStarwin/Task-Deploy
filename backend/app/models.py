@@ -112,9 +112,12 @@ class MediaFile(Base):
     filename = Column(String(255), nullable=False)
     original_filename = Column(String(255), nullable=False)
     file_path = Column(String(500), nullable=False)
+    file_url = Column(String(1000), nullable=False)  # Cloudinary URL
     file_size = Column(Integer, nullable=False)
     mime_type = Column(String(100), nullable=False)
     file_type = Column(String(20), nullable=False)  # image, video
+    storage_type = Column(String(50), nullable=False)  # "cloudinary" or "local"
+    cloudinary_id = Column(String(255), nullable=True)  # Cloudinary public_id
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     # Relationships
