@@ -132,19 +132,27 @@ const StaffTaskPanel: React.FC<StaffTaskPanelProps> = ({ onLogout }) => {
       const result = await apiService.uploadFile(taskId, file, 'image');
       const serverImageUrl = result.url;
       
-      // Update local state
+      // Verify it's a Cloudinary URL before storing
+      if (!serverImageUrl || (!serverImageUrl.includes('cloudinary.com') && !serverImageUrl.includes('localhost') && !serverImageUrl.includes('railway.app'))) {
+        throw new Error('Invalid server URL received');
+      }
+      
+      // Update local state with Cloudinary URL
       setTasks(prevTasks => prevTasks.map(task => 
         task.id === taskId ? { ...task, imageUrl: serverImageUrl } : task
       ));
       setSelectedTask(prev => prev ? { ...prev, imageUrl: serverImageUrl } : null);
+      
+      console.log('✅ Image uploaded successfully to:', serverImageUrl);
     } catch (error) {
       console.error('Failed to upload image:', error);
       
-      // Fallback: Update locally if API fails
-      setTasks(prevTasks => prevTasks.map(task => 
-        task.id === taskId ? { ...task, imageUrl } : task
-      ));
-      setSelectedTask(prev => prev ? { ...prev, imageUrl } : null);
+      // Do NOT store local URL - show error instead
+      alert('Failed to upload image to server. Please try again.');
+      
+      // Optionally, you could store the local URL temporarily for preview,
+      // but make sure it's not submitted to the database
+      // For now, we'll leave the image URL empty to force re-upload
     }
   };
 
@@ -180,6 +188,19 @@ const StaffTaskPanel: React.FC<StaffTaskPanelProps> = ({ onLogout }) => {
       if (task.videoRequired && !task.videoUrl) {
         console.error('❌ STAFF SUBMIT: Video required but not provided');
         alert('Please capture the required video before submitting.');
+        return;
+      }
+
+      // Validate that URLs are server URLs, not local data URLs
+      if (task.imageUrl && task.imageUrl.startsWith('data:')) {
+        console.error('❌ STAFF SUBMIT: Local image URL detected, server upload may have failed');
+        alert('Image upload to server incomplete. Please try uploading the image again.');
+        return;
+      }
+
+      if (task.videoUrl && task.videoUrl.startsWith('data:')) {
+        console.error('❌ STAFF SUBMIT: Local video URL detected, server upload may have failed');
+        alert('Video upload to server incomplete. Please try uploading the video again.');
         return;
       }
 
@@ -251,19 +272,25 @@ const StaffTaskPanel: React.FC<StaffTaskPanelProps> = ({ onLogout }) => {
       const result = await apiService.uploadFile(taskId, file, 'video');
       const serverVideoUrl = result.url;
       
-      // Update local state
+      // Verify it's a valid server URL before storing
+      if (!serverVideoUrl || (!serverVideoUrl.includes('cloudinary.com') && !serverVideoUrl.includes('localhost') && !serverVideoUrl.includes('railway.app'))) {
+        throw new Error('Invalid server URL received');
+      }
+      
+      // Update local state with Cloudinary URL
       setTasks(prevTasks => prevTasks.map(task => 
         task.id === taskId ? { ...task, videoUrl: serverVideoUrl } : task
       ));
       setSelectedTask(prev => prev ? { ...prev, videoUrl: serverVideoUrl } : null);
+      
+      console.log('✅ Video uploaded successfully to:', serverVideoUrl);
     } catch (error) {
       console.error('Failed to upload video:', error);
       
-      // Fallback: Update locally if API fails
-      setTasks(prevTasks => prevTasks.map(task => 
-        task.id === taskId ? { ...task, videoUrl } : task
-      ));
-      setSelectedTask(prev => prev ? { ...prev, videoUrl } : null);
+      // Do NOT store local URL - show error instead
+      alert('Failed to upload video to server. Please try again.');
+      
+      // Do not store local URL to prevent it from being submitted to database
     }
   };
 
