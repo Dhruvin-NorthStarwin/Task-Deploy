@@ -4,11 +4,17 @@ import * as apiService from '../services/apiService'; // Import the apiService
 import { iosStorage, getStorageStatus } from '../utils/iosStorage';
 
 interface User {
-  id: string;
+  id: number;
   name: string;
-  role: 'staff' | 'admin';
-  restaurant_id: string;
-  restaurant_code: string; // Add restaurant_code
+  role?: 'staff' | 'admin';
+  restaurant_code: string;
+  cuisine_type?: string;
+  contact_email?: string;
+  contact_phone?: string;
+  created_at?: string;
+  updated_at?: string;
+  locations?: any[];
+  users?: any[];
 }
 
 interface AuthContextType {

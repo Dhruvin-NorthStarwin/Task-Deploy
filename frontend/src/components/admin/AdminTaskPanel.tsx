@@ -174,7 +174,7 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
         return;
       }
       
-      const restaurantId = parseInt(user.restaurant_id);
+      const restaurantId = user.id;
       
       const assetsData: NFCAssetsResponse = await apiService.getNfcAssets(restaurantId);
       setCleaningAssets(assetsData.assets);
