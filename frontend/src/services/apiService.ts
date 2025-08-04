@@ -377,6 +377,7 @@ export const updateTaskStatus = async (taskId: number, status: string): Promise<
       break;
     case 'approved':
     case 'approve':
+    case 'done':
       endpoint = `${API_BASE_URL}/tasks/${taskId}/approve`;
       break;
     case 'declined':

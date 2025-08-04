@@ -132,7 +132,16 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
   };
 
   const handleTaskApprove = async (taskId: number) => {
-    await handleStatusChange(taskId, 'Done');
+    try {
+      await apiService.approveTask(taskId);
+      setTasks(prevTasks =>
+        prevTasks.map(task =>
+          task.id === taskId ? { ...task, status: 'Done' as Status } : task
+        )
+      );
+    } catch (error) {
+      console.error('Failed to approve task:', error);
+    }
   };
 
   const handleTaskDecline = async (taskId: number, reason: string) => {
