@@ -204,9 +204,9 @@ const StaffPin: React.FC<PinProps> = ({ onLogin }) => {
                         </KeypadButton>
                     </div>
 
-                    {/* Debug Info */}
+                    {/* Debug Info - Only show staff PIN */}
                     <div className="mt-6 text-center text-xs text-gray-500">
-                        <p>Staff PIN: 0000 | Admin PIN: 5678</p>
+                        <p>Staff PIN: 0000</p>
                     </div>
                 </div>
             </div>

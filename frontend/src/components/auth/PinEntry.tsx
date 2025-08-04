@@ -5,9 +5,10 @@ interface PinEntryProps {
   onPinSuccess: (pin: string) => void;
   onLogout: () => void;
   setNotification: (notification: Notification) => void;
+  showAdminPin?: boolean; // Optional prop to control admin PIN visibility
 }
 
-const PinEntryComponent: React.FC<PinEntryProps> = ({ onPinSuccess, onLogout, setNotification }) => {
+const PinEntryComponent: React.FC<PinEntryProps> = ({ onPinSuccess, onLogout, setNotification, showAdminPin = false }) => {
   const [pin, setPin] = useState('');
 
   const handleKeyPress = (key: string) => {
@@ -78,7 +79,9 @@ const PinEntryComponent: React.FC<PinEntryProps> = ({ onPinSuccess, onLogout, se
         </div>
         <div className="mt-6 border-t pt-4 text-sm text-gray-500">
           <p><span className="font-semibold">Staff PIN:</span> 0000</p>
-          <p><span className="font-semibold">Admin PIN:</span> 5678</p>
+          {showAdminPin && (
+            <p><span className="font-semibold">Admin PIN:</span> 5678</p>
+          )}
         </div>
         <button
           onClick={onLogout}
