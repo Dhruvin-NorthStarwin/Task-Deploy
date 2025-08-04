@@ -21,7 +21,8 @@
     "react-dom": "^19.1.0",
     "react-player": "^3.3.1",
     "react-router-dom": "^7.7.1",
-    "serve": "^14.2.1"
+    "serve": "^14.2.1",
+    "test": "^3.3.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.30.1",
