@@ -8,6 +8,7 @@ import TaskDetailModal from './TaskDetailModal';
 import PWAInstallButton from '../common/PWAInstallButton';
 import apiService from '../../services/apiService';
 import DOMPurify from 'dompurify';
+import { useAuth } from '../../context/AuthContext';
 
 // Define main tab types
 type MainTab = 'all-tasks' | 'cleaning-logs';
@@ -17,6 +18,7 @@ interface AdminTaskPanelProps {
 }
 
 const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
+  const { user } = useAuth();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -166,14 +168,13 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
   const fetchCleaningAssets = async () => {
     try {
       setLoadingAssets(true);
-      const userData = localStorage.getItem('userData');
-      if (!userData) {
-        console.error('No user data found');
+      
+      if (!user) {
+        console.error('No user data found - user not authenticated');
         return;
       }
       
-      const user = JSON.parse(userData);
-      const restaurantId = user.restaurant_id;
+      const restaurantId = parseInt(user.restaurant_id);
       
       const assetsData: NFCAssetsResponse = await apiService.getNfcAssets(restaurantId);
       setCleaningAssets(assetsData.assets);
