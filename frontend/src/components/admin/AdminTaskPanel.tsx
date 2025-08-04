@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import type { Task, Day, Category, Status } from '../../types';
+import type { Task, Day, Category, Status, CleaningAsset, CleaningLogsResponse, NFCAssetsResponse } from '../../types';
 import { CATEGORIES, DAYS } from '../../data/tasks';
 import StatusBadge from '../common/StatusBadge';
 import { ActionsIcon } from '../common/Icons';
@@ -17,11 +17,18 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]); // Start with empty tasks
-  const [activeView, setActiveView] = useState<Day | 'priority'>('monday');
+  const [activeView, setActiveView] = useState<Day | 'priority' | 'cleaning-logs'>('monday');
   const [categoryFilter, setCategoryFilter] = useState<Category | 'all'>('all');
   // const [statusFilter, setStatusFilter] = useState<Status | 'all'>('all'); // Removed unused variable
   const [searchTerm, setSearchTerm] = useState('');
   const [openDropdown, setOpenDropdown] = useState<number | null>(null);
+  
+  // Cleaning logs state
+  const [cleaningAssets, setCleaningAssets] = useState<CleaningAsset[]>([]);
+  const [selectedAsset, setSelectedAsset] = useState<string | null>(null);
+  const [cleaningLogs, setCleaningLogs] = useState<CleaningLogsResponse | null>(null);
+  const [loadingAssets, setLoadingAssets] = useState(false);
+  const [loadingLogs, setLoadingLogs] = useState(false);
 
   // Utility function to safely render task content and prevent XSS
   const sanitizeTaskContent = (content: string) => {
@@ -73,6 +80,11 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
     console.log('AdminTaskPanel: Active view:', activeView);
     console.log('AdminTaskPanel: Category filter:', categoryFilter);
     console.log('AdminTaskPanel: Search term:', searchTerm);
+    
+    // If cleaning logs view is active, return empty tasks array
+    if (activeView === 'cleaning-logs') {
+      return [];
+    }
     
     const filtered = tasks.filter(task => {
       const categoryMatch = categoryFilter === 'all' || task.category === categoryFilter;
@@ -213,6 +225,64 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
     setOpenDropdown(openDropdown === taskId ? null : taskId);
   };
 
+  // Cleaning logs functions
+  const fetchCleaningAssets = async () => {
+    try {
+      setLoadingAssets(true);
+      // Get restaurant ID from localStorage or auth context
+      const userData = localStorage.getItem('userData');
+      if (!userData) {
+        console.error('No user data found');
+        return;
+      }
+      
+      const user = JSON.parse(userData);
+      const restaurantId = user.restaurant_id;
+      
+      const assetsData: NFCAssetsResponse = await apiService.getNfcAssets(restaurantId);
+      setCleaningAssets(assetsData.assets);
+    } catch (error) {
+      console.error('Failed to fetch cleaning assets:', error);
+    } finally {
+      setLoadingAssets(false);
+    }
+  };
+
+  const fetchCleaningLogs = async (assetId: string) => {
+    try {
+      setLoadingLogs(true);
+      const logsData: CleaningLogsResponse = await apiService.getCleaningLogs(assetId, 7);
+      setCleaningLogs(logsData);
+      setSelectedAsset(assetId);
+    } catch (error) {
+      console.error('Failed to fetch cleaning logs:', error);
+    } finally {
+      setLoadingLogs(false);
+    }
+  };
+
+  const handleCleaningLogsView = () => {
+    setActiveView('cleaning-logs');
+    if (cleaningAssets.length === 0) {
+      fetchCleaningAssets();
+    }
+  };
+
+  const formatTime = (isoString: string) => {
+    return new Date(isoString).toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
   return (
     <>
       
@@ -317,6 +387,17 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
                         <span className="xxs:hidden xs:inline">{day}</span>
                       </button>
                     ))}
+                    <button 
+                      onClick={handleCleaningLogsView} 
+                      className={`flex-shrink-0 px-2 xxs:px-2.5 xs:px-3 sm:px-4 py-1 xxs:py-1.5 xs:py-2 sm:py-2.5 text-xs sm:text-sm font-medium rounded xxs:rounded-md xs:rounded-lg transition-all duration-200 whitespace-nowrap ${
+                        activeView === 'cleaning-logs' 
+                          ? 'bg-blue-500 text-white shadow-md' 
+                          : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                      }`}
+                    >
+                      <span className="hidden xxs:inline">🧽 Cleaning Logs</span>
+                      <span className="xxs:hidden">🧽</span>
+                    </button>
                   </div>
                 </div>
 
@@ -652,8 +733,137 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
                 ))}
               </div>
 
+              {/* Cleaning Logs View */}
+              {activeView === 'cleaning-logs' && (
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                      🧽
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-900">Cleaning Logs</h2>
+                      <p className="text-sm text-gray-600">View cleaning history for all restaurant assets</p>
+                    </div>
+                  </div>
+
+                  {/* Loading State */}
+                  {loadingAssets && (
+                    <div className="text-center py-8">
+                      <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                      <p className="text-gray-600">Loading assets...</p>
+                    </div>
+                  )}
+
+                  {/* Assets Grid */}
+                  {!loadingAssets && cleaningAssets.length > 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {cleaningAssets.map((asset) => (
+                        <div
+                          key={asset.asset_id}
+                          onClick={() => fetchCleaningLogs(asset.asset_id)}
+                          className="bg-white p-4 rounded-lg border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all cursor-pointer"
+                        >
+                          <div className="flex items-center justify-between mb-3">
+                            <h3 className="font-semibold text-gray-900">{asset.asset_name}</h3>
+                            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                              {asset.total_tasks} logs
+                            </span>
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            <p>Asset ID: {asset.asset_id}</p>
+                            {asset.last_cleaned && (
+                              <p className="text-green-600 mt-1">
+                                Last cleaned: {new Date(asset.last_cleaned).toLocaleDateString()}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* No Assets State */}
+                  {!loadingAssets && cleaningAssets.length === 0 && (
+                    <div className="text-center py-12">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        🧽
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-600 mb-2">No Cleaning Assets Found</h3>
+                      <p className="text-gray-500">No NFC cleaning assets have been registered yet.</p>
+                    </div>
+                  )}
+
+                  {/* Cleaning Logs Details Modal */}
+                  {selectedAsset && cleaningLogs && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                      <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[80vh] overflow-hidden">
+                        <div className="p-6 border-b border-gray-200">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h3 className="text-xl font-semibold text-gray-800">
+                                {cleaningLogs.asset_name} - Cleaning History
+                              </h3>
+                              <p className="text-sm text-gray-600 mt-1">
+                                {cleaningLogs.date_range.days} days • {cleaningLogs.total_cleanings} total cleanings
+                              </p>
+                            </div>
+                            <button
+                              onClick={() => {
+                                setSelectedAsset(null);
+                                setCleaningLogs(null);
+                              }}
+                              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        </div>
+                        
+                        <div className="p-6 overflow-y-auto max-h-96">
+                          {loadingLogs ? (
+                            <div className="text-center py-8">
+                              <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                              <p className="text-gray-600">Loading cleaning logs...</p>
+                            </div>
+                          ) : (
+                            <div className="space-y-6">
+                              {Object.entries(cleaningLogs.logs_by_date).map(([date, logs]) => (
+                                <div key={date}>
+                                  <h4 className="text-sm font-semibold text-gray-700 mb-3 border-b pb-2">
+                                    {formatDate(date)} ({logs.length} cleanings)
+                                  </h4>
+                                  <div className="space-y-2">
+                                    {logs.map((log) => (
+                                      <div key={log.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                        <div>
+                                          <div className="font-medium text-gray-800">{log.staff_name}</div>
+                                          <div className="text-sm text-gray-600">{log.method}</div>
+                                        </div>
+                                        <div className="text-sm font-medium text-gray-700">
+                                          {formatTime(log.completed_at)}
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              ))}
+                              
+                              {Object.keys(cleaningLogs.logs_by_date).length === 0 && (
+                                <div className="text-center py-8">
+                                  <p className="text-gray-500">No cleaning logs found for the selected period.</p>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Empty State */}
-              {filteredTasks.length === 0 && (
+              {activeView !== 'cleaning-logs' && filteredTasks.length === 0 && (
                 <div className="text-center py-16">
                   <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -603,6 +603,39 @@ export const getTaskVideoUrl = async (taskId: number): Promise<string | null> =>
   }
 };
 
+// Cleaning Logs API
+export const getCleaningLogs = async (assetId: string, days: number = 7): Promise<any> => {
+  try {
+    console.log(`Fetching cleaning logs for asset: ${assetId}`);
+    
+    const response = await fetchWithRetryAndAuth(`${API_BASE_URL}/nfc/clean/${assetId}/logs?days=${days}`, {
+      method: 'GET',
+      headers: await getHeaders(true, 'GET'),
+    });
+
+    return await handleResponse(response);
+  } catch (error) {
+    console.error('Error fetching cleaning logs:', error);
+    throw error;
+  }
+};
+
+export const getNfcAssets = async (restaurantId: number): Promise<any> => {
+  try {
+    console.log(`Fetching NFC assets for restaurant: ${restaurantId}`);
+    
+    const response = await fetchWithRetryAndAuth(`${API_BASE_URL}/nfc/assets/${restaurantId}`, {
+      method: 'GET',
+      headers: await getHeaders(true, 'GET'),
+    });
+
+    return await handleResponse(response);
+  } catch (error) {
+    console.error('Error fetching NFC assets:', error);
+    throw error;
+  }
+};
+
 // Default export for easy imports
 const apiService = {
   login,
@@ -619,6 +652,8 @@ const apiService = {
   updateTaskInitials,
   uploadFile,
   getTaskVideoUrl,
+  getCleaningLogs,
+  getNfcAssets,
 };
 
 export default apiService;

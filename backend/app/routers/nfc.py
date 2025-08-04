@@ -22,15 +22,19 @@ async def complete_cleaning_task(
     Creates cleaning log entry directly without requiring existing tasks
     """
     try:
-        # Find restaurant by ID or name (restaurant_code can be either)
+        # Find restaurant by ID, restaurant_code, or name
         restaurant = None
         try:
             # Try as restaurant ID first
             restaurant_id = int(restaurant_code)
             restaurant = crud.get_restaurant(db, restaurant_id)
         except ValueError:
-            # If not a number, try to find by name
-            restaurant = crud.get_restaurant_by_name(db, restaurant_code)
+            # If not a number, try to find by restaurant_code first
+            restaurant = crud.get_restaurant_by_code(db, restaurant_code)
+            
+            # If still not found, try to find by name
+            if not restaurant:
+                restaurant = crud.get_restaurant_by_name(db, restaurant_code)
         
         if not restaurant:
             raise HTTPException(

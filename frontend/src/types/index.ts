@@ -39,3 +39,37 @@ export interface User {
   restaurant_id: number;
   is_active: boolean;
 }
+
+export interface CleaningLogEntry {
+  id: number;
+  staff_name: string;
+  completed_at: string;
+  method: string;
+  time: string;
+}
+
+export interface CleaningAsset {
+  asset_id: string;
+  asset_name: string;
+  nfc_url: string;
+  qr_url: string;
+  total_tasks: number;
+  last_cleaned?: string;
+}
+
+export interface CleaningLogsResponse {
+  asset_id: string;
+  asset_name: string;
+  date_range: {
+    start: string;
+    end: string;
+    days: number;
+  };
+  total_cleanings: number;
+  logs_by_date: { [date: string]: CleaningLogEntry[] };
+}
+
+export interface NFCAssetsResponse {
+  restaurant_id: number;
+  assets: CleaningAsset[];
+}
