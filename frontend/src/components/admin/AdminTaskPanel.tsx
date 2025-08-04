@@ -136,13 +136,15 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
   const handleTaskApprove = async (taskId: number) => {
     try {
       await apiService.approveTask(taskId);
-      setTasks(prevTasks =>
-        prevTasks.map(task =>
-          task.id === taskId ? { ...task, status: 'Done' as Status } : task
-        )
+      const updatedTasks = tasks.map(task =>
+        task.id === taskId ? { ...task, status: 'Done' as Status } : task
       );
-      // Close the modal after successful approval
-      setSelectedTask(null);
+      setTasks(updatedTasks);
+      
+      // Update the selected task if it's the one being approved to show the new status
+      if (selectedTask && selectedTask.id === taskId) {
+        setSelectedTask({ ...selectedTask, status: 'Done' as Status });
+      }
     } catch (error) {
       console.error('Failed to approve task:', error);
     }
@@ -151,13 +153,15 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
   const handleTaskDecline = async (taskId: number, reason: string) => {
     try {
       await apiService.declineTask(taskId, reason);
-      setTasks(prevTasks =>
-        prevTasks.map(task =>
-          task.id === taskId ? { ...task, status: 'Declined' as Status } : task
-        )
+      const updatedTasks = tasks.map(task =>
+        task.id === taskId ? { ...task, status: 'Declined' as Status } : task
       );
-      // Close the modal after successful decline
-      setSelectedTask(null);
+      setTasks(updatedTasks);
+      
+      // Update the selected task if it's the one being declined to show the new status
+      if (selectedTask && selectedTask.id === taskId) {
+        setSelectedTask({ ...selectedTask, status: 'Declined' as Status });
+      }
     } catch (error) {
       console.error('Failed to decline task:', error);
     }

@@ -24,13 +24,50 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
   const [showVideoPreview, setShowVideoPreview] = useState(false);
   const declineFormRef = useRef<HTMLDivElement>(null);
 
+  // Detect iOS for better compatibility
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
   useEffect(() => {
     if (task) {
       setShow(true);
+      // Prevent body scroll on iOS when modal is open
+      if (isIOS) {
+        document.body.style.overflow = 'hidden';
+        document.body.style.position = 'fixed';
+        document.body.style.width = '100%';
+      }
     } else {
       setShow(false);
+      // Restore body scroll
+      if (isIOS) {
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.width = '';
+      }
     }
-  }, [task]);
+    
+    return () => {
+      // Cleanup on unmount
+      if (isIOS) {
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.width = '';
+      }
+    };
+  }, [task, isIOS]);
+
+  const handleImageClick = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowImagePreview(true);
+  };
+
+  const handleVideoClick = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowVideoPreview(true);
+  };
 
   if (!task) return null;
 
@@ -58,9 +95,9 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
   };
 
   return (
-    <div className={`fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 transition-opacity duration-500 ${show ? 'opacity-100' : 'opacity-0'}`}>
-      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={handleClose}></div>
-      <div className={`bg-white rounded-lg sm:rounded-xl shadow-2xl w-full max-w-xs sm:max-w-lg lg:max-w-2xl max-h-[95vh] sm:max-h-[90vh] lg:max-h-[85vh] flex flex-col transition-all duration-500 ${show ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}>
+    <div className={`fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 transition-opacity duration-500 ios-modal-container ${show ? 'opacity-100' : 'opacity-0'}`}>
+      <div className="fixed inset-0 bg-black/40 ios-modal-backdrop" onClick={handleClose}></div>
+      <div className={`bg-white rounded-lg sm:rounded-xl shadow-2xl w-full max-w-xs sm:max-w-lg lg:max-w-2xl max-h-[95vh] sm:max-h-[90vh] lg:max-h-[85vh] flex flex-col transition-all duration-500 relative ios-modal-content ${show ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}>
         {/* Header - Mobile Optimized */}
         <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-200 flex-shrink-0">
           <h2 className="text-base sm:text-lg font-bold text-gray-800 truncate pr-3">{task.task}</h2>
@@ -70,7 +107,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
         </div>
 
         {/* Content - Mobile Optimized Scrollable */}
-        <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 ios-modal-scroll ios-no-bounce">
           {/* Task Description Section */}
           <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
             <h4 className="text-sm sm:text-base font-semibold text-gray-800 mb-2 flex items-center gap-2">
@@ -143,9 +180,11 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                     <img 
                       src={task.imageUrl} 
                       alt="Task submission" 
-                      className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity rounded-lg" 
-                      onClick={() => setShowImagePreview(true)}
+                      className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity rounded-lg ios-image-fix ios-touch-fix" 
+                      onClick={handleImageClick}
+                      onTouchEnd={handleImageClick}
                       title="Click to view full size"
+                      style={{ touchAction: 'manipulation' }}
                     />
                   ) : (
                     <div className="text-center text-gray-500">
@@ -172,14 +211,17 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
                 <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden border-2 border-dashed border-gray-300">
                   {task.videoUrl ? (
                     <div 
-                      className="w-full h-full cursor-pointer hover:opacity-90 transition-opacity relative group rounded-lg overflow-hidden"
-                      onClick={() => setShowVideoPreview(true)}
+                      className="w-full h-full cursor-pointer hover:opacity-90 transition-opacity relative group rounded-lg overflow-hidden ios-touch-fix"
+                      onClick={handleVideoClick}
+                      onTouchEnd={handleVideoClick}
                       title="Click to view full size"
+                      style={{ touchAction: 'manipulation' }}
                     >
                       <video 
                         src={task.videoUrl} 
-                        className="w-full h-full object-cover" 
+                        className="w-full h-full object-cover ios-video-fix" 
                         muted
+                        playsInline
                       />
                       <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 group-hover:bg-opacity-40 transition-all">
                         <div className="bg-white bg-opacity-90 rounded-full p-2">
@@ -285,11 +327,15 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
 
       {/* Image Preview Modal */}
       {showImagePreview && task.imageUrl && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black bg-opacity-90">
-          <div className="relative max-w-[95vw] max-h-[95vh]">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-90"
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+        >
+          <div className="relative max-w-[90vw] max-h-[90vh] flex items-center justify-center">
             <button 
               onClick={() => setShowImagePreview(false)}
-              className="absolute -top-10 right-0 text-white hover:text-gray-300 text-xl font-bold"
+              className="absolute -top-12 right-0 text-white hover:text-gray-300 text-2xl font-bold bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center"
+              style={{ zIndex: 1 }}
             >
               ✕
             </button>
@@ -297,6 +343,7 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
               src={task.imageUrl} 
               alt="Task submission full size" 
               className="max-w-full max-h-full object-contain rounded-lg"
+              style={{ maxWidth: '90vw', maxHeight: '90vh' }}
             />
           </div>
         </div>
@@ -304,11 +351,15 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
 
       {/* Video Preview Modal */}
       {showVideoPreview && task.videoUrl && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black bg-opacity-90">
-          <div className="relative max-w-[95vw] max-h-[95vh]">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-90"
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+        >
+          <div className="relative max-w-[90vw] max-h-[90vh] flex items-center justify-center">
             <button 
               onClick={() => setShowVideoPreview(false)}
-              className="absolute -top-10 right-0 text-white hover:text-gray-300 text-xl font-bold"
+              className="absolute -top-12 right-0 text-white hover:text-gray-300 text-2xl font-bold bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center"
+              style={{ zIndex: 1 }}
             >
               ✕
             </button>
@@ -316,7 +367,9 @@ const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
               src={task.videoUrl} 
               controls
               autoPlay
+              playsInline
               className="max-w-full max-h-full object-contain rounded-lg"
+              style={{ maxWidth: '90vw', maxHeight: '90vh' }}
             />
           </div>
         </div>
