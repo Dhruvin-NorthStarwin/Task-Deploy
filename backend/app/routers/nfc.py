@@ -42,13 +42,6 @@ async def complete_cleaning_task(
                 detail=f"Restaurant '{restaurant_code}' not found"
             )
         
-        # Validate staff name
-        if not staff_info.staff_name or len(staff_info.staff_name.strip()) < 2:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Staff name is required and must be at least 2 characters"
-            )
-        
         # Validate asset ID
         if not asset_id or len(asset_id.strip()) < 2:
             raise HTTPException(
@@ -63,10 +56,8 @@ async def complete_cleaning_task(
             "asset_id": asset_id.strip(),
             "task_id": None,  # No task ID needed for self-sufficient NFC
             "restaurant_id": restaurant.id,
-            "staff_name": staff_info.staff_name.strip(),
             "completed_at": current_time,
-            "method": "NFC",
-            "notes": staff_info.notes
+            "notes": staff_info.notes or f"Completed via NFC at {current_time.strftime('%H:%M:%S')}"
         }
         
         cleaning_log = crud.create_cleaning_log(db, cleaning_log_data)
@@ -98,9 +89,7 @@ async def complete_cleaning_task(
             "recent_cleanings": [
                 {
                     "id": log.id,
-                    "staff_name": log.staff_name,
                     "completed_at": log.completed_at.isoformat(),
-                    "method": log.method,
                     "notes": log.notes
                 }
                 for log in recent_cleanings
@@ -142,10 +131,9 @@ async def get_cleaning_logs(
             
             logs_by_date[date_key].append({
                 "id": log.id,
-                "staff_name": log.staff_name,
                 "completed_at": log.completed_at.isoformat(),
-                "method": log.method,
-                "time": log.completed_at.strftime("%H:%M")
+                "time": log.completed_at.strftime("%H:%M"),
+                "notes": log.notes
             })
         
         return {

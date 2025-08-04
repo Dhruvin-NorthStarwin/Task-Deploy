@@ -42,10 +42,9 @@ export interface User {
 
 export interface CleaningLogEntry {
   id: number;
-  staff_name: string;
   completed_at: string;
-  method: string;
   time: string;
+  notes?: string;
 }
 
 export interface CleaningAsset {

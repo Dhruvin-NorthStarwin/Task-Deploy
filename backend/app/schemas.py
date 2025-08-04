@@ -192,15 +192,13 @@ class TaskFilters(BaseModel):
 
 # NFC schemas
 class NFCCleaningRequest(BaseModel):
-    staff_name: Optional[str] = None
     notes: Optional[str] = None
 
 class CleaningLogEntry(BaseModel):
     id: int
     asset_id: str
-    staff_name: str
     completed_at: datetime
-    method: str
+    notes: Optional[str] = None
     
     class Config:
         from_attributes = True

@@ -338,13 +338,9 @@ def get_nfc_assets_by_restaurant(db: Session, restaurant_id: int):
     from sqlalchemy import func
     
     return db.query(
-        models.Task.location.label('asset_id'),
-        func.count(models.Task.id).label('task_count'),
-        func.max(models.Task.completed_at).label('last_cleaned')
+        models.CleaningLog.asset_id.label('asset_id'),
+        func.count(models.CleaningLog.id).label('task_count'),
+        func.max(models.CleaningLog.completed_at).label('last_cleaned')
     ).filter(
-        and_(
-            models.Task.restaurant_id == restaurant_id,
-            models.Task.category == models.TaskCategory.CLEANING,
-            models.Task.location.isnot(None)
-        )
-    ).group_by(models.Task.location).all()
+        models.CleaningLog.restaurant_id == restaurant_id
+    ).group_by(models.CleaningLog.asset_id).all()

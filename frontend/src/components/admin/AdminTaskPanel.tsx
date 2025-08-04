@@ -586,13 +586,7 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
                                         <span className="text-sm font-medium text-gray-900">
                                           Cleaned at {formatTime(log.completed_at)}
                                         </span>
-                                        <span className="text-xs text-gray-500">
-                                          by {log.staff_name}
-                                        </span>
                                       </div>
-                                      {log.method && (
-                                        <p className="text-sm text-gray-600">Method: {log.method}</p>
-                                      )}
                                       {log.time && (
                                         <p className="text-xs text-gray-500 mt-1">
                                           Duration: {log.time}

@@ -10,9 +10,7 @@ interface CleaningStats {
 
 interface CleaningEntry {
   id: number;
-  staff_name: string;
   completed_at: string;
-  method: string;
   notes?: string;
 }
 
@@ -37,7 +35,6 @@ const NFCCleaningPage: React.FC = () => {
   const [completionData, setCompletionData] = useState<NFCResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showLogs, setShowLogs] = useState(false);
-  const [staffName, setStaffName] = useState('');
 
   useEffect(() => {
     completeCleaningTask();
@@ -53,11 +50,6 @@ const NFCCleaningPage: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-
-      // Get staff name from localStorage or prompt
-      const savedStaffName = localStorage.getItem('staff_name') || '';
-      const currentStaffName = savedStaffName || 'Anonymous Staff';
-      setStaffName(currentStaffName);
 
       const token = localStorage.getItem('authToken');
       
@@ -84,7 +76,6 @@ const NFCCleaningPage: React.FC = () => {
           ...(token && { 'Authorization': `Bearer ${token}` })
         },
         body: JSON.stringify({
-          staff_name: currentStaffName,
           notes: `Completed via NFC at ${new Date().toLocaleTimeString()}`
         })
       });
@@ -225,7 +216,7 @@ const NFCCleaningPage: React.FC = () => {
                     {completionData.message}
                   </h2>
                   <p className="text-sm text-gray-600">
-                    Completed by {staffName} at {formatTime(completionData.completed_at)}
+                    Completed at {formatTime(completionData.completed_at)}
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
                     Restaurant: {completionData.restaurant_name} (ID: {completionData.restaurant_id})
@@ -276,10 +267,10 @@ const NFCCleaningPage: React.FC = () => {
                     >
                       <div>
                         <div className="font-medium text-gray-800">
-                          {entry.staff_name}
+                          Cleaning Completed
                         </div>
                         <div className="text-sm text-gray-600">
-                          {entry.method} • {formatDate(entry.completed_at)}
+                          {formatDate(entry.completed_at)}
                         </div>
                       </div>
                       <div className="text-sm font-medium text-gray-700">
@@ -343,14 +334,14 @@ const NFCCleaningPage: React.FC = () => {
                   <div key={entry.id} className="p-3 bg-gray-50 rounded-lg">
                     <div className="flex items-center justify-between mb-2">
                       <div className="font-medium text-gray-800">
-                        {entry.staff_name}
+                        Cleaning Completed
                       </div>
                       <div className="text-sm font-medium text-gray-700">
                         {formatTime(entry.completed_at)}
                       </div>
                     </div>
                     <div className="text-sm text-gray-600">
-                      {formatDate(entry.completed_at)} • {entry.method}
+                      {formatDate(entry.completed_at)}
                     </div>
                     {entry.notes && (
                       <div className="text-xs text-gray-500 mt-2 italic">

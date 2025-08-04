@@ -130,9 +130,7 @@ class CleaningLog(Base):
     asset_id = Column(String(100), nullable=False, index=True)  # e.g., "table-5", "main-freezer"
     task_id = Column(Integer, ForeignKey("tasks.id"), nullable=True)  # Made nullable for self-sufficient NFC
     restaurant_id = Column(Integer, ForeignKey("restaurants.id"), nullable=False)
-    staff_name = Column(String(255), nullable=False)
     completed_at = Column(DateTime(timezone=True), server_default=func.now())
-    method = Column(String(50), nullable=False, default="NFC")  # NFC, QR, Manual
     notes = Column(Text, nullable=True)
     
     # Relationships
