@@ -141,6 +141,8 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
           task.id === taskId ? { ...task, status: 'Done' as Status } : task
         )
       );
+      // Close the modal after successful approval
+      setSelectedTask(null);
     } catch (error) {
       console.error('Failed to approve task:', error);
     }
@@ -154,6 +156,8 @@ const AdminTaskPanel: React.FC<AdminTaskPanelProps> = ({ onLogout }) => {
           task.id === taskId ? { ...task, status: 'Declined' as Status } : task
         )
       );
+      // Close the modal after successful decline
+      setSelectedTask(null);
     } catch (error) {
       console.error('Failed to decline task:', error);
     }
