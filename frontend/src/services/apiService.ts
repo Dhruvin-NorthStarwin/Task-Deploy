@@ -234,6 +234,15 @@ export const register = async (registrationData: {
     if (config.DEBUG) {
       console.error('🔥 REGISTER ERROR:', response.status, response.statusText, errorData);
     }
+    
+    // Enhanced error message for 422 validation errors
+    if (response.status === 422 && errorData.errors) {
+      const validationErrors = errorData.errors.map((err: any) => 
+        `${err.field}: ${err.message}`
+      ).join(', ');
+      throw new Error(`Validation failed: ${validationErrors}`);
+    }
+    
     throw new Error(errorData.detail || errorData.message || `Registration failed: ${response.status}`);
   }
   

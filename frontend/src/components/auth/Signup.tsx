@@ -36,7 +36,8 @@ const SignupComponent: React.FC<SignupProps> = ({ onShowLogin, onRegistrationSuc
 
   // Validation functions
   const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // More strict email validation to match backend EmailStr requirements
+    const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
     return emailRegex.test(email);
   };
 
@@ -140,7 +141,7 @@ const SignupComponent: React.FC<SignupProps> = ({ onShowLogin, onRegistrationSuc
     setIsLoading(true);
     
     try {
-      const response = await apiService.register({
+      const registrationPayload = {
         name: restaurantName.trim(),
         cuisine_type: cuisineType.trim(),
         locations: locations.map(loc => ({
@@ -151,24 +152,55 @@ const SignupComponent: React.FC<SignupProps> = ({ onShowLogin, onRegistrationSuc
         contact_email: contactEmail.trim().toLowerCase(),
         contact_phone: contactPhone.trim(),
         password: password.trim()
+      };
+
+      // Debug logging to help identify the issue
+      console.log('🔍 Registration payload:', {
+        ...registrationPayload,
+        password: '[HIDDEN]',
+        dataTypes: {
+          name: typeof registrationPayload.name,
+          cuisine_type: typeof registrationPayload.cuisine_type,
+          contact_email: typeof registrationPayload.contact_email,
+          contact_phone: typeof registrationPayload.contact_phone,
+          locations: Array.isArray(registrationPayload.locations),
+          locationCount: registrationPayload.locations.length
+        }
       });
 
-      if (response.success && response.data) {
+      const response = await apiService.register(registrationPayload);
+
+      if (response.restaurant_code) {
         setNotification({ 
           message: 'Restaurant registered successfully! Please save your restaurant code.', 
           type: 'success' 
         });
-        onRegistrationSuccess(response.data.restaurantCode);
+        onRegistrationSuccess(response.restaurant_code);
       } else {
         setNotification({ 
-          message: response.error || 'Registration failed. Please try again.', 
+          message: response.message || 'Registration failed. Please try again.', 
           type: 'error' 
         });
       }
     } catch (error) {
       console.error('Registration error:', error);
+      
+      let errorMessage = 'Network error. Please check your connection and try again.';
+      
+      if (error instanceof Error) {
+        if (error.message.includes('Validation failed')) {
+          errorMessage = `Please check your input: ${error.message}`;
+        } else if (error.message.includes('422')) {
+          errorMessage = 'Please verify all fields are filled correctly and try again.';
+        } else if (error.message.includes('400')) {
+          errorMessage = 'This email may already be registered. Please try a different email.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       setNotification({ 
-        message: 'Network error. Please check your connection and try again.', 
+        message: errorMessage, 
         type: 'error' 
       });
     } finally {
